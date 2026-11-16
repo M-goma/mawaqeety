@@ -1,0 +1,312 @@
+<UserControl x:Class="Mawaqeety.App.Views.SettingsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:Mawaqeety.App.Localization"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls"
+             x:Name="Root">
+    <UserControl.Resources>
+        <c:BoolToVisibilityConverter x:Key="BoolVis"/>
+        <c:BoolToVisibilityConverter x:Key="NotBoolVis" Invert="True"/>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
+        <c:EmptyToVisibilityConverter x:Key="Empty"/>
+        <c:LocationNameConverter x:Key="LocName"/>
+        <c:InverseBoolConverter x:Key="Not"/>
+
+        <!-- label | control row -->
+        <Style x:Key="FieldGrid" TargetType="Grid">
+            <Setter Property="Margin" Value="0,7"/>
+        </Style>
+        <Style x:Key="SectionIcon" TargetType="TextBlock">
+            <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
+            <Setter Property="Margin" Value="0,3,10,0"/>
+        </Style>
+        <Style x:Key="SmallIconButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="MinWidth" Value="32"/>
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,28,32,32" MaxWidth="900">
+            <Grid Margin="0,0,0,18">
+                <TextBlock Text="{l:Tr NavSettings}" Style="{StaticResource H1}"/>
+                <TextBlock Text="{Binding SavedHint}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Foreground="{DynamicResource AccentBrush}" FontSize="13"/>
+            </Grid>
+
+            <!-- ============ Location ============ -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE707;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecLocation}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+
+                    <Border Background="{DynamicResource Surface2Brush}" CornerRadius="10" Padding="14,10" Margin="0,0,0,12">
+                        <StackPanel>
+                            <TextBlock Text="{l:Tr CurrentLocation}" Style="{StaticResource Muted}" FontSize="12"/>
+                            <TextBlock Text="{Binding LocationName}" FontSize="17" FontWeight="SemiBold"/>
+                            <TextBlock Text="{Binding LocationDetails}" Style="{StaticResource Muted}" FontSize="12" FlowDirection="LeftToRight"
+                                       HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid>
+                            <TextBox x:Name="SearchBox" Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=150}" Padding="34,7,10,7"/>
+                            <TextBlock Text="&#xE721;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Foreground="{DynamicResource TextMutedBrush}"
+                                       HorizontalAlignment="Left" VerticalAlignment="Center" Margin="12,0,0,0" IsHitTestVisible="False"/>
+                            <TextBlock Text="{l:Tr SearchCity}" Foreground="{DynamicResource TextMutedBrush}" IsHitTestVisible="False"
+                                       VerticalAlignment="Center" Margin="36,0,0,0"
+                                       Visibility="{Binding Text, ElementName=SearchBox, Converter={StaticResource Empty}}"/>
+                        </Grid>
+                        <Button Grid.Column="1" Margin="8,0,0,0" Command="{Binding SearchOnlineCommand}" Content="{l:Tr SearchOnline}"/>
+                        <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding DetectLocationCommand}" Style="{StaticResource PrimaryButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#xE81D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
+                                <TextBlock Text="{l:Tr DetectLocation}"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+
+                    <TextBlock Text="{Binding SearchStatus}" Style="{StaticResource Muted}" Margin="2,8,0,0"
+                               Visibility="{Binding SearchStatus, Converter={StaticResource NotEmpty}}"/>
+
+                    <ListBox x:Name="Results" ItemsSource="{Binding SearchResults}" MaxHeight="230" Margin="0,6,0,0"
+                             Visibility="{Binding HasItems, RelativeSource={RelativeSource Self}, Converter={StaticResource BoolVis}}"
+                             SelectionChanged="Results_SelectionChanged">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <TextBlock DockPanel.Dock="Right" FlowDirection="LeftToRight" Foreground="{DynamicResource TextMutedBrush}" FontSize="12"
+                                               Text="{Binding TimeZoneId}" VerticalAlignment="Center"/>
+                                    <TextBlock Text="&#xE707;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Foreground="{DynamicResource AccentBrush}"
+                                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding Converter={StaticResource LocName}}" FontSize="14"/>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <Expander Margin="0,12,0,0" Foreground="{DynamicResource TextBrush}">
+                        <Expander.Header>
+                            <TextBlock Text="{l:Tr ManualCoordinates}" Foreground="{DynamicResource TextMutedBrush}"/>
+                        </Expander.Header>
+                        <StackPanel Margin="0,8,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="Auto"/><ColumnDefinition Width="140"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{l:Tr Latitude}" Style="{StaticResource Label}" Margin="0,0,8,0"/>
+                                <TextBox Grid.Column="1" Text="{Binding ManualLat, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                                <TextBlock Grid.Column="2" Text="{l:Tr Longitude}" Style="{StaticResource Label}" Margin="16,0,8,0"/>
+                                <TextBox Grid.Column="3" Text="{Binding ManualLng, UpdateSourceTrigger=PropertyChanged}" FlowDirection="LeftToRight"/>
+                                <Button Grid.Column="4" Content="{l:Tr Apply}" Margin="12,0,0,0" Command="{Binding ApplyManualCoordinatesCommand}"/>
+                            </Grid>
+
+                            <CheckBox Style="{StaticResource Switch}" Content="{l:Tr AutoTimeZone}" IsChecked="{Binding AutoTimeZone}" Margin="0,14,0,4"/>
+                            <Grid Style="{StaticResource FieldGrid}" Visibility="{Binding AutoTimeZone, Converter={StaticResource BoolVis}}">
+                                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="360"/></Grid.ColumnDefinitions>
+                                <TextBlock Text="{l:Tr TimeZone}" Style="{StaticResource Label}"/>
+                                <ComboBox Grid.Column="1" ItemsSource="{Binding TimeZones}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                          SelectedValue="{Binding TimeZoneId}" MaxDropDownHeight="320"/>
+                            </Grid>
+                            <StackPanel Visibility="{Binding AutoTimeZone, Converter={StaticResource NotBoolVis}}">
+                                <Grid Style="{StaticResource FieldGrid}">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{l:Tr ManualOffset}" Style="{StaticResource Label}"/>
+                                    <TextBox Grid.Column="1" Text="{Binding ManualOffset}" FlowDirection="LeftToRight"/>
+                                </Grid>
+                                <CheckBox Style="{StaticResource Switch}" Content="{l:Tr ManualDst}" IsChecked="{Binding ManualDst}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ Calculation ============ -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE8EF;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecCalculation}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="400"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Method}" Style="{StaticResource Label}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Methods}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Method}" MaxDropDownHeight="360"/>
+                    </Grid>
+                    <Grid Style="{StaticResource FieldGrid}" Visibility="{Binding IsCustomMethod, Converter={StaticResource BoolVis}}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="90"/>
+                            <ColumnDefinition Width="Auto"/><ColumnDefinition Width="90"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="1" Text="{l:Tr CustomFajr}" Style="{StaticResource Label}" Margin="0,0,8,0"/>
+                        <TextBox Grid.Column="2" Text="{Binding CustomFajr}" FlowDirection="LeftToRight"/>
+                        <TextBlock Grid.Column="3" Text="{l:Tr CustomIsha}" Style="{StaticResource Label}" Margin="16,0,8,0"/>
+                        <TextBox Grid.Column="4" Text="{Binding CustomIsha}" FlowDirection="LeftToRight"/>
+                    </Grid>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="400"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Madhab}" Style="{StaticResource Label}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Madhabs}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Madhab}"/>
+                    </Grid>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="400"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr HighLat}" Style="{StaticResource Label}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding HighLatRules}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding HighLat}"/>
+                    </Grid>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="400"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Source}" Style="{StaticResource Label}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Sources}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Source}"/>
+                    </Grid>
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,4" Visibility="{Binding IsOnline, Converter={StaticResource BoolVis}}">
+                        <Button Content="{l:Tr SyncNow}" Command="{Binding SyncNowCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource Not}}"/>
+                        <TextBlock Text="{Binding SyncStatus}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+                    </StackPanel>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr HijriAdjust}" Style="{StaticResource Label}"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <Button Style="{StaticResource SmallIconButton}" Command="{Binding HijriDownCommand}" Content="−"/>
+                            <TextBlock Text="{Binding HijriAdjustment}" Width="40" TextAlignment="Center" VerticalAlignment="Center" FontSize="15" FlowDirection="LeftToRight"/>
+                            <Button Style="{StaticResource SmallIconButton}" Command="{Binding HijriUpCommand}" Content="+"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ Alerts ============ -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xEA8F;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecAlerts}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr PreAlert}" IsChecked="{Binding PreAlertEnabled}"/>
+                    <StackPanel Visibility="{Binding PreAlertEnabled, Converter={StaticResource BoolVis}}">
+                        <Grid Style="{StaticResource FieldGrid}">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="200"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="{l:Tr PreAlertMinutes}" Style="{StaticResource Label}"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="0,0,10,0" Visibility="{Binding IsCustomPreAlert, Converter={StaticResource BoolVis}}">
+                                <TextBox Width="70" Text="{Binding PreAlertMinutes}" FlowDirection="LeftToRight"/>
+                                <TextBlock Text="{l:Tr Minutes}" Style="{StaticResource Label}" Margin="8,0,0,0"/>
+                            </StackPanel>
+                            <ComboBox Grid.Column="2" ItemsSource="{Binding PreAlertChoices}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding PreAlertChoice}"/>
+                        </Grid>
+                        <Grid Style="{StaticResource FieldGrid}">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="200"/></Grid.ColumnDefinitions>
+                            <TextBlock Text="{l:Tr PreAlertMode}" Style="{StaticResource Label}"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding PreModes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding PreAlertMode}"/>
+                        </Grid>
+                    </StackPanel>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr MuteAll}" IsChecked="{Binding MuteAll}"/>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="260"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Volume}" Style="{StaticResource Label}"/>
+                        <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding Volume, Delay=200}" VerticalAlignment="Center"
+                                IsMoveToPointEnabled="True" FlowDirection="LeftToRight"/>
+                    </Grid>
+                    <Button Content="{l:Tr TestNotification}" HorizontalAlignment="Left" Margin="0,8,0,0" Command="{Binding TestNotificationCommand}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ Per prayer ============ -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE916;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecPerPrayer}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding PrayerAlerts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource Surface2Brush}" CornerRadius="10" Padding="14,10" Margin="0,4">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition Width="60"/>
+                                            <ColumnDefinition Width="170"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        <CheckBox Grid.Column="1" Style="{StaticResource Switch}" IsChecked="{Binding Enabled}" Margin="0" VerticalAlignment="Center"
+                                                  ToolTip="{l:Tr Enabled}"/>
+                                        <ComboBox Grid.Column="2" Margin="10,0" ItemsSource="{Binding Modes}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                                  SelectedValue="{Binding Mode}" IsEnabled="{Binding Enabled}" ToolTip="{l:Tr AlertType}"/>
+                                        <DockPanel Grid.Column="3" Margin="4,0" IsEnabled="{Binding Enabled}">
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource SmallIconButton}" Command="{Binding TestCommand}" ToolTip="{l:Tr Test}" Margin="4,0,0,0">
+                                                <TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                                            </Button>
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource SmallIconButton}" Command="{Binding ResetSoundCommand}" ToolTip="{l:Tr Reset}" Margin="4,0,0,0">
+                                                <TextBlock Text="&#xE72C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                                            </Button>
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource SmallIconButton}" Command="{Binding BrowseCommand}" ToolTip="{l:Tr Browse}" Margin="4,0,0,0">
+                                                <TextBlock Text="&#xE8E5;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                                            </Button>
+                                            <TextBlock Text="{Binding SoundName}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                                       Foreground="{DynamicResource TextMutedBrush}" ToolTip="{Binding SoundName}"/>
+                                        </DockPanel>
+                                        <StackPanel Grid.Column="4" Orientation="Horizontal" Margin="10,0,0,0" ToolTip="{l:Tr Adjustment}">
+                                            <Button Style="{StaticResource SmallIconButton}" Command="{Binding AdjustDownCommand}" Content="−"/>
+                                            <TextBlock Text="{Binding Adjustment, StringFormat={}{0:+0;-0;0}}" Width="36" TextAlignment="Center"
+                                                       VerticalAlignment="Center" FlowDirection="LeftToRight"/>
+                                            <Button Style="{StaticResource SmallIconButton}" Command="{Binding AdjustUpCommand}" Content="+"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{l:Tr Notice}" Style="{StaticResource Muted}" FontSize="12" Margin="2,8,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ Appearance ============ -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE790;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecAppearance}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="220"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Language}" Style="{StaticResource Label}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Language}"/>
+                    </Grid>
+                    <Grid Style="{StaticResource FieldGrid}">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="220"/></Grid.ColumnDefinitions>
+                        <TextBlock Text="{l:Tr Theme}" Style="{StaticResource Label}"/>
+                        <ComboBox Grid.Column="1" ItemsSource="{Binding Themes}" DisplayMemberPath="Label" SelectedValuePath="Value" SelectedValue="{Binding Theme}"/>
+                    </Grid>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr Clock24}" IsChecked="{Binding Use24h}"/>
+                </StackPanel>
+            </Border>
+
+            <!-- ============ System ============ -->
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE7F8;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecSystem}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr StartWithWindows}" IsChecked="{Binding StartWithWindows}"/>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr StartMinimized}" IsChecked="{Binding StartMinimized}"/>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr CloseToTray}" IsChecked="{Binding CloseToTray}"/>
+                    <Button Content="{l:Tr OpenLogs}" HorizontalAlignment="Left" Margin="0,10,0,0" Command="{Binding OpenLogsCommand}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,41 @@
+# Mawaqeety – مواقيتي
+**صلاتك في وقتها.** برنامج Windows لعرض مواقيت الصلاة ويذكّرك بها تلقائيًا من الخلفية.
+
+![logo](src/Mawaqeety.App/Assets/logo.png)
+
+## المزايا
+- **محرك حساب محلي** (يعمل دون إنترنت) — 20 طريقة حساب، منها الهيئة المصرية العامة للمساحة وأم القرى ورابطة العالم الإسلامي.
+- **مصدر بديل عبر الإنترنت** (Aladhan) اختياري. يُحفظ محليًا للعمل دون اتصال، ويُرفض تلقائيًا إذا اختلف عن المحرك المحلي بأكثر من 20 دقيقة.
+- مذهبا العصر (الجمهور / الحنفي)، وقواعد خطوط العرض العليا، وتعديل يدوي بالدقائق لكل صلاة.
+- **إشعارات Windows أصلية** عند دخول الوقت وقبله (5/10/15/30 دقيقة أو مدة مخصصة)، وصوت خاص لكل صلاة (MP3/WAV).
+- لا يتكرر أي تنبيه للصلاة نفسها في اليوم نفسه، حتى بعد إعادة التشغيل (سجل في SQLite).
+- **أيقونة في شريط المهام** بجوار الساعة: الصلاة القادمة، والوقت المتبقي، وإيقاف مؤقت للتنبيهات، وإنهاء البرنامج.
+- لوحة رئيسية فيها عداد تنازلي وشريط تقدّم، وتقويم شهري مع **تصدير Excel وPDF**.
+- عربي (RTL) وإنجليزي، ووضع ليلي ونهاري، وتشغيل تلقائي مع Windows، ونسخة واحدة فقط تعمل في الوقت نفسه.
+- التوقيت الصيفي يُضبط تلقائيًا حسب المنطقة الزمنية (IANA)، مع خيار الضبط اليدوي.
+
+## التثبيت (للمستخدم)
+1. شغّل `Mawaqeety-win-Setup.exe`. لا يحتاج صلاحيات المسؤول ولا تثبيت .NET.
+2. يضيف المثبّت اختصارًا على سطح المكتب وفي قائمة Start، ويسجّل البرنامج في "التطبيقات المثبتة" لتتمكن من إزالته بشكل سليم.
+3. البرنامج يبدأ تلقائيًا مع Windows في الخلفية، ويمكنك تغيير ذلك من الإعدادات.
+
+> النسخة غير موقّعة رقميًا حاليًا، لذلك قد يُظهر Windows SmartScreen تحذيرًا. اختر "More info ← Run anyway". للتوزيع التجاري يلزم شراء شهادة توقيع (انظر docs/BUILD.md).
+
+## البناء (للمطوّر)
+```bash
+dotnet test --project tests/Mawaqeety.Tests/Mawaqeety.Tests.csproj
+```
+```bash
+./installer/build.sh 1.0.0
+```
+وعلى Windows: `./installer/build.ps1 -Version 1.0.0`. الناتج في `Releases/`. التفاصيل في [docs/BUILD.md](docs/BUILD.md).
+
+## الوثائق
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — البنية التقنية وقاعدة البيانات والقرارات.
+- [docs/BUILD.md](docs/BUILD.md) — البناء والتوقيع والتحديثات.
+- [docs/TESTING.md](docs/TESTING.md) — الاختبارات الآلية وقائمة الاختبار اليدوي على Windows.
+
+---
+
+## English summary
+Mawaqeety is a Windows 10/11 tray app (C# / .NET 10 / WPF) that calculates prayer times **offline**, shows a live dashboard and monthly calendar (Excel/PDF export), and sends **native Windows notifications** (with optional per-prayer MP3/WAV sounds) at and before each prayer, from the background, starting with Windows. Build with `installer/build.ps1` (Windows) or `installer/build.sh` (Linux/macOS cross-build). See `docs/`.

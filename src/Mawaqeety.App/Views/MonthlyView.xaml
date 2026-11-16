@@ -1,0 +1,127 @@
+<UserControl x:Class="Mawaqeety.App.Views.MonthlyView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:l="clr-namespace:Mawaqeety.App.Localization"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls">
+    <UserControl.Resources>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
+        <Style x:Key="Cell" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="13.5"/>
+            <Setter Property="FlowDirection" Value="LeftToRight"/>
+        </Style>
+        <Style x:Key="HeadCell" TargetType="TextBlock">
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+    </UserControl.Resources>
+
+    <DockPanel Margin="32,28,32,20">
+        <!-- Toolbar -->
+        <Grid DockPanel.Dock="Top" Margin="0,0,0,16">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="{Binding Title}" Style="{StaticResource H1}"/>
+                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource Muted}" FontSize="14" Margin="0,2,0,0"/>
+            </StackPanel>
+            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Command="{Binding PrevMonthCommand}" ToolTip="{l:Tr PrevMonth}" Padding="10,7">
+                    <TextBlock Text="&#xE76B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                </Button>
+                <Button Command="{Binding ThisMonthCommand}" Content="{l:Tr ThisMonth}" Margin="6,0"/>
+                <Button Command="{Binding NextMonthCommand}" ToolTip="{l:Tr NextMonth}" Padding="10,7">
+                    <TextBlock Text="&#xE76C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                </Button>
+                <Button Command="{Binding ExportExcelCommand}" Style="{StaticResource PrimaryButton}" Margin="16,0,6,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE9F9;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
+                        <TextBlock Text="{l:Tr ExportExcel}"/>
+                    </StackPanel>
+                </Button>
+                <Button Command="{Binding ExportPdfCommand}" Style="{StaticResource PrimaryButton}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xEA90;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
+                        <TextBlock Text="{l:Tr ExportPdf}"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <Border DockPanel.Dock="Top" Visibility="{Binding Status, Converter={StaticResource NotEmpty}}" Background="{DynamicResource AccentSoftBrush}"
+                CornerRadius="10" Padding="14,6" Margin="0,0,0,12">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="{l:Tr OpenFile}" Command="{Binding OpenExportCommand}"
+                        Visibility="{Binding LastExportPath, Converter={StaticResource NotEmpty}}"/>
+                <TextBlock Text="{Binding Status}" VerticalAlignment="Center"/>
+            </DockPanel>
+        </Border>
+
+        <!-- Table -->
+        <Border Style="{StaticResource Card}" Padding="0" Margin="0" ClipToBounds="True">
+            <DockPanel>
+                <Border DockPanel.Dock="Top" Background="#0B1F3A" CornerRadius="14,14,0,0" Padding="8,11">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.6*"/><ColumnDefinition Width="1.4*"/>
+                            <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="{l:Tr Date}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="1" Text="{l:Tr Hijri}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="2" Text="{l:Tr Fajr}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="3" Text="{l:Tr Sunrise}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="4" Text="{l:Tr Dhuhr}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="5" Text="{l:Tr Asr}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="6" Text="{l:Tr Maghrib}" Style="{StaticResource HeadCell}"/>
+                        <TextBlock Grid.Column="7" Text="{l:Tr Isha}" Style="{StaticResource HeadCell}"/>
+                    </Grid>
+                </Border>
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <ItemsControl ItemsSource="{Binding Days}" Margin="6,4">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border x:Name="Row" Padding="2,8" CornerRadius="8" BorderThickness="1" BorderBrush="Transparent">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="1.6*"/><ColumnDefinition Width="1.4*"/>
+                                            <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="13.5">
+                                            <Run x:Name="DayName" Text="{Binding DayName, Mode=OneWay}" Foreground="{DynamicResource TextMutedBrush}"/>
+                                            <Run Text="{Binding Date, Mode=OneWay}" FontWeight="SemiBold"/>
+                                        </TextBlock>
+                                        <TextBlock Grid.Column="1" Text="{Binding Hijri}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                   FontSize="13" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Fajr}" Style="{StaticResource Cell}"/>
+                                        <TextBlock Grid.Column="3" Text="{Binding Sunrise}" Style="{StaticResource Cell}" Foreground="{DynamicResource TextMutedBrush}"/>
+                                        <TextBlock Grid.Column="4" Text="{Binding Dhuhr}" Style="{StaticResource Cell}"/>
+                                        <TextBlock Grid.Column="5" Text="{Binding Asr}" Style="{StaticResource Cell}"/>
+                                        <TextBlock Grid.Column="6" Text="{Binding Maghrib}" Style="{StaticResource Cell}"/>
+                                        <TextBlock Grid.Column="7" Text="{Binding Isha}" Style="{StaticResource Cell}"/>
+                                    </Grid>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsFriday}" Value="True">
+                                        <Setter TargetName="Row" Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
+                                        <Setter TargetName="DayName" Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                        <Setter TargetName="Row" Property="Background" Value="{DynamicResource GoldSoftBrush}"/>
+                                        <Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </DockPanel>
+        </Border>
+    </DockPanel>
+</UserControl>
