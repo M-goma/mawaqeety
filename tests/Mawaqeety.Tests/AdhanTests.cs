@@ -67,4 +67,16 @@ public class AdhanTests
         // This exact URL was verified to return a valid MP3 (ID3 header) from raw.githubusercontent.com.
         Assert.Equal("https://raw.githubusercontent.com/Kiwifu/adhan-mp3/main/Mishary_Rashid_Alafasy_1_-_Kuwait_%28%D9%85%D8%B4%D8%A7%D8%B1%D9%8A_%D8%B1%D8%A7%D8%B4%D8%AF_%D8%A7%D9%84%D8%B9%D9%81%D8%A7%D8%B3%D9%8A_-_%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA%29.mp3", AdhanCatalog.Find("alafasy")!.Url);
     }
+
+    [Fact]
+    public void Full_collection_is_available_with_readable_unique_names()
+    {
+        Assert.True(AdhanCatalog.All.Count > 200);
+        Assert.Equal(AdhanCatalog.All.Count, AdhanCatalog.All.Select(v => v.NameAr).Distinct().Count());
+        Assert.True(AdhanCatalog.ForFajr.First().IsFajr);
+        // ids saved by v1.1 must still resolve
+        foreach (var id in new[] { "alafasy", "makkah-mala", "madinah", "aqsa", "abdulbasit", "refaat", "hussary", "minshawi",
+                     "banna", "mustafa-ismail", "qatami", "alafasy-fajr", "makkah-fajr", "madinah-fajr", "cairo-fajr" })
+            Assert.NotNull(AdhanCatalog.Find(id));
+    }
 }

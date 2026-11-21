@@ -79,7 +79,7 @@ public partial class App : Application
         LocationSearch = new LocationSearchService(Http, aladhan, Log);
         Location = new WindowsLocationService(LocationSearch, Log);
         Updates = new UpdateService(Log);
-        Adhan = new AdhanLibrary(Http, Log);
+        Adhan = new AdhanLibrary(Log);
 
         Toast = new ToastService(Log);
         Sound = new SoundService(Dispatcher, Log);

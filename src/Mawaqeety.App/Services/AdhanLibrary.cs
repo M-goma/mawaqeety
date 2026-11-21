@@ -9,8 +9,18 @@ namespace Mawaqeety.App.Services;
 /// Downloads adhan recordings on demand into %AppData%\Mawaqeety\adhan and serves them offline afterwards.
 /// Downloads are atomic (temp file + move) and validated as MP3 so a broken file is never played.
 /// </summary>
-public sealed class AdhanLibrary(HttpClient http, IAppLog log)
+public sealed class AdhanLibrary(IAppLog log)
 {
+    // Own client: the shared API client has a 15 s timeout, too short for multi-MB audio on slow links.
+    private static readonly HttpClient Http = CreateClient();
+
+    private static HttpClient CreateClient()
+    {
+        var c = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
+        c.DefaultRequestHeaders.UserAgent.ParseAdd("Mawaqeety (Windows desktop prayer times)");
+        return c;
+    }
+
     private readonly ConcurrentDictionary<string, Task<bool>> _inFlight = new();
     private static readonly string Dir = Path.Combine(AppPaths.DataDir, "adhan");
 
@@ -39,8 +49,8 @@ public sealed class AdhanLibrary(HttpClient http, IAppLog log)
         try
         {
             // Adhan files are a few MB; allow more time than the default API timeout.
-            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(3));
-            using var resp = await http.GetAsync(v.Url, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(8));
+            using var resp = await Http.GetAsync(v.Url, HttpCompletionOption.ResponseHeadersRead, cts.Token).ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
             {
                 log.Warn($"Adhan download HTTP {(int)resp.StatusCode}: {v.Id}");
