@@ -55,7 +55,15 @@ public sealed partial class PrayerAlertViewModel : ObservableObject
         set { _store.Update(_ => A.AdjustmentMinutes = Math.Clamp(value, -60, 60), affectsTimes: true); OnPropertyChanged(); }
     }
 
-    public string SoundName => string.IsNullOrWhiteSpace(A.SoundPath) ? Loc.T("DefaultSound") : Path.GetFileName(A.SoundPath);
+    public string SoundName
+    {
+        get
+        {
+            if (!string.IsNullOrWhiteSpace(A.SoundPath)) return Path.GetFileName(A.SoundPath);
+            var sound = Core.Audio.AlertSoundResolver.Resolve(Prayer, AlertKind.AtTime, _store.Current);
+            return sound.Adhan is { } v ? string.Format(Loc.T("SoundAdhan"), v.DisplayName(Loc.I.IsArabic)) : Loc.T("DefaultSound");
+        }
+    }
 
     [RelayCommand]
     private void Browse()
@@ -74,11 +82,13 @@ public sealed partial class PrayerAlertViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void Test()
+    private async Task Test()
     {
         var app = App.Instance;
         if (app.Sound.IsPlaying) { app.Sound.Stop(); return; }
-        app.Sound.Play(A.SoundPath, _store.Current.Volume);
+        var sound = Core.Audio.AlertSoundResolver.Resolve(Prayer, AlertKind.AtTime, _store.Current);
+        if (sound.Adhan is { } v) await app.Adhan.EnsureAsync(v);
+        app.Sound.Play(app.Adhan.PathToPlay(sound), _store.Current.Volume);
     }
 
     [RelayCommand]
@@ -110,6 +120,8 @@ public sealed partial class SettingsViewModel : ObservableObject
     public IReadOnlyList<Option<TimeSource>> Sources { get; }
     public IReadOnlyList<Option<int>> PreAlertChoices { get; }
     public IReadOnlyList<Option<string>> TimeZones { get; }
+    public IReadOnlyList<Option<string>> AdhanVoices { get; }
+    public IReadOnlyList<Option<string>> FajrAdhanVoices { get; }
     public ObservableCollection<PrayerAlertViewModel> PrayerAlerts { get; }
     public ObservableCollection<GeoLocation> SearchResults { get; } = [];
 
@@ -135,6 +147,10 @@ public sealed partial class SettingsViewModel : ObservableObject
         PreAlertChoices = new[] { 5, 10, 15, 20, 30, 45, 60 }
             .Select(m => new Option<int>(m, () => $"{m} {Loc.T("Minutes")}")).Append(new Option<int>(-1, () => Loc.T("Custom"))).ToList();
         TimeZones = TimeZoneInfo.GetSystemTimeZones().Select(z => new Option<string>(z.Id, () => z.DisplayName)).ToList();
+        AdhanVoices = Core.Audio.AdhanCatalog.Regular.Select(v => new Option<string>(v.Id, () => v.DisplayName(Loc.I.IsArabic))).ToList();
+        FajrAdhanVoices = Core.Audio.AdhanCatalog.ForFajr.Select(v => new Option<string>(v.Id, () => v.DisplayName(Loc.I.IsArabic))).ToList();
+        App.Instance.Adhan.Downloaded += _ => App.Instance.Dispatcher.BeginInvoke(RefreshAdhanStatus);
+        App.Instance.Sound.PlayingChanged += _ => App.Instance.Dispatcher.BeginInvoke(() => OnPropertyChanged(nameof(PreviewLabel)));
         PrayerAlerts = new(PrayerExtensions.All.Select(p => new PrayerAlertViewModel(p, _store, Modes)));
         ManualLat = S.Location.Latitude.ToString("0.####", CultureInfo.InvariantCulture);
         ManualLng = S.Location.Longitude.ToString("0.####", CultureInfo.InvariantCulture);
@@ -148,10 +164,14 @@ public sealed partial class SettingsViewModel : ObservableObject
             foreach (var o in Themes) o.Refresh();
             foreach (var o in Sources) o.Refresh();
             foreach (var o in PreAlertChoices) o.Refresh();
+            foreach (var o in AdhanVoices) o.Refresh();
+            foreach (var o in FajrAdhanVoices) o.Refresh();
+            RefreshAdhanStatus();
             foreach (var p in PrayerAlerts) p.RefreshLanguage();
             OnPropertyChanged(nameof(LocationName));
         };
         _store.Changed += _ => App.Instance.Dispatcher.BeginInvoke(() => SavedHint = Loc.T("Saved"));
+        RefreshAdhanStatus();
     }
 
     // ---------------- location ----------------
@@ -356,6 +376,94 @@ public sealed partial class SettingsViewModel : ObservableObject
         await SyncNow();
     }
 
+    // ---------------- adhan ----------------
+    [ObservableProperty] private string _adhanStatus = "";
+    [ObservableProperty] private string _fajrAdhanStatus = "";
+
+    public bool AdhanEnabled
+    {
+        get => S.AdhanEnabled;
+        set
+        {
+            _store.Update(s => s.AdhanEnabled = value);
+            OnPropertyChanged();
+            RefreshAdhanStatus();
+            foreach (var p in PrayerAlerts) p.RefreshLanguage();
+            if (value) _ = DownloadSelectedAsync();
+        }
+    }
+
+    public string AdhanId
+    {
+        get => S.AdhanId;
+        set
+        {
+            if (string.IsNullOrEmpty(value) || value == S.AdhanId) return;
+            _store.Update(s => s.AdhanId = value);
+            OnPropertyChanged();
+            _ = DownloadSelectedAsync();
+        }
+    }
+
+    public string FajrAdhanId
+    {
+        get => S.FajrAdhanId;
+        set
+        {
+            if (string.IsNullOrEmpty(value) || value == S.FajrAdhanId) return;
+            _store.Update(s => s.FajrAdhanId = value);
+            OnPropertyChanged();
+            _ = DownloadSelectedAsync();
+        }
+    }
+
+    public string PreviewLabel => App.Instance.Sound.IsPlaying ? Loc.T("StopPreview") : Loc.T("Preview");
+
+    [RelayCommand] private Task PreviewAdhan() => PreviewAsync(S.AdhanId);
+    [RelayCommand] private Task PreviewFajrAdhan() => PreviewAsync(S.FajrAdhanId);
+
+    private async Task PreviewAsync(string id)
+    {
+        var app = App.Instance;
+        if (app.Sound.IsPlaying) { app.Sound.Stop(); return; }
+        if (Core.Audio.AdhanCatalog.Find(id) is not { } v) return;
+        if (!app.Adhan.IsAvailable(v))
+        {
+            SetStatus(v, Loc.T("AdhanDownloading"));
+            if (!await app.Adhan.EnsureAsync(v)) { SetStatus(v, Loc.T("AdhanFailed")); return; }
+            RefreshAdhanStatus();
+        }
+        app.Sound.Play(app.Adhan.LocalPath(v), S.Volume);
+    }
+
+    private async Task DownloadSelectedAsync()
+    {
+        RefreshAdhanStatus();
+        foreach (var id in new[] { S.AdhanId, S.FajrAdhanId }.Distinct())
+        {
+            if (Core.Audio.AdhanCatalog.Find(id) is not { } v || App.Instance.Adhan.IsAvailable(v)) continue;
+            SetStatus(v, Loc.T("AdhanDownloading"));
+            if (!await App.Instance.Adhan.EnsureAsync(v)) SetStatus(v, Loc.T("AdhanPending"));
+        }
+        RefreshAdhanStatus();
+        foreach (var p in PrayerAlerts) p.RefreshLanguage();
+    }
+
+    private void SetStatus(Core.Audio.AdhanVoice v, string text)
+    {
+        if (v.Id == S.AdhanId) AdhanStatus = text;
+        if (v.Id == S.FajrAdhanId) FajrAdhanStatus = text;
+    }
+
+    private void RefreshAdhanStatus()
+    {
+        string Status(string id) => Core.Audio.AdhanCatalog.Find(id) is { } v && App.Instance.Adhan.IsAvailable(v)
+            ? Loc.T("AdhanReady") : Loc.T("AdhanPending");
+        AdhanStatus = Status(S.AdhanId);
+        FajrAdhanStatus = Status(S.FajrAdhanId);
+        OnPropertyChanged(nameof(PreviewLabel));
+    }
+
     // ---------------- alerts ----------------
     public bool PreAlertEnabled
     {
@@ -412,7 +520,7 @@ public sealed partial class SettingsViewModel : ObservableObject
         var st = app.ComputeStatus(DateTimeOffset.Now);
         app.Toast.ShowAlert(new Core.Scheduling.PlannedAlert(DateOnly.FromDateTime(DateTime.Today), st.Next, AlertKind.AtTime,
             DateTimeOffset.Now, st.NextTime, AlertMode.NotificationWithSound, S.AlertFor(st.Next).SoundPath, 0), withStopButton: !S.MuteAllSounds, S.Use24HourClock);
-        if (!S.MuteAllSounds) app.Sound.Play(S.AlertFor(st.Next).SoundPath, S.Volume);
+        if (!S.MuteAllSounds) app.Sound.Play(app.Adhan.PathToPlay(Core.Audio.AlertSoundResolver.Resolve(st.Next, AlertKind.AtTime, S)), S.Volume);
     }
 
     // ---------------- appearance / system ----------------

@@ -22,6 +22,7 @@ public partial class App : Application
     private readonly bool _startInBackground;
     private MainWindow? _window;
     private DispatcherTimer? _trayTimer;
+    private DispatcherTimer? _adhanTimer;
     private bool _exiting;
 
     public static App Instance => (App)Current;
@@ -37,6 +38,7 @@ public partial class App : Application
     public LocationSearchService LocationSearch { get; private set; } = null!;
     public WindowsLocationService Location { get; private set; } = null!;
     public UpdateService Updates { get; private set; } = null!;
+    public AdhanLibrary Adhan { get; private set; } = null!;
     public HttpClient Http { get; private set; } = null!;
     public MainViewModel? MainVm { get; private set; }
 
@@ -77,13 +79,14 @@ public partial class App : Application
         LocationSearch = new LocationSearchService(Http, aladhan, Log);
         Location = new WindowsLocationService(LocationSearch, Log);
         Updates = new UpdateService(Log);
+        Adhan = new AdhanLibrary(Http, Log);
 
         Toast = new ToastService(Log);
         Sound = new SoundService(Dispatcher, Log);
         Tray = new TrayService();
         WireTray();
 
-        Scheduler = new AlertScheduler(Times, Db, new AlertSink(Dispatcher, Toast, Sound, Settings), () => Settings.Current, log: Log);
+        Scheduler = new AlertScheduler(Times, Db, new AlertSink(Dispatcher, Toast, Sound, Settings, Adhan), () => Settings.Current, log: Log);
         Scheduler.Start();
 
         Settings.Changed += affectsTimes =>
@@ -112,6 +115,10 @@ public partial class App : Application
 
         _trayTimer = new DispatcherTimer(TimeSpan.FromSeconds(20), DispatcherPriority.Background, (_, _) => UpdateTray(), Dispatcher);
         _trayTimer.Start();
+        // Retry adhan downloads later if the PC was offline at startup.
+        _adhanTimer = new DispatcherTimer(TimeSpan.FromMinutes(15), DispatcherPriority.Background, (_, _) => _ = PrefetchAdhanAsync(), Dispatcher);
+        _adhanTimer.Start();
+        System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += (_, ev) => { if (ev.IsAvailable) _ = PrefetchAdhanAsync(); };
         UpdateTray();
 
         _ = Task.Run(BackgroundMaintenanceAsync);
@@ -146,10 +153,20 @@ public partial class App : Application
             var today = DateOnly.FromDateTime(DateTime.Today);
             Db.PruneLog(today.AddDays(-60));
             Db.PruneCache(today.AddMonths(-2));
+            await PrefetchAdhanAsync();
             if (Settings.Current.Source == TimeSource.OnlineWithLocalFallback)
                 await Times.SyncAsync(Settings.Current, today, CancellationToken.None);
         }
         catch (Exception ex) { Log.Warn("Background maintenance failed", ex); }
+    }
+
+    /// <summary>Downloads the selected adhan voices once, so they are ready offline at prayer time.</summary>
+    public async Task PrefetchAdhanAsync()
+    {
+        var s = Settings.Current;
+        if (!s.AdhanEnabled) return;
+        foreach (var id in new[] { s.AdhanId, s.FajrAdhanId }.Distinct())
+            if (Core.Audio.AdhanCatalog.Find(id) is { } v) await Adhan.EnsureAsync(v);
     }
 
     private void WireTray()
@@ -228,6 +245,7 @@ public partial class App : Application
         Log.Info("Exiting");
         Settings.SaveNow();
         _trayTimer?.Stop();
+        _adhanTimer?.Stop();
         Sound.Stop();
         Tray.Dispose();
         _window?.Close();

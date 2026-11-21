@@ -38,7 +38,7 @@ public sealed class PrayerAlertSettings
 
 public sealed class AppSettings
 {
-    public int SchemaVersion { get; set; } = 1;
+    public int SchemaVersion { get; set; } = 2;
     public bool FirstRunCompleted { get; set; }
 
     // Location
@@ -62,6 +62,11 @@ public sealed class AppSettings
     public Dictionary<Prayer, PrayerAlertSettings> Alerts { get; set; } = PrayerExtensions.All.ToDictionary(
         p => p,
         p => new PrayerAlertSettings { Enabled = p != Prayer.Sunrise, Mode = AlertMode.NotificationWithSound });
+
+    /// <summary>Play the selected adhan at prayer time (obligatory prayers, unless a custom sound is set for that prayer).</summary>
+    public bool AdhanEnabled { get; set; } = true;
+    public string AdhanId { get; set; } = Audio.AdhanCatalog.DefaultId;
+    public string FajrAdhanId { get; set; } = Audio.AdhanCatalog.DefaultFajrId;
 
     public bool PreAlertEnabled { get; set; } = true;
     public int PreAlertMinutes { get; set; } = 10;

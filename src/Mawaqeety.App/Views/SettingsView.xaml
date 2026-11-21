@@ -186,6 +186,50 @@
                 </StackPanel>
             </Border>
 
+            <!-- ============ Adhan ============ -->
+            <Border Style="{StaticResource Card}" BorderBrush="{DynamicResource GoldBrush}">
+                <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE995;" Style="{StaticResource SectionIcon}"/>
+                        <TextBlock Text="{l:Tr SecAdhan}" Style="{StaticResource H2}"/>
+                    </StackPanel>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr AdhanEnabled}" IsChecked="{Binding AdhanEnabled}"/>
+                    <StackPanel Visibility="{Binding AdhanEnabled, Converter={StaticResource BoolVis}}">
+                        <Grid Style="{StaticResource FieldGrid}">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="300"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{l:Tr AdhanVoice}" Style="{StaticResource Label}"/>
+                                <TextBlock Text="{Binding AdhanStatus}" Style="{StaticResource Muted}" FontSize="12"/>
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding AdhanVoices}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                      SelectedValue="{Binding AdhanId}" MaxDropDownHeight="360" VerticalAlignment="Center"/>
+                            <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding PreviewAdhanCommand}" VerticalAlignment="Center" MinWidth="90">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                    <TextBlock Text="{Binding PreviewLabel}"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <Grid Style="{StaticResource FieldGrid}">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="300"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{l:Tr FajrAdhanVoice}" Style="{StaticResource Label}"/>
+                                <TextBlock Text="{Binding FajrAdhanStatus}" Style="{StaticResource Muted}" FontSize="12"/>
+                            </StackPanel>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding FajrAdhanVoices}" DisplayMemberPath="Label" SelectedValuePath="Value"
+                                      SelectedValue="{Binding FajrAdhanId}" MaxDropDownHeight="360" VerticalAlignment="Center"/>
+                            <Button Grid.Column="2" Margin="8,0,0,0" Command="{Binding PreviewFajrAdhanCommand}" VerticalAlignment="Center" MinWidth="90">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                    <TextBlock Text="{Binding PreviewLabel}"/>
+                                </StackPanel>
+                            </Button>
+                        </Grid>
+                        <TextBlock Text="{l:Tr AdhanNote}" Style="{StaticResource Muted}" FontSize="12" Margin="0,6,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
             <!-- ============ Alerts ============ -->
             <Border Style="{StaticResource Card}">
                 <StackPanel>

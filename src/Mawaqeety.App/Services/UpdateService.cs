@@ -12,7 +12,7 @@ public enum UpdateResult { NotInstalled, UpToDate, Updating, Failed }
 /// </summary>
 public sealed class UpdateService(IAppLog log)
 {
-    public const string FeedUrl = "https://github.com/your-org/mawaqeety/releases/latest/download";
+    public const string FeedUrl = "https://github.com/M-goma/mawaqeety/raw/main/download";
 
     public string CurrentVersion =>
         typeof(UpdateService).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
