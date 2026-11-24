@@ -1,8 +1,14 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// Optional private signing key for store builds (never committed).
+val keyFile: File = rootProject.file("key.properties")
+val keyProps = Properties().apply { if (keyFile.exists()) keyFile.inputStream().use { load(it) } }
 
 android {
     namespace = "com.mawaqeety.mawaqeety"
@@ -35,10 +41,6 @@ android {
     // - Otherwise the committed "sideload" key is used, so every APK built by CI has the same
     //   signature and installs as an update over the previous one. It is NOT secret: replace it
     //   with a private key before publishing on Google Play.
-    val keyProps = java.util.Properties()
-    val keyFile = rootProject.file("key.properties")
-    if (keyFile.exists()) keyFile.inputStream().use { keyProps.load(it) }
-
     signingConfigs {
         create("release") {
             if (keyFile.exists()) {

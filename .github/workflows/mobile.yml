@@ -71,6 +71,8 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
+    # Needs GitHub Pages enabled once: Settings -> Pages -> Source: GitHub Actions.
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
@@ -83,8 +85,6 @@ jobs:
       - run: flutter pub get
       - run: flutter build web --release --no-web-resources-cdn --base-href /mawaqeety/
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: mobile/build/web

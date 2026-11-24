@@ -312,7 +312,7 @@ cities = [
  ("Tokyo","طوكيو","JP",35.6762,139.6503,"Asia/Tokyo"),
  ("Beijing","بكين","CN",39.9042,116.4074,"Asia/Shanghai"),
  ("Shanghai","شنغهاي","CN",31.2304,121.4737,"Asia/Shanghai"),
- ("Urumqi","أورومتشي","CN",43.8256,87.6168,"Asia/Urumqi"),
+ ("Urumqi","أورومتشي","CN",43.8256,87.6168,"Asia/Shanghai"),  # official Beijing time; Asia/Urumqi has no Windows mapping
  ("Seoul","سيول","KR",37.5665,126.9780,"Asia/Seoul"),
  ("Bangkok","بانكوك","TH",13.7563,100.5018,"Asia/Bangkok"),
  ("Manila","مانيلا","PH",14.5995,120.9842,"Asia/Manila"),
