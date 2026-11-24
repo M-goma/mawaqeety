@@ -32,8 +32,14 @@ public class CatalogAndExportTests
     [Fact]
     public void All_catalog_time_zones_resolve()
     {
+        // Windows may not know every IANA id directly (e.g. Asia/Urumqi); the resolver maps it to a Windows zone.
         foreach (var c in CityCatalog.Default.Cities)
-            Assert.Equal(c.TimeZoneId, TimeZoneInfo.FindSystemTimeZoneById(c.TimeZoneId).Id);
+        {
+            var found = TimeZoneInfo.TryFindSystemTimeZoneById(c.TimeZoneId, out _)
+                        || (TimeZoneInfo.TryConvertIanaIdToWindowsId(c.TimeZoneId, out var win) && TimeZoneInfo.TryFindSystemTimeZoneById(win, out _));
+            Assert.True(found, c.TimeZoneId);
+            Assert.NotNull(Mawaqeety.Core.TimeZoneResolver.Resolve(c.TimeZoneId));
+        }
     }
 
     [Fact]
