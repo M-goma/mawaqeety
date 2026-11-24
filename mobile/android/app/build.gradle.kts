@@ -12,7 +12,7 @@ val keyProps = Properties().apply { if (keyFile.exists()) keyFile.inputStream().
 
 android {
     namespace = "com.mawaqeety.mawaqeety"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = maxOf(flutter.compileSdkVersion, 37) // flutter_local_notifications 23 requires 37+
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
