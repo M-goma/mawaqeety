@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 defaults:
   run:
@@ -85,11 +83,6 @@ jobs:
 
   web:
     runs-on: ubuntu-latest
-    # Needs GitHub Pages enabled once: Settings -> Pages -> Source: GitHub Actions.
-    continue-on-error: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -98,9 +91,11 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter build web --release --no-web-resources-cdn --base-href /mawaqeety/
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - run: touch build/web/.nojekyll
+      - name: Publish to GitHub Pages (gh-pages branch)
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          path: mobile/build/web
-      - id: deploy
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: mobile/build/web
+          publish_branch: gh-pages
+          force_orphan: true
