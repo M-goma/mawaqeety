@@ -36,30 +36,23 @@ android {
         versionName = flutter.versionName
     }
 
-    // Release signing.
-    // - Store builds: put a private key in android/key.properties (never committed).
-    // - Otherwise the committed "sideload" key is used, so every APK built by CI has the same
-    //   signature and installs as an update over the previous one. It is NOT secret: replace it
-    //   with a private key before publishing on Google Play.
+    // Release signing: CI writes android/key.properties from the repository secrets
+    // (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD).
+    // Without them the debug key is used: the APK installs fine, but updating requires reinstalling.
     signingConfigs {
-        create("release") {
-            if (keyFile.exists()) {
+        if (keyFile.exists()) {
+            create("release") {
                 storeFile = file(keyProps.getProperty("storeFile"))
                 storePassword = keyProps.getProperty("storePassword")
                 keyAlias = keyProps.getProperty("keyAlias")
                 keyPassword = keyProps.getProperty("keyPassword")
-            } else {
-                storeFile = file("mawaqeety-sideload.jks")
-                storePassword = "mawaqeety-sideload"
-                keyAlias = "mawaqeety"
-                keyPassword = "mawaqeety-sideload"
             }
         }
     }
 
     buildTypes {
         release {
-            signingConfig = signingConfigs.getByName("release")
+            signingConfig = if (keyFile.exists()) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
         }
     }
 }

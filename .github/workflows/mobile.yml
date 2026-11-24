@@ -29,6 +29,20 @@ jobs:
           cache: true
       - run: flutter pub get
       - run: flutter test
+      - name: Release signing key (from repository secrets, if configured)
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PW: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > android/app/release.jks
+            printf "storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n" "$STORE_PW" "$KEY_ALIAS" "$KEY_PW" > android/key.properties
+            echo "Using release signing key"
+          else
+            echo "::warning::No signing secrets configured - APK signed with a temporary debug key"
+          fi
       - run: flutter build apk --release
       - name: Rename APK
         run: cp build/app/outputs/flutter-apk/app-release.apk build/Mawaqeety.apk
