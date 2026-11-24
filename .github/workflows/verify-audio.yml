@@ -4,7 +4,7 @@ name: verify-audio
 on:
   push:
     branches: [main]
-    paths: ["mobile/assets/data/reciters.json", ".github/workflows/verify-audio.yml"]
+    paths: ["mobile/assets/data/reciters.json", ".github/workflows/verify-audio.yml", "tools/verify_audio.py"]
   workflow_dispatch:
   schedule:
     - cron: "17 3 * * 1"
@@ -15,18 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Check reciter URLs
-        run: |
-          fail=0
-          for id in $(jq -r '.[].id' mobile/assets/data/reciters.json); do
-            for f in 001001 002255 114006; do
-              url="https://everyayah.com/data/$id/$f.mp3"
-              read code type size < <(curl -s -o /tmp/a.mp3 -w "%{http_code} %{content_type} %{size_download}" -L --max-time 60 "$url")
-              magic=$(head -c 3 /tmp/a.mp3 | xxd -p)
-              if [ "$code" = "200" ] && { [ "$magic" = "494433" ] || [[ "$magic" == fff* ]]; } && [ "$size" -gt 3000 ]; then
-                echo "OK   $id/$f ($size bytes)"
-              else
-                echo "BAD  $id/$f code=$code type=$type size=$size magic=$magic"; fail=1
-              fi
-            done
-          done
-          exit $fail
+        run: python3 tools/verify_audio.py
