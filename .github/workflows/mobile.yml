@@ -55,6 +55,17 @@ jobs:
           name: Mawaqeety-google-play-aab
           path: mobile/build/Mawaqeety-play.aab
           if-no-files-found: ignore
+      - name: Publish the Google Play bundle to the "play-latest" release
+        if: hashFiles('mobile/build/Mawaqeety-play.aab') != ''
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: play-latest
+          name: "Google Play bundle (AAB)"
+          body: |
+            ملف Mawaqeety-play.aab للرفع على Google Play Console (موقّع بمفتاح الرفع).
+            لا يُثبَّت مباشرة على الهاتف؛ للتثبيت المباشر استخدم Mawaqeety.apk.
+          make_latest: false
+          files: mobile/build/Mawaqeety-play.aab
       - name: Rename APK
         run: cp build/app/outputs/flutter-apk/app-release.apk build/Mawaqeety.apk
       - uses: actions/upload-artifact@v4
