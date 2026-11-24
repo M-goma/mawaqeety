@@ -65,7 +65,38 @@ class ProphetPage extends StatelessWidget {
               Text(p.title, style: const TextStyle(color: Color(0xFFE9C75A), fontSize: 15)),
               const SizedBox(height: 8),
               Text(p.summary, style: const TextStyle(color: Color(0xFFE6F3EE), height: 1.7)),
+              const SizedBox(height: 12),
+              ListenableBuilder(
+                listenable: app.narration,
+                builder: (context, _) => Wrap(spacing: 8, children: [
+                  FilledButton.tonalIcon(
+                    onPressed: () {
+                      if (app.narration.speaking) {
+                        app.narration.stop();
+                      } else {
+                        app.recitation.stop();
+                        app.narration.speak([
+                          '${p.nameAr}. ${p.title}. ${p.summary}',
+                          for (final s in p.sections) ...['${s.heading}.', ...s.body.split('\n\n')],
+                          if (p.lessons.isNotEmpty) 'دروس وعبر. ${p.lessons.join(' ')}',
+                        ]);
+                      }
+                    },
+                    icon: Icon(app.narration.speaking ? Icons.stop : Icons.headphones),
+                    label: Text(app.narration.speaking ? 'إيقاف القراءة' : 'استمع إلى القصة'),
+                  ),
+                ]),
+              ),
             ]),
+          ),
+          ListenableBuilder(
+            listenable: Listenable.merge([app.narration, app.recitation]),
+            builder: (context, _) {
+              final err = app.narration.error ?? app.recitation.error;
+              return err == null
+                  ? const SizedBox.shrink()
+                  : Padding(padding: const EdgeInsets.only(top: 8), child: Text(err, style: const TextStyle(color: AppColors.gold)));
+            },
           ),
           for (final s in p.sections) ...[
             const SizedBox(height: 20),
@@ -137,6 +168,18 @@ class _AyatCard extends StatelessWidget {
             Text('سورة ${s.name} (${Arabic.digits(from)}${to > from ? '–${Arabic.digits(to)}' : ''})',
                 style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.w600)),
             if (a.note.isNotEmpty) Text(a.note, style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13)),
+            Align(
+              alignment: AlignmentDirectional.centerEnd,
+              child: TextButton.icon(
+                onPressed: () {
+                  app.narration.stop();
+                  app.recitation.onFinished = null;
+                  app.recitation.play(app.repo, app.settings.reciterId, a.surah, from, to);
+                },
+                icon: const Icon(Icons.play_circle_outline),
+                label: const Text('استماع للتلاوة'),
+              ),
+            ),
           ]),
         ),
       ),

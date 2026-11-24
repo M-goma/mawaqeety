@@ -41,6 +41,11 @@ class Prophet {
   Prophet(this.id, this.order, this.nameAr, this.nameEn, this.title, this.summary, this.sections, this.ayat, this.lessons, this.surahs);
 }
 
+class Reciter {
+  final String id, name;
+  Reciter(this.id, this.name);
+}
+
 class AdhanVoice {
   final String id, nameAr, file;
   final bool fajr;
@@ -54,6 +59,7 @@ class Repository {
   late final List<Prophet> prophets;
   late final List<Place> cities;
   late final List<AdhanVoice> voices;
+  late final List<Reciter> reciters;
   late final List<List<String>> _normalized;
 
   Future<void> load() async {
@@ -84,7 +90,12 @@ class Repository {
 
     final v = jsonDecode(await rootBundle.loadString('assets/data/adhan_voices.json')) as List;
     voices = v.map((e) => AdhanVoice(e['id'], e['ar'], e['file'], e['fajr'] == true)).toList();
+
+    final r = jsonDecode(await rootBundle.loadString('assets/data/reciters.json')) as List;
+    reciters = r.map((e) => Reciter(e['id'], e['name'])).toList();
   }
+
+  Reciter reciter(String id) => reciters.firstWhere((r) => r.id == id, orElse: () => reciters.first);
 
   AdhanVoice? voice(String id) {
     for (final v in voices) {

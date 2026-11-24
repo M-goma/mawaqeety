@@ -14,6 +14,7 @@ public sealed partial class AyahItem : ObservableObject
     public string Mark => "﴿" + QuranRepository.ArabicDigits(Number) + "﴾";
     [ObservableProperty] private bool _isBookmarked;
     [ObservableProperty] private bool _isLastRead;
+    [ObservableProperty] private bool _isPlaying;
 }
 
 /// <summary>An entry of the left index: a surah, a search hit, a bookmark or "continue reading".</summary>
@@ -55,8 +56,89 @@ public sealed partial class QuranViewModel : ObservableObject
 
     public double MarkFontSize => FontSize * 0.85;
 
+    // ---------------- recitation ----------------
+    public IReadOnlyList<Reciter> ReciterList { get; } = Reciters.All;
+
+    public string ReciterId
+    {
+        get => Reciters.Find(App.Instance.Settings.Current.ReciterId).Id;
+        set
+        {
+            if (value == ReciterId) return;
+            var wasPlaying = App.Instance.Recitation.IsPlaying;
+            var (surah, ayah) = (App.Instance.Recitation.CurrentSurah, App.Instance.Recitation.CurrentAyah);
+            App.Instance.Settings.Update(s => s.ReciterId = value);
+            OnPropertyChanged();
+            if (wasPlaying && surah > 0) StartRecitation(surah, Math.Max(1, ayah)); // continue with the new voice
+        }
+    }
+
+    public bool IsReciting => App.Instance.Recitation.IsPlaying;
+    public bool IsRecitingPaused => App.Instance.Recitation.IsPaused;
+    public string PlayGlyph => IsReciting && !IsRecitingPaused ? "\uE769" : "\uE768";
+    public string PlayLabel => !IsReciting ? "استماع" : IsRecitingPaused ? "متابعة" : "إيقاف مؤقت";
+
+    private void StartRecitation(int surah, int ayah)
+    {
+        var rec = App.Instance.Recitation;
+        rec.OnFinished = last =>
+        {
+            if (!App.Instance.Settings.Current.ContinueToNextSurah || last >= 114) return null;
+            var next = last + 1;
+            App.Instance.Dispatcher.BeginInvoke(() => Open(next, 1, scroll: true));
+            return (next, 1, Q[next].Verses.Count);
+        };
+        rec.Play(surah, ayah, Q[surah].Verses.Count);
+    }
+
+    [RelayCommand]
+    private void PlayPause()
+    {
+        var rec = App.Instance.Recitation;
+        if (rec.IsPlaying) { rec.TogglePause(); return; }
+        // Start from the selected/last-read ayah of this surah, otherwise from the beginning.
+        var s = App.Instance.Settings.Current;
+        var start = s.LastReadSurah == SurahNumber && s.LastReadAyah > 0 ? s.LastReadAyah : 1;
+        StartRecitation(SurahNumber, start);
+    }
+
+    [RelayCommand] private void StopRecitation() => App.Instance.Recitation.Stop();
+
+    [RelayCommand]
+    private void PlayFromAyah(AyahItem? a)
+    {
+        if (a is not null) StartRecitation(a.Surah, a.Number);
+    }
+
+    private void OnAyahStarted(int surah, int ayah)
+    {
+        App.Instance.Dispatcher.BeginInvoke(() =>
+        {
+            if (surah != SurahNumber) Open(surah, Math.Max(1, ayah), scroll: false);
+            AyahItem? current = null;
+            foreach (var x in Ayahs)
+            {
+                x.IsPlaying = x.Number == ayah;
+                if (x.IsPlaying) current = x;
+            }
+            if (current is not null) ScrollRequested?.Invoke(current);
+        });
+    }
+
+    private void OnRecitationState() => App.Instance.Dispatcher.BeginInvoke(() =>
+    {
+        if (!App.Instance.Recitation.IsPlaying) foreach (var x in Ayahs) x.IsPlaying = false;
+        OnPropertyChanged(nameof(IsReciting));
+        OnPropertyChanged(nameof(IsRecitingPaused));
+        OnPropertyChanged(nameof(PlayGlyph));
+        OnPropertyChanged(nameof(PlayLabel));
+    });
+
     public QuranViewModel()
     {
+        App.Instance.Recitation.AyahStarted += OnAyahStarted;
+        App.Instance.Recitation.StateChanged += OnRecitationState;
+        App.Instance.Recitation.Error += msg => App.Instance.Dispatcher.BeginInvoke(() => Status = msg);
         var s = App.Instance.Settings.Current;
         Open(s.LastReadSurah > 0 ? s.LastReadSurah : 1, s.LastReadAyah > 0 ? s.LastReadAyah : 1, scroll: false);
         RebuildIndex();

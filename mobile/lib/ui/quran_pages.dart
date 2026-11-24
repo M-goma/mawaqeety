@@ -104,10 +104,72 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
 
   Surah get s => app.repo.surahs[_surah - 1];
 
+  int _lastScrolled = -1;
+
   @override
   void initState() {
     super.initState();
     _jumpTo(widget.initialAyah);
+    app.recitation.addListener(_onRecitation);
+  }
+
+  @override
+  void dispose() {
+    app.recitation.removeListener(_onRecitation);
+    super.dispose();
+  }
+
+  void _onRecitation() {
+    final r = app.recitation;
+    if (!mounted) return;
+    if (r.active && r.surah != _surah && r.surah > 0) {
+      _go(r.surah);
+    }
+    setState(() {});
+    if (r.active && r.surah == _surah && r.ayah > 0 && r.ayah != _lastScrolled) {
+      _lastScrolled = r.ayah;
+      final ctx = _keys[r.ayah]?.currentContext;
+      if (ctx != null) Scrollable.ensureVisible(ctx, alignment: 0.25, duration: const Duration(milliseconds: 400));
+    }
+  }
+
+  void _startRecitation(int ayah) {
+    app.narration.stop();
+    app.adhan.stop();
+    app.recitation.onFinished = (last) {
+      if (!app.settings.continueNextSurah || last >= 114) return null;
+      app.recitation.play(app.repo, app.settings.reciterId, last + 1, 1);
+      return last + 1;
+    };
+    app.recitation.play(app.repo, app.settings.reciterId, _surah, ayah);
+  }
+
+  void _pickReciter() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (c) => SafeArea(
+        child: SizedBox(
+          height: MediaQuery.of(c).size.height * 0.6,
+          child: ListView(children: [
+            const Padding(padding: EdgeInsets.all(16), child: Text('اختر القارئ', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
+            for (final r in app.repo.reciters)
+              ListTile(
+                leading: Icon(r.id == app.settings.reciterId ? Icons.radio_button_checked : Icons.radio_button_off, color: AppColors.emerald),
+                title: Text(r.name),
+                onTap: () {
+                  final wasActive = app.recitation.active;
+                  final at = app.recitation.ayah;
+                  app.update((x) => x.reciterId = r.id, reschedule: false);
+                  Navigator.pop(c);
+                  if (wasActive) _startRecitation(at > 0 ? at : 1);
+                  setState(() {});
+                },
+              ),
+          ]),
+        ),
+      ),
+    );
   }
 
   void _jumpTo(int ayah) {
@@ -132,6 +194,14 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
       context: context,
       builder: (c) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
+          ListTile(
+            leading: const Icon(Icons.play_circle_outline, color: AppColors.emerald),
+            title: const Text('استماع من هذه الآية'),
+            onTap: () {
+              Navigator.pop(c);
+              _startRecitation(ayah);
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.bookmark_added_outlined),
             title: const Text('حفظ موضع القراءة هنا'),
@@ -159,10 +229,47 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
     final size = app.settings.quranFontSize;
     final style = quranStyle(context, size);
     final showBasmala = _surah != 1 && _surah != 9;
+    final rec = app.recitation;
     return Scaffold(
+      bottomNavigationBar: rec.active
+          ? SafeArea(
+              child: Container(
+                color: AppColors.navy3,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: Row(children: [
+                  const Icon(Icons.graphic_eq, color: AppColors.gold),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${app.repo.reciter(app.settings.reciterId).name} • ${rec.ayah == 0 ? 'البسملة' : 'الآية ${Arabic.digits(rec.ayah)}'}',
+                      style: const TextStyle(color: Colors.white), overflow: TextOverflow.ellipsis),
+                  ),
+                  IconButton(icon: Icon(rec.playing ? Icons.pause : Icons.play_arrow, color: Colors.white), onPressed: rec.togglePause),
+                  IconButton(icon: const Icon(Icons.stop, color: Colors.white), onPressed: rec.stop),
+                ]),
+              ),
+            )
+          : (rec.error != null ? SafeArea(child: Padding(padding: const EdgeInsets.all(12), child: Text(rec.error!, textAlign: TextAlign.center))) : null),
       appBar: AppBar(
         title: Text('سورة ${s.name}'),
         actions: [
+          IconButton(
+            tooltip: 'القارئ',
+            icon: const Icon(Icons.record_voice_over_outlined),
+            onPressed: _pickReciter,
+          ),
+          IconButton(
+            tooltip: rec.active && rec.playing ? 'إيقاف مؤقت' : 'استماع',
+            icon: Icon(rec.active && rec.playing ? Icons.pause_circle_filled : Icons.play_circle_fill, color: AppColors.emerald, size: 30),
+            onPressed: () {
+              if (rec.active) {
+                rec.togglePause();
+              } else {
+                final last = app.settings.lastRead;
+                _startRecitation(last != null && last.surah == _surah ? last.ayah : 1);
+              }
+            },
+          ),
           IconButton(
             tooltip: 'حجم الخط',
             icon: const Icon(Icons.format_size),
@@ -213,7 +320,12 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-                color: app.settings.bookmarks.contains(Bookmark(_surah, i + 1)) ? AppColors.goldSoft : null,
+                decoration: BoxDecoration(
+                  color: rec.active && rec.surah == _surah && rec.ayah == i + 1
+                      ? AppColors.emerald.withValues(alpha: 0.18)
+                      : (app.settings.bookmarks.contains(Bookmark(_surah, i + 1)) ? AppColors.goldSoft : null),
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Text.rich(
                   TextSpan(children: [
                     TextSpan(text: '${s.verses[i]} '),

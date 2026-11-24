@@ -12,7 +12,9 @@ import '../core/prayer_calculator.dart';
 import '../core/settings.dart';
 import '../data/repository.dart';
 import 'adhan_player.dart';
+import 'narration.dart';
 import 'notification_service.dart';
+import 'recitation.dart';
 
 class PrayerStatus {
   final Prayer? current;
@@ -29,6 +31,8 @@ class AppState extends ChangeNotifier {
   final repo = Repository();
   final notifications = NotificationService();
   final adhan = AdhanPlayer();
+  final recitation = Recitation();
+  final narration = Narration();
   late SharedPreferences _prefs;
   Settings settings = Settings();
   bool ready = false;
@@ -149,6 +153,8 @@ class AppState extends ChangeNotifier {
       final key = '${today.toIso8601String()}-${p.name}';
       if (diff >= 0 && diff < 5 && _lastAutoAdhan != key) {
         _lastAutoAdhan = key;
+        unawaited(recitation.stop());
+        unawaited(narration.stop());
         unawaited(adhan.playFor(p, repo, settings));
       }
     }

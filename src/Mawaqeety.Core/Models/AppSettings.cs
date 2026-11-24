@@ -86,6 +86,9 @@ public sealed class AppSettings
 
     // Qur'an reader
     public double QuranFontSize { get; set; } = 30;
+    public string ReciterId { get; set; } = Content.Reciters.DefaultId;
+    /// <summary>Continue to the next surah when a recitation reaches the end.</summary>
+    public bool ContinueToNextSurah { get; set; } = true;
     public int LastReadSurah { get; set; }
     public int LastReadAyah { get; set; }
     /// <summary>Bookmarked ayahs as "surah:ayah".</summary>

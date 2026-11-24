@@ -91,7 +91,29 @@
                     </StackPanel>
                 </Grid>
 
-                <TextBlock DockPanel.Dock="Bottom" Text="اضغط بزر الفأرة الأيمن على أي آية لحفظ موضع القراءة أو إضافة علامة أو النسخ."
+                <Border DockPanel.Dock="Top" Margin="18,0,18,8" Padding="10,6" CornerRadius="10" Background="{DynamicResource Surface2Brush}">
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Left" Text="&#xE720;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource GoldBrush}" Margin="0,0,8,0"/>
+                        <TextBlock DockPanel.Dock="Left" Text="القارئ" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                            <Button Style="{StaticResource PrimaryButton}" Command="{Binding PlayPauseCommand}" Margin="8,0,0,0" Padding="14,5">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding PlayGlyph}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                    <TextBlock Text="{Binding PlayLabel}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding StopRecitationCommand}" Margin="6,0,0,0" Padding="10,5" ToolTip="إيقاف"
+                                    Visibility="{Binding IsReciting, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="&#xE71A;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                        </StackPanel>
+                        <ComboBox ItemsSource="{Binding ReciterList}" DisplayMemberPath="Name" SelectedValuePath="Id"
+                                  SelectedValue="{Binding ReciterId}" MaxDropDownHeight="380"/>
+                    </DockPanel>
+                </Border>
+
+                <TextBlock DockPanel.Dock="Bottom" Text="اضغط بزر الفأرة الأيمن على أي آية للاستماع منها، أو لحفظ موضع القراءة، أو لإضافة علامة، أو للنسخ. يُحفظ صوت كل آية بعد سماعها لتعمل دون إنترنت."
                            Style="{StaticResource Muted}" FontSize="11.5" Margin="18,4,18,10"/>
                 <TextBlock DockPanel.Dock="Bottom" Text="{Binding Status}" Foreground="{DynamicResource AccentBrush}" Margin="18,0"
                            Visibility="{Binding Status, Converter={StaticResource NotEmpty}}"/>
@@ -111,6 +133,9 @@
                             <Setter Property="ContextMenu">
                                 <Setter.Value>
                                     <ContextMenu>
+                                        <MenuItem Header="استماع من هذه الآية"
+                                                  Command="{Binding PlacementTarget.Tag.PlayFromAyahCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}"/>
+                                        <Separator/>
                                         <MenuItem Header="حفظ موضع القراءة هنا"
                                                   Command="{Binding PlacementTarget.Tag.SaveLastReadCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}"/>
                                         <MenuItem Header="إضافة / إزالة علامة"
@@ -137,6 +162,11 @@
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding IsBookmarked}" Value="True">
                                     <Setter TargetName="Bg" Property="Background" Value="{DynamicResource GoldSoftBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                    <Setter TargetName="Bg" Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
+                                    <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                    <Setter TargetName="Bg" Property="BorderThickness" Value="1"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding IsLastRead}" Value="True">
                                     <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>

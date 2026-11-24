@@ -4,6 +4,7 @@
              xmlns:c="clr-namespace:Mawaqeety.App.Controls">
     <UserControl.Resources>
         <c:BoolToVisibilityConverter x:Key="BoolVis"/>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
     </UserControl.Resources>
 
     <Grid Margin="24,24,24,16">
@@ -40,8 +41,22 @@
                         <TextBlock Text="{Binding Title}" Foreground="White" FontSize="28" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Subtitle}" Foreground="#E9C75A" FontSize="15"/>
                         <TextBlock Text="{Binding Summary}" Foreground="#E6F3EE" FontSize="14.5" TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="26"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Command="{Binding NarrateCommand}" Padding="16,6" Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE767;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
+                                    <TextBlock Text="{Binding NarrateLabel}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding StopAudioCommand}" Margin="8,0,0,0" Padding="10,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="إيقاف الصوت">
+                                <TextBlock Text="&#xE71A;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
+                <TextBlock Text="{Binding AudioStatus}" TextWrapping="Wrap" Foreground="{DynamicResource GoldBrush}" Margin="4,0,4,12"
+                           Visibility="{Binding AudioStatus, Converter={StaticResource NotEmpty}}"/>
 
                 <ItemsControl ItemsSource="{Binding Sections}">
                     <ItemsControl.ItemTemplate>
@@ -75,6 +90,14 @@
                                                    TextAlignment="Justify" LineHeight="46" LineStackingStrategy="BlockLineHeight"
                                                    Foreground="{DynamicResource TextBrush}"/>
                                         <DockPanel Margin="0,6,0,0">
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}"
+                                                    Command="{Binding DataContext.ReciteAyatCommand, RelativeSource={RelativeSource AncestorType=ItemsControl, AncestorLevel=1}}"
+                                                    CommandParameter="{Binding}" Foreground="{DynamicResource GoldBrush}" ToolTip="استماع للتلاوة بصوت القارئ المختار">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                                    <TextBlock Text="استماع"/>
+                                                </StackPanel>
+                                            </Button>
                                             <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="فتح في المصحف"
                                                     Command="{Binding DataContext.OpenInQuranCommand, RelativeSource={RelativeSource AncestorType=ItemsControl, AncestorLevel=1}}"
                                                     CommandParameter="{Binding}" Foreground="{DynamicResource AccentBrush}"/>

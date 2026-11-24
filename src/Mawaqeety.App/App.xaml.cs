@@ -39,6 +39,8 @@ public partial class App : Application
     public WindowsLocationService Location { get; private set; } = null!;
     public UpdateService Updates { get; private set; } = null!;
     public AdhanLibrary Adhan { get; private set; } = null!;
+    public QuranAudioService Recitation { get; private set; } = null!;
+    public NarrationService Narration { get; private set; } = null!;
     public HttpClient Http { get; private set; } = null!;
     public MainViewModel? MainVm { get; private set; }
 
@@ -80,6 +82,8 @@ public partial class App : Application
         Location = new WindowsLocationService(LocationSearch, Log);
         Updates = new UpdateService(Log);
         Adhan = new AdhanLibrary(Log);
+        Recitation = new QuranAudioService(Dispatcher, Log, () => Settings.Current.ReciterId);
+        Narration = new NarrationService(Dispatcher, Log);
 
         Toast = new ToastService(Log);
         Sound = new SoundService(Dispatcher, Log);
@@ -181,7 +185,11 @@ public partial class App : Application
                 ? DateTimeOffset.Now.Add(d)
                 : new DateTimeOffset(DateTime.Today.AddDays(1));
         });
-        Sound.PlayingChanged += playing => Dispatcher.BeginInvoke(() => Tray.SetSoundPlaying(playing));
+        Sound.PlayingChanged += playing =>
+        {
+            Dispatcher.BeginInvoke(() => Tray.SetSoundPlaying(playing));
+            if (playing) { Recitation.Pause(); Narration.Stop(); } // the adhan takes priority
+        };
         Toast.OpenRequested += () => Dispatcher.BeginInvoke(ShowMainWindow);
         Toast.StopSoundRequested += () => Sound.Stop();
     }
@@ -247,6 +255,8 @@ public partial class App : Application
         _trayTimer?.Stop();
         _adhanTimer?.Stop();
         Sound.Stop();
+        Recitation.Stop();
+        Narration.Stop();
         Tray.Dispose();
         _window?.Close();
         try { Scheduler.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(2)); } catch { }
