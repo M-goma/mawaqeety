@@ -19,4 +19,8 @@ class Arabic {
       .replaceAll('ئ', 'ي')
       .toLowerCase()
       .trim();
+
+  /// Search key: like [normalize] but without alefs — the Uthmani script omits many alefs
+  /// (ٱلۡعَٰلَمِينَ vs العالمين). Apply to both the query and the text.
+  static String searchKey(String s) => normalize(s).replaceAll('ا', '');
 }

@@ -19,6 +19,8 @@
         <DataTemplate DataType="{x:Type vm:MonthlyViewModel}"><v:MonthlyView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><v:SettingsView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:AboutViewModel}"><v:AboutView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:QuranViewModel}"><v:QuranView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ProphetsViewModel}"><v:ProphetsView/></DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -46,6 +48,8 @@
                 <StackPanel>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE80F;" Content="{l:Tr NavDashboard}" IsChecked="{Binding IsDashboard}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE787;" Content="{l:Tr NavMonthly}" IsChecked="{Binding IsMonthly}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE736;" Content="{l:Tr NavQuran}" IsChecked="{Binding IsQuran}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE82D;" Content="{l:Tr NavProphets}" IsChecked="{Binding IsProphets}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE713;" Content="{l:Tr NavSettings}" IsChecked="{Binding IsSettings}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE946;" Content="{l:Tr NavAbout}" IsChecked="{Binding IsAbout}"/>
                 </StackPanel>

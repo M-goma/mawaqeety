@@ -5,6 +5,8 @@
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\cities.json" />
+    <EmbeddedResource Include="Resources\quran.json" />
+    <EmbeddedResource Include="Resources\prophets.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />

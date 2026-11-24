@@ -84,6 +84,13 @@ public sealed class AppSettings
     public bool StartMinimized { get; set; } = true;
     public bool MinimizeToTrayOnClose { get; set; } = true;
 
+    // Qur'an reader
+    public double QuranFontSize { get; set; } = 30;
+    public int LastReadSurah { get; set; }
+    public int LastReadAyah { get; set; }
+    /// <summary>Bookmarked ayahs as "surah:ayah".</summary>
+    public List<string> Bookmarks { get; set; } = [];
+
     public PrayerAlertSettings AlertFor(Prayer p)
     {
         if (!Alerts.TryGetValue(p, out var a))

@@ -59,7 +59,7 @@ class Repository {
   Future<void> load() async {
     final q = jsonDecode(await rootBundle.loadString('assets/data/quran.json')) as List;
     surahs = q.map((s) => Surah(s['n'], s['name'], s['en'], s['type'] == 'm', (s['v'] as List).cast<String>())).toList();
-    _normalized = surahs.map((s) => s.verses.map(Arabic.normalize).toList()).toList();
+    _normalized = surahs.map((s) => s.verses.map(Arabic.searchKey).toList()).toList();
 
     final p = jsonDecode(await rootBundle.loadString('assets/data/prophets.json')) as List;
     prophets = p
@@ -94,7 +94,7 @@ class Repository {
   }
 
   List<SearchHit> searchQuran(String query, {int limit = 200}) {
-    final q = Arabic.normalize(query);
+    final q = Arabic.searchKey(query);
     if (q.length < 2) return [];
     final hits = <SearchHit>[];
     for (var s = 0; s < surahs.length && hits.length < limit; s++) {

@@ -7,8 +7,9 @@ namespace Mawaqeety.App.Controls;
 public sealed class BoolToVisibilityConverter : IValueConverter
 {
     public bool Invert { get; set; }
+    /// <summary>ConverterParameter="inv" inverts for a single binding.</summary>
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
-        (value is true) ^ Invert ? Visibility.Visible : Visibility.Collapsed;
+        (value is true) ^ Invert ^ (parameter as string == "inv") ? Visibility.Visible : Visibility.Collapsed;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         (value is Visibility.Visible) ^ Invert;
 }
@@ -38,5 +39,14 @@ public sealed class LocationNameConverter : IValueConverter
 {
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
         value is Core.Models.GeoLocation l ? l.DisplayName(Localization.Loc.I.IsArabic) : "";
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
+/// <summary>Multiplies a number (e.g. font size → line height).</summary>
+public sealed class Scale(double factor) : IValueConverter
+{
+    public static readonly Scale ByTwo = new(1.9);
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is double d ? d * factor : value;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }

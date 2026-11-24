@@ -1,0 +1,185 @@
+using System.Collections.ObjectModel;
+using System.Windows;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Mawaqeety.Core.Content;
+
+namespace Mawaqeety.App.ViewModels;
+
+public sealed partial class AyahItem : ObservableObject
+{
+    public int Surah { get; init; }
+    public int Number { get; init; }
+    public string Text { get; init; } = "";
+    public string Mark => "﴿" + QuranRepository.ArabicDigits(Number) + "﴾";
+    [ObservableProperty] private bool _isBookmarked;
+    [ObservableProperty] private bool _isLastRead;
+}
+
+/// <summary>An entry of the left index: a surah, a search hit, a bookmark or "continue reading".</summary>
+public sealed record IndexItem(string Kind, int Surah, int Ayah, string Title, string Subtitle, string Badge)
+{
+    public bool IsHeader => Kind == "header";
+}
+
+public sealed partial class QuranViewModel : ObservableObject
+{
+    private static readonly QuranRepository Q = QuranRepository.Default;
+    private const string Basmala = "بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ";
+
+    public ObservableCollection<IndexItem> Index { get; } = [];
+    public ObservableCollection<AyahItem> Ayahs { get; } = [];
+
+    /// <summary>Raised when the view should scroll to an ayah.</summary>
+    public event Action<AyahItem>? ScrollRequested;
+
+    [ObservableProperty] private string _filter = "";
+    [ObservableProperty] private int _surahNumber = 1;
+    [ObservableProperty] private string _surahTitle = "";
+    [ObservableProperty] private string _surahInfo = "";
+    [ObservableProperty] private bool _showBasmala;
+    [ObservableProperty] private string _status = "";
+
+    public string BasmalaText => Basmala;
+
+    public double FontSize
+    {
+        get => App.Instance.Settings.Current.QuranFontSize;
+        set
+        {
+            App.Instance.Settings.Update(s => s.QuranFontSize = Math.Clamp(value, 18, 56));
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(MarkFontSize));
+        }
+    }
+
+    public double MarkFontSize => FontSize * 0.85;
+
+    public QuranViewModel()
+    {
+        var s = App.Instance.Settings.Current;
+        Open(s.LastReadSurah > 0 ? s.LastReadSurah : 1, s.LastReadAyah > 0 ? s.LastReadAyah : 1, scroll: false);
+        RebuildIndex();
+    }
+
+    partial void OnFilterChanged(string value) => RebuildIndex();
+
+    private void RebuildIndex()
+    {
+        Index.Clear();
+        var s = App.Instance.Settings.Current;
+        var f = Filter.Trim();
+        if (f.Length == 0)
+        {
+            if (s.LastReadSurah > 0)
+                Index.Add(new IndexItem("continue", s.LastReadSurah, s.LastReadAyah, "متابعة القراءة",
+                    $"سورة {Q[s.LastReadSurah].Name} • الآية {QuranRepository.ArabicDigits(s.LastReadAyah)}", ""));
+            foreach (var b in ParseBookmarks(s.Bookmarks))
+                Index.Add(new IndexItem("bookmark", b.Surah, b.Ayah, $"سورة {Q[b.Surah].Name} : {QuranRepository.ArabicDigits(b.Ayah)}",
+                    Shorten(Q[b.Surah].Verses[b.Ayah - 1]), ""));
+            foreach (var su in Q.Surahs) Index.Add(SurahItem(su));
+            return;
+        }
+
+        var key = QuranRepository.Normalize(f);
+        foreach (var su in Q.Surahs.Where(x => QuranRepository.Normalize(x.Name).Contains(key) ||
+                                                x.NameEn.Contains(f, StringComparison.OrdinalIgnoreCase) || x.Number.ToString() == f))
+            Index.Add(SurahItem(su));
+        var hits = Q.Search(f);
+        if (hits.Count > 0)
+        {
+            Index.Add(new IndexItem("header", 0, 0, hits.Count >= 300 ? "في الآيات: أكثر من ٣٠٠ نتيجة" : $"في الآيات: {QuranRepository.ArabicDigits(hits.Count)} نتيجة", "", ""));
+            foreach (var h in hits)
+                Index.Add(new IndexItem("hit", h.Surah.Number, h.Ayah, $"سورة {h.Surah.Name} : {QuranRepository.ArabicDigits(h.Ayah)}", Shorten(h.Text), ""));
+        }
+    }
+
+    private static IndexItem SurahItem(Surah s) =>
+        new("surah", s.Number, 1, $"سورة {s.Name}", $"{(s.Meccan ? "مكية" : "مدنية")} • {QuranRepository.ArabicDigits(s.Verses.Count)} آية",
+            QuranRepository.ArabicDigits(s.Number));
+
+    private static string Shorten(string t) => t.Length > 70 ? t[..70] + "…" : t;
+
+    private static IEnumerable<(int Surah, int Ayah)> ParseBookmarks(IEnumerable<string> list)
+    {
+        foreach (var b in list)
+        {
+            var p = b.Split(':');
+            if (p.Length == 2 && int.TryParse(p[0], out var s) && int.TryParse(p[1], out var a) && s is >= 1 and <= 114 && a >= 1 && a <= Q[s].Verses.Count)
+                yield return (s, a);
+        }
+    }
+
+    [RelayCommand]
+    private void OpenIndex(IndexItem? item)
+    {
+        if (item is null || item.IsHeader) return;
+        Open(item.Surah, item.Ayah, scroll: true);
+    }
+
+    /// <summary>Opens a surah and scrolls to an ayah (used by the prophets' stories too).</summary>
+    public void Open(int surah, int ayah, bool scroll = true)
+    {
+        surah = Math.Clamp(surah, 1, 114);
+        var s = Q[surah];
+        ayah = Math.Clamp(ayah, 1, s.Verses.Count);
+        var settings = App.Instance.Settings.Current;
+        if (surah != SurahNumber || Ayahs.Count == 0)
+        {
+            SurahNumber = surah;
+            SurahTitle = $"سورة {s.Name}";
+            SurahInfo = $"{(s.Meccan ? "مكية" : "مدنية")} • آياتها {QuranRepository.ArabicDigits(s.Verses.Count)}";
+            ShowBasmala = surah != 1 && surah != 9;
+            var marks = ParseBookmarks(settings.Bookmarks).Where(b => b.Surah == surah).Select(b => b.Ayah).ToHashSet();
+            Ayahs.Clear();
+            for (var i = 0; i < s.Verses.Count; i++)
+                Ayahs.Add(new AyahItem
+                {
+                    Surah = surah, Number = i + 1, Text = s.Verses[i], IsBookmarked = marks.Contains(i + 1),
+                    IsLastRead = settings.LastReadSurah == surah && settings.LastReadAyah == i + 1,
+                });
+        }
+        if (scroll) ScrollRequested?.Invoke(Ayahs[ayah - 1]);
+    }
+
+    [RelayCommand] private void NextSurah() { if (SurahNumber < 114) Open(SurahNumber + 1, 1); }
+    [RelayCommand] private void PrevSurah() { if (SurahNumber > 1) Open(SurahNumber - 1, 1); }
+
+    [RelayCommand]
+    private void SaveLastRead(AyahItem? a)
+    {
+        if (a is null) return;
+        foreach (var x in Ayahs) x.IsLastRead = x == a;
+        App.Instance.Settings.Update(s => { s.LastReadSurah = a.Surah; s.LastReadAyah = a.Number; });
+        Status = "تم حفظ موضع القراءة";
+        if (Filter.Length == 0) RebuildIndex();
+    }
+
+    [RelayCommand]
+    private void ToggleBookmark(AyahItem? a)
+    {
+        if (a is null) return;
+        var key = $"{a.Surah}:{a.Number}";
+        App.Instance.Settings.Update(s =>
+        {
+            if (!s.Bookmarks.Remove(key)) s.Bookmarks.Add(key);
+        });
+        a.IsBookmarked = !a.IsBookmarked;
+        if (Filter.Length == 0) RebuildIndex();
+    }
+
+    [RelayCommand]
+    private void CopyAyah(AyahItem? a)
+    {
+        if (a is null) return;
+        try
+        {
+            Clipboard.SetText($"﴿{a.Text}﴾ [{Q[a.Surah].Name}: {a.Number}]");
+            Status = "تم نسخ الآية";
+        }
+        catch (Exception ex) { App.Instance.Log.Warn("Clipboard failed", ex); }
+    }
+
+    [RelayCommand] private void FontUp() => FontSize += 2;
+    [RelayCommand] private void FontDown() => FontSize -= 2;
+}

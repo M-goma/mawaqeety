@@ -89,6 +89,8 @@ public sealed class Loc : INotifyPropertyChanged
         // navigation
         ["NavDashboard"] = ("الرئيسية", "Home"),
         ["NavMonthly"] = ("التقويم الشهري", "Monthly"),
+        ["NavQuran"] = ("القرآن الكريم", "Qur'an"),
+        ["NavProphets"] = ("قصص الأنبياء", "Prophets' stories"),
         ["NavSettings"] = ("الإعدادات", "Settings"),
         ["NavAbout"] = ("حول البرنامج", "About"),
         // dashboard
