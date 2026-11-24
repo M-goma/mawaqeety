@@ -47,6 +47,15 @@ class ProphetPage extends StatelessWidget {
   final Prophet prophet;
   const ProphetPage({super.key, required this.prophet});
 
+  static void _narrate(Prophet p) {
+    app.recitation.stop();
+    app.narration.speak([
+      '${p.nameAr}. ${p.title}. ${p.summary}',
+      for (final s in p.sections) ...['${s.heading}.', ...s.body.split('\n\n')],
+      if (p.lessons.isNotEmpty) 'دروس وعبر. ${p.lessons.join(' ')}',
+    ], gender: app.settings.narrationVoice);
+  }
+
   @override
   Widget build(BuildContext context) {
     final p = prophet;
@@ -68,23 +77,38 @@ class ProphetPage extends StatelessWidget {
               const SizedBox(height: 12),
               ListenableBuilder(
                 listenable: app.narration,
-                builder: (context, _) => Wrap(spacing: 8, children: [
+                builder: (context, _) => Wrap(spacing: 8, runSpacing: 8, crossAxisAlignment: WrapCrossAlignment.center, children: [
                   FilledButton.tonalIcon(
                     onPressed: () {
                       if (app.narration.speaking) {
                         app.narration.stop();
                       } else {
-                        app.recitation.stop();
-                        app.narration.speak([
-                          '${p.nameAr}. ${p.title}. ${p.summary}',
-                          for (final s in p.sections) ...['${s.heading}.', ...s.body.split('\n\n')],
-                          if (p.lessons.isNotEmpty) 'دروس وعبر. ${p.lessons.join(' ')}',
-                        ]);
+                        _narrate(p);
                       }
                     },
                     icon: Icon(app.narration.speaking ? Icons.stop : Icons.headphones),
                     label: Text(app.narration.speaking ? 'إيقاف القراءة' : 'استمع إلى القصة'),
                   ),
+                  SegmentedButton<String>(
+                    showSelectedIcon: false,
+                    style: SegmentedButton.styleFrom(
+                      foregroundColor: Colors.white, selectedForegroundColor: AppColors.navy,
+                      selectedBackgroundColor: const Color(0xFFE9C75A), side: const BorderSide(color: Colors.white54),
+                    ),
+                    segments: const [
+                      ButtonSegment(value: 'male', icon: Icon(Icons.man), label: Text('رجل')),
+                      ButtonSegment(value: 'female', icon: Icon(Icons.woman), label: Text('امرأة')),
+                    ],
+                    selected: {app.settings.narrationVoice},
+                    onSelectionChanged: (v) async {
+                      final wasSpeaking = app.narration.speaking;
+                      await app.update((x) => x.narrationVoice = v.first, reschedule: false);
+                      if (wasSpeaking) _narrate(p);
+                    },
+                  ),
+                  if (!app.narration.exactVoice)
+                    const Text('لا يوجد في جهازك صوت عربي من هذا النوع، فتم تعديل نبرة الصوت المتاح.',
+                        style: TextStyle(color: Color(0xFFE6F3EE), fontSize: 12)),
                 ]),
               ),
             ]),

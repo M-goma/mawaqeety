@@ -55,6 +55,7 @@ class Settings {
   double quranFontSize = 26;
   String reciterId = 'Alafasy_128kbps';
   bool continueNextSurah = true;
+  String narrationVoice = 'male'; // 'male' | 'female'
   Bookmark? lastRead;
   List<Bookmark> bookmarks = [];
 
@@ -70,7 +71,7 @@ class Settings {
         'adjust': {for (final e in adjust.entries) e.key.name: e.value},
         'notify': {for (final e in notify.entries) e.key.name: e.value},
         'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
-        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah,
+        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -103,6 +104,7 @@ class Settings {
       r.quranFontSize = (j['quranFontSize'] ?? 26).toDouble();
       r.reciterId = j['reciterId'] ?? r.reciterId;
       r.continueNextSurah = j['continueNextSurah'] ?? true;
+      r.narrationVoice = j['narrationVoice'] ?? 'male';
       if (j['lastRead'] != null) r.lastRead = Bookmark.fromJson(j['lastRead']);
       r.bookmarks = ((j['bookmarks'] ?? []) as List).map((e) => Bookmark.fromJson(e)).toList();
     } catch (_) {/* corrupted -> defaults */}

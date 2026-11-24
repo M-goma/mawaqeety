@@ -55,6 +55,28 @@ public sealed partial class ProphetsViewModel : ObservableObject
     public string NarrateLabel => IsNarrating ? "إيقاف القراءة" : "استمع إلى القصة";
     [ObservableProperty] private string _audioStatus = "";
 
+    public IReadOnlyList<KeyValuePair<string, string>> VoiceOptions { get; } =
+        [new("Male", "صوت رجل"), new("Female", "صوت امرأة")];
+
+    public string NarrationVoice
+    {
+        get => App.Instance.Settings.Current.NarrationVoice;
+        set
+        {
+            if (value == NarrationVoice) return;
+            App.Instance.Settings.Update(s => s.NarrationVoice = value);
+            OnPropertyChanged();
+            AudioStatus = App.Instance.Narration.ExactGenderAvailable
+                ? ""
+                : "لا يوجد في Windows صوت عربي بهذا النوع، فتم تعديل نبرة الصوت المتاح. لصوت أوضح: الإعدادات ← الوقت واللغة ← الكلام ← إضافة أصوات ← العربية.";
+            if (App.Instance.Narration.IsSpeaking)
+            {
+                App.Instance.Narration.Stop();
+                Narrate(); // restart the story with the new voice
+            }
+        }
+    }
+
     public ProphetsViewModel()
     {
         _selected = Prophets.FirstOrDefault();

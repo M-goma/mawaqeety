@@ -89,6 +89,8 @@ public sealed class AppSettings
     public string ReciterId { get; set; } = Content.Reciters.DefaultId;
     /// <summary>Continue to the next surah when a recitation reaches the end.</summary>
     public bool ContinueToNextSurah { get; set; } = true;
+    /// <summary>Narration voice for the prophets' stories: "Male" or "Female".</summary>
+    public string NarrationVoice { get; set; } = "Male";
     public int LastReadSurah { get; set; }
     public int LastReadAyah { get; set; }
     /// <summary>Bookmarked ayahs as "surah:ayah".</summary>

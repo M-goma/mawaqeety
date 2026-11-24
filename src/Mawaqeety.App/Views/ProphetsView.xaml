@@ -52,6 +52,8 @@
                                     BorderBrush="#66FFFFFF" ToolTip="إيقاف الصوت">
                                 <TextBlock Text="&#xE71A;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
                             </Button>
+                            <ComboBox Width="140" Margin="10,0,0,0" ItemsSource="{Binding VoiceOptions}" DisplayMemberPath="Value"
+                                      SelectedValuePath="Key" SelectedValue="{Binding NarrationVoice}" ToolTip="صوت القارئ للقصة"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>

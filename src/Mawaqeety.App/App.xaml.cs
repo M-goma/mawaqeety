@@ -83,7 +83,7 @@ public partial class App : Application
         Updates = new UpdateService(Log);
         Adhan = new AdhanLibrary(Log);
         Recitation = new QuranAudioService(Dispatcher, Log, () => Settings.Current.ReciterId);
-        Narration = new NarrationService(Dispatcher, Log);
+        Narration = new NarrationService(Dispatcher, Log) { PreferredGender = () => Settings.Current.NarrationVoice };
 
         Toast = new ToastService(Log);
         Sound = new SoundService(Dispatcher, Log);
