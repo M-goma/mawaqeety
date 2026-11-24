@@ -12,6 +12,7 @@ import '../core/prayer_calculator.dart';
 import '../core/settings.dart';
 import '../data/repository.dart';
 import 'adhan_player.dart';
+import 'app_updater.dart';
 import 'narration.dart';
 import 'notification_service.dart';
 import 'recitation.dart';
@@ -33,6 +34,7 @@ class AppState extends ChangeNotifier {
   final adhan = AdhanPlayer();
   final recitation = Recitation();
   final narration = Narration();
+  final updater = AppUpdater();
   late SharedPreferences _prefs;
   Settings settings = Settings();
   bool ready = false;

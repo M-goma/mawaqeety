@@ -41,7 +41,20 @@ jobs:
           else
             echo "::warning::No signing secrets configured - APK signed with a temporary debug key"
           fi
-      - run: flutter build apk --release
+      - run: flutter build apk --release --build-number=${{ github.run_number }}
+      - name: Build Google Play bundle (AAB)
+        run: |
+          if [ -f android/key.properties ]; then
+            flutter build appbundle --release --build-number=${{ github.run_number }}
+            cp build/app/outputs/bundle/release/app-release.aab build/Mawaqeety-play.aab
+          else
+            echo "::warning::Google Play bundle skipped: add the ANDROID_* signing secrets (see docs/GOOGLE_PLAY.md)"
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Mawaqeety-google-play-aab
+          path: mobile/build/Mawaqeety-play.aab
+          if-no-files-found: ignore
       - name: Rename APK
         run: cp build/app/outputs/flutter-apk/app-release.apk build/Mawaqeety.apk
       - uses: actions/upload-artifact@v4
@@ -90,7 +103,7 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - run: flutter build web --release --no-web-resources-cdn --base-href /mawaqeety/
+      - run: flutter build web --release --no-web-resources-cdn --base-href /mawaqeety/ --build-number=${{ github.run_number }}
       - run: touch build/web/.nojekyll
       - name: Publish to GitHub Pages (gh-pages branch)
         uses: peaceiris/actions-gh-pages@v4

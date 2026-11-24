@@ -123,12 +123,14 @@ class SettingsPage extends StatelessWidget {
                     onChanged: (v) => app.update((x) => x.use24h = v)),
               ]),
             ),
+            const _Header('التحديثات', Icons.system_update_outlined),
+            const _UpdateCard(),
             const _Header('حول التطبيق', Icons.info_outline),
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  'مواقيتي – صلاتك في وقتها\nالإصدار 1.0.0\n\n'
+                  'مواقيتي – صلاتك في وقتها\n\n'
                   'المواقيت تُحسب على جهازك دون إنترنت بنفس محرك برنامج الكمبيوتر.\n'
                   'نص القرآن الكريم: الرسم العثماني من موسوعة القرآن الكريم (quranenc.com) عبر مشروع quran-json – رخصة CC BY-SA 4.0.\n'
                   'خط المصحف: Amiri Quran (OFL). تسجيلات الأذان من مجموعة عامة على GitHub وحقوقها لأصحابها.\n'
@@ -336,4 +338,50 @@ class _CityPickerPageState extends State<CityPickerPage> {
       ]),
     );
   }
+}
+
+class _UpdateCard extends StatefulWidget {
+  const _UpdateCard();
+  @override
+  State<_UpdateCard> createState() => _UpdateCardState();
+}
+
+class _UpdateCardState extends State<_UpdateCard> {
+  String _version = '';
+  String _status = '';
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    app.updater.versionLabel().then((v) {
+      if (mounted) setState(() => _version = v);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => Card(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text('الإصدار الحالي: $_version', textDirection: TextDirection.rtl),
+            const SizedBox(height: 10),
+            FilledButton.icon(
+              style: FilledButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+              onPressed: _busy
+                  ? null
+                  : () async {
+                      setState(() { _busy = true; _status = 'جارٍ البحث عن تحديثات...'; });
+                      final r = await app.updater.check();
+                      if (mounted) setState(() { _busy = false; _status = r.message; });
+                    },
+              icon: _busy
+                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Icon(Icons.system_update),
+              label: const Text('البحث عن تحديثات'),
+            ),
+            if (_status.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_status, style: const TextStyle(color: AppColors.gold))),
+          ]),
+        ),
+      );
 }

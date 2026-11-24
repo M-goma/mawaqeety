@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../main.dart';
+import '../services/app_updater.dart';
 import 'prayer_page.dart';
 import 'prophets_page.dart';
 import 'quran_pages.dart';
@@ -22,6 +23,14 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await app.notifications.requestPermissions();
       await app.reschedule();
+      // Quiet check at startup: offer the update if one is available.
+      final r = await app.updater.check(apply: false);
+      if (!mounted || r.status != UpdateStatus.available) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        duration: const Duration(seconds: 12),
+        content: Text(r.message),
+        action: SnackBarAction(label: 'تحديث', onPressed: () => app.updater.check()),
+      ));
     });
   }
 
