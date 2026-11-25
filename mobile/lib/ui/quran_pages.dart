@@ -54,7 +54,11 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
                   leading: Icon(Icons.bookmark, color: AppColors.gold),
                   title: const Text('متابعة القراءة', style: TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text('سورة ${app.repo.surahs[last.surah - 1].name} • الآية ${Arabic.digits(last.ayah)}'),
-                  trailing: const Icon(Icons.chevron_left),
+                  trailing: IconButton(
+                    tooltip: 'إزالة موضع القراءة',
+                    icon: const Icon(Icons.close),
+                    onPressed: () => app.update((x) => x.lastRead = null, reschedule: false),
+                  ),
                   onTap: () => openReader(context, last.surah, last.ayah),
                 ),
               ),
@@ -132,6 +136,9 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
     setState(() {});
     if (r.active && r.surah == _surah && r.ayah > 0 && r.ayah != _lastScrolled) {
       _lastScrolled = r.ayah;
+      // While listening, the saved reading position moves along with the recitation.
+      final pos = Bookmark(r.surah, r.ayah);
+      if (app.settings.lastRead != pos) app.update((x) => x.lastRead = pos, reschedule: false);
       final ctx = _keys[r.ayah]?.currentContext;
       if (ctx != null) Scrollable.ensureVisible(ctx, alignment: 0.25, duration: const Duration(milliseconds: 400));
     }
@@ -217,21 +224,36 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
               _startRecitation(ayah);
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.bookmark_added_outlined),
-            title: const Text('حفظ موضع القراءة هنا'),
-            onTap: () {
-              app.update((x) => x.lastRead = b, reschedule: false);
-              Navigator.pop(c);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ موضع القراءة')));
-            },
-          ),
+          if (app.settings.lastRead == b)
+            ListTile(
+              leading: const Icon(Icons.bookmark_remove_outlined),
+              title: const Text('إزالة موضع القراءة'),
+              onTap: () {
+                app.update((x) => x.lastRead = null, reschedule: false);
+                Navigator.pop(c);
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تمت إزالة موضع القراءة')));
+              },
+            )
+          else
+            ListTile(
+              leading: const Icon(Icons.bookmark_added_outlined),
+              title: const Text('حفظ موضع القراءة هنا'),
+              subtitle: app.settings.lastRead != null ? const Text('سيحلّ محلّ الموضع المحفوظ السابق') : null,
+              onTap: () {
+                app.update((x) => x.lastRead = b, reschedule: false);
+                Navigator.pop(c);
+                setState(() {});
+                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم حفظ موضع القراءة')));
+              },
+            ),
           ListTile(
             leading: Icon(marked ? Icons.bookmark_remove_outlined : Icons.bookmark_add_outlined),
             title: Text(marked ? 'إزالة العلامة' : 'إضافة علامة على الآية'),
             onTap: () {
               app.update((x) => marked ? x.bookmarks.remove(b) : x.bookmarks.add(b), reschedule: false);
               Navigator.pop(c);
+              setState(() {});
             },
           ),
         ]),
@@ -375,6 +397,14 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
                 ),
                 child: Text.rich(
                   TextSpan(children: [
+                    if (app.settings.lastRead == Bookmark(_surah, i + 1))
+                      WidgetSpan(
+                        alignment: PlaceholderAlignment.middle,
+                        child: Padding(
+                          padding: const EdgeInsetsDirectional.only(end: 4),
+                          child: Icon(Icons.bookmark, size: size * 0.8, color: AppColors.emerald),
+                        ),
+                      ),
                     TextSpan(text: '${s.verses[i]} '),
                     TextSpan(text: ayahNumber(i + 1), style: style.copyWith(color: AppColors.gold, fontSize: size * 0.9)),
                   ]),
