@@ -6,3 +6,4 @@ Releases/
 *.user
 .vs/
 TestResults/
+__pycache__/
