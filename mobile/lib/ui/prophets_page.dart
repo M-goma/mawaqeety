@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/arabic.dart';
 import '../data/repository.dart';
 import '../main.dart';
+import '../services/narration.dart';
 import 'format.dart';
 import 'quran_pages.dart';
 import 'theme.dart';
@@ -49,6 +50,10 @@ class ProphetPage extends StatelessWidget {
 
   static void _narrate(Prophet p) {
     app.recitation.stop();
+    if (app.narration.hasRecording(p.id, app.settings.narrationVoice)) {
+      app.narration.playRecorded(p.id, app.settings.narrationVoice);
+      return;
+    }
     app.narration.speak([
       '${p.nameAr}. ${p.title}. ${p.summary}',
       for (final s in p.sections) ...['${s.heading}.', ...s.body.split('\n\n')],
@@ -111,6 +116,10 @@ class ProphetPage extends StatelessWidget {
                       if (wasSpeaking) _narrate(p);
                     },
                   ),
+                  if (app.narration.hasRecording(p.id, app.settings.narrationVoice))
+                    Text('🎙 تسجيل بصوت ${Narration.recordedNames[app.settings.narrationVoice]}',
+                        style: TextStyle(color: AppColors.goldLight, fontSize: 13))
+                  else
                   TextButton.icon(
                     style: TextButton.styleFrom(foregroundColor: Colors.white),
                     onPressed: () => showModalBottomSheet(

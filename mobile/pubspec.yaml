@@ -1,7 +1,7 @@
 name: mawaqeety
 description: "مواقيتي – مواقيت الصلاة والأذان والقرآن الكريم وقصص الأنبياء"
 publish_to: 'none'
-version: 1.7.0+7
+version: 1.8.0+8
 
 environment:
   sdk: ^3.10.0
@@ -39,6 +39,7 @@ flutter:
     - assets/data/cities.json
     - assets/data/adhan_voices.json
     - assets/data/reciters.json
+    - assets/data/story_audio.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
   fonts:

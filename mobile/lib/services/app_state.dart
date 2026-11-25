@@ -56,6 +56,7 @@ class AppState extends ChangeNotifier {
     settings = Settings.fromJsonString(_prefs.getString(_key));
     await repo.load();
     await downloads.init();
+    await narration.loadRecordings();
     recitation.downloads = downloads;
     await notifications.init(onTap: (_) => playAdhanForCurrent());
     ready = true;

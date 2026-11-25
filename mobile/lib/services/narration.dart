@@ -1,11 +1,78 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
 
 /// Reads the prophets' stories aloud with the device's Arabic text-to-speech voice.
 class Narration extends ChangeNotifier {
   final _tts = FlutterTts();
+  final _player = AudioPlayer();
   bool speaking = false;
   int _session = 0;
+
+  /// Studio recordings of the stories: gender -> story id -> number of parts.
+  Map<String, Map<String, int>> _recorded = {};
+  String _base = '';
+  static const recordedNames = {'male': 'نبيل', 'female': 'عرين'};
+
+  Future<void> loadRecordings() async {
+    try {
+      final j = jsonDecode(await rootBundle.loadString('assets/data/story_audio.json')) as Map<String, dynamic>;
+      _base = j['base'] as String;
+      _recorded = {
+        for (final g in ['male', 'female'])
+          g: ((j[g] ?? {}) as Map<String, dynamic>).map((k, v) => MapEntry(k, v as int)),
+      };
+    } catch (e) {
+      debugPrint('story audio manifest: $e');
+    }
+    _player.playerStateStream.listen((st) {
+      if (st.processingState == ProcessingState.completed && speaking) {
+        speaking = false;
+        notifyListeners();
+      }
+    });
+  }
+
+  /// True when the story has a studio recording in this voice.
+  bool hasRecording(String storyId, String gender) => (_recorded[gender]?[storyId] ?? 0) > 0;
+
+  /// Plays the studio recording; each part is saved on the device the first time, so it then works offline.
+  Future<void> playRecorded(String storyId, String gender) async {
+    await stop();
+    final session = ++_session;
+    error = null;
+    final parts = _recorded[gender]?[storyId] ?? 0;
+    try {
+      final dir = kIsWeb ? null : Directory('${(await getApplicationSupportDirectory()).path}/stories');
+      if (dir != null) await dir.create(recursive: true);
+      final sources = <AudioSource>[];
+      for (var i = 1; i <= parts; i++) {
+        final name = '$gender-$storyId-$i.mp3';
+        final uri = Uri.parse('$_base$name');
+        if (dir == null) {
+          sources.add(AudioSource.uri(uri));
+          continue;
+        }
+        final file = File('${dir.path}/$name');
+        sources.add(await file.exists() ? AudioSource.file(file.path) : LockCachingAudioSource(uri, cacheFile: file));
+      }
+      if (session != _session) return;
+      await _player.setAudioSources(sources);
+      speaking = true;
+      notifyListeners();
+      await _player.play();
+    } catch (e) {
+      debugPrint('recorded story failed: $e');
+      error = 'تعذّر تشغيل القصة. تأكد من الاتصال بالإنترنت عند الاستماع إليها أول مرة.';
+      speaking = false;
+      notifyListeners();
+    }
+  }
   String? error;
 
   /// True when a real voice of the requested gender was found (otherwise the pitch is adjusted).
@@ -113,6 +180,7 @@ class Narration extends ChangeNotifier {
   Future<void> stop() async {
     _session++;
     await _tts.stop();
+    await _player.stop();
     if (speaking) {
       speaking = false;
       notifyListeners();
