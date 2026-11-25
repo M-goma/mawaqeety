@@ -120,6 +120,19 @@ https://m-goma.github.io/mawaqeety/privacy.html
   - نسخة المتصفح: يعيد تحميل الصفحة.
 - لرفع إصدار جديد: نزّل ملف AAB الجديد من Actions، ثم ارفعه في Production.
 
+## 8) الرفع التلقائي إلى Google Play (اختياري، مرة واحدة)
+بعد هذا الإعداد، كل تعديل يُرفع تلقائيًا إلى Google Play، ويظهر التحديث لمن ثبّت التطبيق من المتجر عند الضغط على «البحث عن تحديثات».
+**شرط:** أول إصدار يُرفع يدويًا من Play Console، وبعده يعمل الرفع التلقائي.
+
+1. Play Console ← **Setup ← API access**. إن طُلب ربط مشروع Google Cloud، اختر **Create new project**.
+2. افتح https://console.cloud.google.com/iam-admin/serviceaccounts بنفس الحساب ← اختر المشروع ← **Create service account** ← اسم مثل `mawaqeety-ci` ← **Done**.
+3. افتح الحساب الذي أنشأته ← **Keys ← Add key ← Create new key ← JSON**. سيُنزَّل ملف JSON؛ احفظه في مكان آمن.
+4. Play Console ← **Users and permissions ← Invite new users** ← الصق بريد الحساب الخدمي (ينتهي بـ `iam.gserviceaccount.com`) ← **App permissions** ← اختر «مواقيتي» ← فعّل **Release to testing tracks** (و **Release to production** إن أردت النشر العام تلقائيًا) ← **Invite user**.
+5. GitHub ← https://github.com/M-goma/mawaqeety/settings/secrets/actions ← **New repository secret**:
+   - Name: `PLAY_SERVICE_ACCOUNT_JSON`
+   - Secret: محتوى ملف JSON كاملًا.
+6. (اختياري) لاختيار المسار: GitHub ← **Settings ← Secrets and variables ← Actions ← Variables** ← أضف `PLAY_TRACK` بقيمة `internal` أو `alpha` (اختبار مغلق) أو `production`. القيمة الافتراضية `internal`.
+
 ## ⚠️ نقاط مهمة قبل النشر
 1. **حقوق تسجيلات الأذان:** تسجيلات الأذان مأخوذة من مجموعة عامة على GitHub دون رخصة واضحة. إذا قدّم صاحب حقوق أحد التسجيلات شكوى، فقد تُطلب إزالة التطبيق. **الأنسب قبل النشر على المتجر:** الاحتفاظ فقط بالتسجيلات المسموح بها صراحةً، أو تسجيل أذان خاص بكم. يمكن تعديل القائمة بسهولة.
 2. **التلاوات** من everyayah.com متاحة للاستخدام غير التجاري. التطبيق مجاني، لذلك هذا مناسب.

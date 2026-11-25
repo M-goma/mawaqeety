@@ -57,6 +57,19 @@ jobs:
           name: Mawaqeety-google-play-aab
           path: mobile/build/Mawaqeety-play.aab
           if-no-files-found: ignore
+      - name: Upload to Google Play (internal testing) automatically
+        # Needs the PLAY_SERVICE_ACCOUNT_JSON secret (see docs/GOOGLE_PLAY.md, "automatic upload").
+        # Play then offers the update to everyone who installed the app from Play.
+        env:
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        if: env.PLAY_JSON != '' && hashFiles('mobile/build/Mawaqeety-play.aab') != ''
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.mawaqeety.app
+          releaseFiles: mobile/build/Mawaqeety-play.aab
+          track: ${{ vars.PLAY_TRACK || 'internal' }}
+          status: completed
       - name: Publish the Google Play bundle to the "play-latest" release
         if: hashFiles('mobile/build/Mawaqeety-play.aab') != ''
         uses: softprops/action-gh-release@v2
