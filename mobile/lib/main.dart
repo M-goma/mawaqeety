@@ -29,11 +29,13 @@ class MawaqeetyApp extends StatelessWidget {
           ThemeChoice.light => ThemeMode.light,
           ThemeChoice.system => ThemeMode.system,
         };
+        final palette = paletteById(app.settings.palette);
+        AppColors.current = palette;
         return MaterialApp(
           title: 'مواقيتي',
           debugShowCheckedModeBanner: false,
-          theme: buildTheme(Brightness.light),
-          darkTheme: buildTheme(Brightness.dark),
+          theme: buildTheme(Brightness.light, palette),
+          darkTheme: buildTheme(Brightness.dark, palette),
           themeMode: mode,
           locale: const Locale('ar'),
           supportedLocales: const [Locale('ar'), Locale('en')],
@@ -59,7 +61,7 @@ class _Splash extends StatelessWidget {
             Image.asset('assets/images/logo.png', width: 96),
             const SizedBox(height: 16),
             const Text('مواقيتي', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
-            const Text('صلاتك في وقتها', style: TextStyle(color: AppColors.gold, fontSize: 15)),
+            Text('صلاتك في وقتها', style: TextStyle(color: AppColors.gold, fontSize: 15)),
           ]),
         ),
       );

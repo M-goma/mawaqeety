@@ -30,7 +30,7 @@ class _MonthlyPageState extends State<MonthlyPage> {
         ],
       ),
       body: Column(children: [
-        Padding(padding: const EdgeInsets.all(8), child: Text(s.place.display, style: const TextStyle(color: AppColors.gold))),
+        Padding(padding: const EdgeInsets.all(8), child: Text(s.place.display, style: TextStyle(color: AppColors.gold))),
         Container(
           color: AppColors.navy3,
           padding: const EdgeInsets.symmetric(vertical: 10),

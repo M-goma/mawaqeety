@@ -47,7 +47,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
               Card(
                 color: AppColors.goldSoft,
                 child: ListTile(
-                  leading: const Icon(Icons.bookmark, color: AppColors.gold),
+                  leading: Icon(Icons.bookmark, color: AppColors.gold),
                   title: const Text('متابعة القراءة', style: TextStyle(fontWeight: FontWeight.w700)),
                   subtitle: Text('سورة ${app.repo.surahs[last.surah - 1].name} • الآية ${Arabic.digits(last.ayah)}'),
                   trailing: const Icon(Icons.chevron_left),
@@ -195,7 +195,7 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
       builder: (c) => SafeArea(
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           ListTile(
-            leading: const Icon(Icons.play_circle_outline, color: AppColors.emerald),
+            leading: Icon(Icons.play_circle_outline, color: AppColors.emerald),
             title: const Text('استماع من هذه الآية'),
             onTap: () {
               Navigator.pop(c);
@@ -237,7 +237,7 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
                 color: AppColors.navy3,
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: Row(children: [
-                  const Icon(Icons.graphic_eq, color: AppColors.gold),
+                  Icon(Icons.graphic_eq, color: AppColors.gold),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -389,7 +389,7 @@ class _QuranSearchPageState extends State<QuranSearchPage> {
               final h = _hits[i];
               return ListTile(
                 title: Text(h.text, style: quranStyle(context, 20).copyWith(height: 1.8)),
-                subtitle: Text('سورة ${h.surah.name} • الآية ${Arabic.digits(h.ayah)}', style: const TextStyle(color: AppColors.gold)),
+                subtitle: Text('سورة ${h.surah.name} • الآية ${Arabic.digits(h.ayah)}', style: TextStyle(color: AppColors.gold)),
                 onTap: () => openReader(context, h.surah.number, h.ayah),
               );
             },

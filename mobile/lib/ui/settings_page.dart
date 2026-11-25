@@ -126,6 +126,10 @@ class SettingsPage extends StatelessWidget {
                   items: const {ThemeChoice.dark: 'ليلي', ThemeChoice.light: 'نهاري', ThemeChoice.system: 'حسب الجهاز'},
                   onChanged: (v) => app.update((x) => x.theme = v, reschedule: false),
                 ),
+                _PalettePicker(
+                  selected: s.palette,
+                  onChanged: (id) => app.update((x) => x.palette = id, reschedule: false),
+                ),
                 SwitchListTile(title: const Text('نظام 24 ساعة'), value: s.use24h,
                     onChanged: (v) => app.update((x) => x.use24h = v)),
               ]),
@@ -214,7 +218,7 @@ class _VoiceTile extends StatelessWidget {
     final playing = app.adhan.playingId == id;
     return ListTile(
       title: Text(label),
-      subtitle: Text(v?.nameAr ?? '-', style: const TextStyle(color: AppColors.gold)),
+      subtitle: Text(v?.nameAr ?? '-', style: TextStyle(color: AppColors.gold)),
       onTap: () async {
         final picked = await Navigator.push<String>(context, MaterialPageRoute(builder: (_) => VoicePickerPage(selected: id, fajrFirst: fajr)));
         if (picked != null) onChanged(picked);
@@ -263,7 +267,7 @@ class _VoicePickerPageState extends State<VoicePickerPage> {
                   leading: Icon(v.id == widget.selected ? Icons.radio_button_checked : Icons.radio_button_off,
                       color: v.id == widget.selected ? AppColors.emerald : null),
                   title: Text(v.nameAr),
-                  subtitle: v.fajr ? const Text('أذان الفجر', style: TextStyle(color: AppColors.gold, fontSize: 12)) : null,
+                  subtitle: v.fajr ? Text('أذان الفجر', style: TextStyle(color: AppColors.gold, fontSize: 12)) : null,
                   trailing: IconButton(
                     icon: Icon(playing ? Icons.stop_circle_outlined : Icons.play_circle_outline),
                     onPressed: () => playing ? app.adhan.stop() : app.adhan.play(v),
@@ -330,7 +334,7 @@ class _CityPickerPageState extends State<CityPickerPage> {
             itemBuilder: (c, i) {
               final p = results[i];
               return ListTile(
-                leading: const Icon(Icons.location_city, color: AppColors.emerald),
+                leading: Icon(Icons.location_city, color: AppColors.emerald),
                 title: Text(p.nameAr),
                 subtitle: Text(p.countryAr),
                 trailing: Text(p.nameEn, style: TextStyle(color: Theme.of(context).hintColor, fontSize: 12)),
@@ -387,8 +391,63 @@ class _UpdateCardState extends State<_UpdateCard> {
                   : const Icon(Icons.system_update),
               label: const Text('البحث عن تحديثات'),
             ),
-            if (_status.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_status, style: const TextStyle(color: AppColors.gold))),
+            if (_status.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 8), child: Text(_status, style: TextStyle(color: AppColors.gold))),
           ]),
         ),
       );
+}
+
+
+/// Ten colour styles shown as tappable swatches.
+class _PalettePicker extends StatelessWidget {
+  final String selected;
+  final ValueChanged<String> onChanged;
+  const _PalettePicker({required this.selected, required this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final current = paletteById(selected);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Text('الألوان', style: TextStyle(fontWeight: FontWeight.w600)),
+          const Spacer(),
+          Text(current.nameAr, style: TextStyle(color: AppColors.gold)),
+        ]),
+        const SizedBox(height: 10),
+        GridView.count(
+          crossAxisCount: 5,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          children: [
+            for (final p in palettes)
+              Tooltip(
+                message: p.nameAr,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(40),
+                  onTap: () => onChanged(p.id),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(colors: [p.primary, p.hero[1], p.bg],
+                          begin: Alignment.topRight, end: Alignment.bottomLeft),
+                      border: Border.all(color: p.id == selected ? p.accent : Colors.white24, width: p.id == selected ? 3 : 1),
+                    ),
+                    child: Center(
+                      child: p.id == selected
+                          ? Icon(Icons.check, color: p.accent, size: 22)
+                          : Container(width: 10, height: 10, decoration: BoxDecoration(shape: BoxShape.circle, color: p.accent)),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ]),
+    );
+  }
 }

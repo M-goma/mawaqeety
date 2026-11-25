@@ -52,6 +52,7 @@ class Settings {
   int hijriAdjust = 0;
   bool use24h = false;
   ThemeChoice theme = ThemeChoice.dark;
+  String palette = 'emerald';
   double quranFontSize = 26;
   String reciterId = 'Alafasy_128kbps';
   bool continueNextSurah = true;
@@ -76,7 +77,7 @@ class Settings {
         'adjust': {for (final e in adjust.entries) e.key.name: e.value},
         'notify': {for (final e in notify.entries) e.key.name: e.value},
         'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
-        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
+        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
@@ -108,6 +109,7 @@ class Settings {
       r.hijriAdjust = j['hijriAdjust'] ?? 0;
       r.use24h = j['use24h'] ?? false;
       r.theme = _enum(ThemeChoice.values, j['theme'], r.theme);
+      r.palette = j['palette'] ?? 'emerald';
       r.quranFontSize = (j['quranFontSize'] ?? 26).toDouble();
       r.reciterId = j['reciterId'] ?? r.reciterId;
       r.continueNextSurah = j['continueNextSurah'] ?? true;

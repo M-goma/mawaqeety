@@ -32,7 +32,7 @@ class ProphetsPage extends StatelessWidget {
                     ),
                     title: Text('${p.nameAr} عليه السلام'.replaceAll('محمد ﷺ عليه السلام', 'محمد ﷺ'),
                         style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                    subtitle: Text(p.title, style: const TextStyle(color: AppColors.gold)),
+                    subtitle: Text(p.title, style: TextStyle(color: AppColors.gold)),
                     trailing: const Icon(Icons.chevron_left),
                     onTap: () => Navigator.push(c, MaterialPageRoute(builder: (_) => ProphetPage(prophet: p))),
                   ),
@@ -76,9 +76,9 @@ class ProphetPage extends StatelessWidget {
             decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(18)),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(p.nameAr, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
-              Text(p.title, style: const TextStyle(color: Color(0xFFE9C75A), fontSize: 15)),
+              Text(p.title, style: TextStyle(color: AppColors.goldLight, fontSize: 15)),
               const SizedBox(height: 8),
-              Text(p.summary, style: const TextStyle(color: Color(0xFFE6F3EE), height: 1.7)),
+              Text(p.summary, style: TextStyle(color: AppColors.heroText, height: 1.7)),
               const SizedBox(height: 12),
               ListenableBuilder(
                 listenable: app.narration,
@@ -98,7 +98,7 @@ class ProphetPage extends StatelessWidget {
                     showSelectedIcon: false,
                     style: SegmentedButton.styleFrom(
                       foregroundColor: Colors.white, selectedForegroundColor: AppColors.navy,
-                      selectedBackgroundColor: const Color(0xFFE9C75A), side: const BorderSide(color: Colors.white54),
+                      selectedBackgroundColor: AppColors.goldLight, side: const BorderSide(color: Colors.white54),
                     ),
                     segments: const [
                       ButtonSegment(value: 'male', icon: Icon(Icons.man), label: Text('رجل')),
@@ -131,7 +131,7 @@ class ProphetPage extends StatelessWidget {
               final err = app.narration.error ?? app.recitation.error;
               return err == null
                   ? const SizedBox.shrink()
-                  : Padding(padding: const EdgeInsets.only(top: 8), child: Text(err, style: const TextStyle(color: AppColors.gold)));
+                  : Padding(padding: const EdgeInsets.only(top: 8), child: Text(err, style: TextStyle(color: AppColors.gold)));
             },
           ),
           for (final s in p.sections) ...[
@@ -159,7 +159,7 @@ class ProphetPage extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Padding(padding: EdgeInsets.only(top: 6), child: Icon(Icons.star, size: 14, color: AppColors.gold)),
+                  Padding(padding: EdgeInsets.only(top: 6), child: Icon(Icons.star, size: 14, color: AppColors.gold)),
                   const SizedBox(width: 8),
                   Expanded(child: Text(l, style: body)),
                 ]),
@@ -202,7 +202,7 @@ class _AyatCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text('سورة ${s.name} (${Arabic.digits(from)}${to > from ? '–${Arabic.digits(to)}' : ''})',
-                style: const TextStyle(color: AppColors.gold, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w600)),
             if (a.note.isNotEmpty) Text(a.note, style: TextStyle(color: Theme.of(context).hintColor, fontSize: 13)),
             Align(
               alignment: AlignmentDirectional.centerEnd,
@@ -299,13 +299,13 @@ class _VoiceTuningSheetState extends State<VoiceTuningSheet> {
               onChanged: (v) => setState(() => _voice = v ?? ''),
             ),
             if (_voices.length <= 1)
-              const Text('جهازك فيه صوت عربي واحد. للحصول على أصوات أكثر (منها أصوات رجال): الإعدادات ← تحويل النص إلى كلام ← محرك Google ← تثبيت بيانات الصوت ← العربية.',
+              Text('جهازك فيه صوت عربي واحد. للحصول على أصوات أكثر (منها أصوات رجال): الإعدادات ← تحويل النص إلى كلام ← محرك Google ← تثبيت بيانات الصوت ← العربية.',
                   style: TextStyle(fontSize: 12, color: AppColors.gold)),
             const SizedBox(height: 12),
             Row(children: [
               const Text('طبقة الصوت'),
               const Spacer(),
-              Text(_pitch < 0.8 ? 'عميق (أجش)' : _pitch > 1.05 ? 'رفيع' : 'طبيعي', style: const TextStyle(color: AppColors.gold)),
+              Text(_pitch < 0.8 ? 'عميق (أجش)' : _pitch > 1.05 ? 'رفيع' : 'طبيعي', style: TextStyle(color: AppColors.gold)),
             ]),
             Row(children: [
               const Text('أعمق', style: TextStyle(fontSize: 12)),

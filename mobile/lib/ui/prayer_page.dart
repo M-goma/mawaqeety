@@ -43,7 +43,7 @@ class PrayerPage extends StatelessWidget {
                       InkWell(
                         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CityPickerPage())),
                         child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          const Icon(Icons.place, color: AppColors.gold, size: 20),
+                          Icon(Icons.place, color: AppColors.gold, size: 20),
                           const SizedBox(width: 4),
                           Flexible(child: Text(s.place.display, style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700), overflow: TextOverflow.ellipsis)),
                           const Icon(Icons.expand_more, size: 18),
@@ -64,17 +64,17 @@ class PrayerPage extends StatelessWidget {
                 decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(22),
                     boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 6))]),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  const Text('الصلاة القادمة', style: TextStyle(color: Color(0xFFCCE9DD), fontSize: 14)),
+                  Text('الصلاة القادمة', style: TextStyle(color: AppColors.heroText, fontSize: 14)),
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
                     Text(st.next == Prayer.dhuhr && isFriday ? 'الجمعة' : st.next.nameAr,
                         style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w700)),
                     const SizedBox(width: 12),
                     Padding(padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(fmtTime(app.local(st.nextTime), s.use24h), style: const TextStyle(color: Color(0xFFE9C75A), fontSize: 18))),
+                        child: Text(fmtTime(app.local(st.nextTime), s.use24h), style: TextStyle(color: AppColors.goldLight, fontSize: 18))),
                   ]),
                   const SizedBox(height: 4),
                   Row(children: [
-                    const Text('الوقت المتبقي', style: TextStyle(color: Color(0xFFCCE9DD), fontSize: 13)),
+                    Text('الوقت المتبقي', style: TextStyle(color: AppColors.heroText, fontSize: 13)),
                     const Spacer(),
                     Text(fmtCountdown(st.remaining), textDirection: TextDirection.ltr,
                         style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700)),
@@ -83,11 +83,11 @@ class PrayerPage extends StatelessWidget {
                   ClipRRect(
                     borderRadius: BorderRadius.circular(4),
                     child: LinearProgressIndicator(value: st.progress, minHeight: 7,
-                        backgroundColor: Colors.white24, color: const Color(0xFFE9C75A)),
+                        backgroundColor: Colors.white24, color: AppColors.goldLight),
                   ),
                   const SizedBox(height: 10),
                   Text(st.current == null ? 'لا توجد صلاة حاليًا (بعد الشروق)' : 'وقت صلاة ${st.current!.nameAr}',
-                      style: const TextStyle(color: Color(0xFFCCE9DD), fontSize: 13)),
+                      style: TextStyle(color: AppColors.heroText, fontSize: 13)),
                 ]),
               ),
               // Adhan control
@@ -163,7 +163,7 @@ class _PrayerRow extends StatelessWidget {
                 margin: const EdgeInsetsDirectional.only(start: 8),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
                 decoration: BoxDecoration(color: highlight, borderRadius: BorderRadius.circular(8)),
-                child: Text(isNext ? 'القادمة' : 'الآن', style: const TextStyle(fontSize: 11, color: AppColors.navy, fontWeight: FontWeight.w700)),
+                child: Text(isNext ? 'القادمة' : 'الآن', style: TextStyle(fontSize: 11, color: AppColors.navy, fontWeight: FontWeight.w700)),
               ),
           ]),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
