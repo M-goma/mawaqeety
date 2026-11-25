@@ -8,6 +8,11 @@ on:
 permissions:
   contents: write
 
+# Never run two uploads to Google Play at the same time (they would conflict); newer runs wait their turn.
+concurrency:
+  group: mobile-release
+  cancel-in-progress: false
+
 defaults:
   run:
     working-directory: mobile
@@ -62,7 +67,9 @@ jobs:
       - name: Upload to Google Play (internal testing) automatically
         # Needs the PLAY_SERVICE_ACCOUNT_JSON secret (see docs/GOOGLE_PLAY.md, "automatic upload").
         # Play then offers the update to everyone who installed the app from Play.
+        id: play
         if: env.PLAY_UPLOAD == 'true' && hashFiles('mobile/build/Mawaqeety-play.aab') != ''
+        continue-on-error: true
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
@@ -70,6 +77,29 @@ jobs:
           releaseFiles: mobile/build/Mawaqeety-play.aab
           track: ${{ vars.PLAY_TRACK || 'internal' }}
           status: completed
+          whatsNewDirectory: mobile/distribution/whatsnew
+      - name: Retry the Google Play upload once (transient errors / pending review)
+        id: play_retry
+        if: steps.play.outcome == 'failure'
+        continue-on-error: true
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.mawaqeety.app
+          releaseFiles: mobile/build/Mawaqeety-play.aab
+          track: ${{ vars.PLAY_TRACK || 'internal' }}
+          status: completed
+          whatsNewDirectory: mobile/distribution/whatsnew
+          changesNotSentForReview: true
+      - name: Verify that Google Play received this build
+        if: env.PLAY_UPLOAD == 'true' && hashFiles('mobile/build/Mawaqeety-play.aab') != ''
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          EXPECTED: ${{ github.run_number }}
+          TRACK: ${{ vars.PLAY_TRACK || 'internal' }}
+        run: |
+          pip install --quiet google-api-python-client google-auth
+          python ../tools/play_verify.py
       - name: Publish the Google Play bundle to the "play-latest" release
         if: hashFiles('mobile/build/Mawaqeety-play.aab') != ''
         uses: softprops/action-gh-release@v2
