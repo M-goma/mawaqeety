@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../main.dart';
 import '../services/app_updater.dart';
+import 'adhkar_page.dart';
 import 'prayer_page.dart';
 import 'prophets_page.dart';
 import 'quran_pages.dart';
@@ -47,7 +48,7 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    const pages = [PrayerPage(), QuranIndexPage(), ProphetsPage(), SettingsPage()];
+    const pages = [PrayerPage(), QuranIndexPage(), AdhkarPage(), ProphetsPage(), SettingsPage()];
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
@@ -56,7 +57,8 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
         destinations: const [
           NavigationDestination(icon: Icon(Icons.access_time_outlined), selectedIcon: Icon(Icons.access_time_filled), label: 'المواقيت'),
           NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'القرآن'),
-          NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'قصص الأنبياء'),
+          NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'الأذكار'),
+          NavigationDestination(icon: Icon(Icons.auto_stories_outlined), selectedIcon: Icon(Icons.auto_stories), label: 'القصص'),
           NavigationDestination(icon: Icon(Icons.settings_outlined), selectedIcon: Icon(Icons.settings), label: 'الإعدادات'),
         ],
       ),

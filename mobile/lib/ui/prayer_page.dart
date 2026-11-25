@@ -4,6 +4,7 @@ import '../core/prayer_calculator.dart';
 import '../main.dart';
 import 'format.dart';
 import 'monthly_page.dart';
+import 'qibla_page.dart';
 import 'settings_page.dart';
 import 'theme.dart';
 
@@ -101,11 +102,25 @@ class PrayerPage extends StatelessWidget {
                       label: Text(app.adhan.isPlaying ? 'إيقاف الأذان' : 'تشغيل الأذان'),
                     ),
                   ),
+                ]),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                child: Row(children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaPage())),
+                      icon: const Icon(Icons.explore_outlined),
+                      label: const Text('اتجاه القبلة'),
+                    ),
+                  ),
                   const SizedBox(width: 10),
-                  OutlinedButton.icon(
-                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyPage())),
-                    icon: const Icon(Icons.calendar_month_outlined),
-                    label: const Text('التقويم الشهري'),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyPage())),
+                      icon: const Icon(Icons.calendar_month_outlined),
+                      label: const Text('التقويم الشهري'),
+                    ),
                   ),
                 ]),
               ),
