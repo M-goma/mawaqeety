@@ -39,7 +39,9 @@ jobs:
             printf "storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n" "$STORE_PW" "$KEY_ALIAS" "$KEY_PW" > android/key.properties
             echo "Using release signing key"
           else
-            echo "::warning::No signing secrets configured - APK signed with a temporary debug key"
+            # Never publish an APK signed with a throw-away key: it could not be updated in place later.
+            echo "::error::Signing secrets missing (ANDROID_KEYSTORE_BASE64 ...). See docs/GOOGLE_PLAY.md"
+            exit 1
           fi
       - run: flutter build apk --release --build-number=${{ github.run_number }}
       - name: Build Google Play bundle (AAB)
