@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../core/arabic.dart';
 import '../core/qibla.dart';
 import '../main.dart';
+import '../services/compass/web_compass.dart';
 import 'theme.dart';
 
 class QiblaPage extends StatefulWidget {
@@ -25,6 +26,40 @@ class _QiblaPageState extends State<QiblaPage> {
   bool _aligned = false;
 
   bool get _hasSensor => !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+  bool _webStarted = false;
+  Timer? _webTimer;
+  bool get _live => _hasSensor || _webStarted;
+
+  /// Browser (iPhone Safari / Android Chrome): start the device compass after a tap.
+  Future<void> _startWebCompass() async {
+    final r = await WebCompass.start();
+    if (!mounted) return;
+    if (r != 'ok') {
+      setState(() => _error = r == 'denied'
+          ? 'لم يُسمح باستخدام البوصلة. اسمح بالوصول إلى «الحركة والاتجاه» ثم أعد المحاولة.'
+          : 'لا يتوفر حسّاس بوصلة في هذا الجهاز أو المتصفح.');
+      return;
+    }
+    setState(() {
+      _webStarted = true;
+      _error = null;
+    });
+    var waited = 0;
+    _webTimer = Timer.periodic(const Duration(milliseconds: 80), (_) {
+      final h = WebCompass.heading;
+      if (!mounted) return;
+      if (h == null) {
+        waited += 80;
+        if (waited > 4000 && _heading == null) {
+          _webTimer?.cancel();
+          setState(() => _error = 'لا يتوفر حسّاس بوصلة في هذا الجهاز أو المتصفح.');
+        }
+        return;
+      }
+      setState(() => _heading = _heading == null ? h : _smooth(_heading!, h));
+      _checkAligned();
+    });
+  }
 
   @override
   void initState() {
@@ -61,6 +96,7 @@ class _QiblaPageState extends State<QiblaPage> {
   @override
   void dispose() {
     _sub?.cancel();
+    _webTimer?.cancel();
     super.dispose();
   }
 
@@ -80,15 +116,29 @@ class _QiblaPageState extends State<QiblaPage> {
             textAlign: TextAlign.center, style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 20),
         _Compass3D(
-          heading: _hasSensor && _heading != null ? heading : 0,
+          heading: _live && _heading != null ? heading : 0,
           qibla: q,
           aligned: _aligned,
           dark: Theme.of(context).brightness == Brightness.dark,
         ),
         const SizedBox(height: 20),
-        if (!_hasSensor)
-          const Text('البوصلة الحية متاحة في تطبيق أندرويد. وجّه الشمال في الرسم نحو الشمال الحقيقي، والسهم يشير إلى القبلة.',
-              textAlign: TextAlign.center)
+        if (_error != null && !(kIsWeb && !_webStarted))
+          Text(_error!, textAlign: TextAlign.center)
+        else if (kIsWeb && !_webStarted)
+          Column(children: [
+            if (_error != null)
+              Padding(padding: const EdgeInsets.only(bottom: 10), child: Text(_error!, textAlign: TextAlign.center)),
+            FilledButton.icon(
+              onPressed: _startWebCompass,
+              icon: const Icon(Icons.explore),
+              label: Text(_error == null ? 'تشغيل البوصلة' : 'إعادة المحاولة'),
+            ),
+            const SizedBox(height: 8),
+            const Text('على الآيفون سيطلب المتصفح إذن «الحركة والاتجاه»؛ اضغط «سماح».',
+                textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+          ])
+        else if (!_live)
+          const Text('وجّه الشمال في الرسم نحو الشمال الحقيقي، والسهم يشير إلى القبلة.', textAlign: TextAlign.center)
         else if (_error != null)
           Text(_error!, textAlign: TextAlign.center)
         else if (_heading == null)

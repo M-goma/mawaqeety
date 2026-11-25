@@ -34,9 +34,12 @@
 
   <!-- iOS meta tags & icons -->
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#07152A">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="مواقيتي">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="192x192" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/Icon-512.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png"/>
@@ -53,6 +56,33 @@
     For more details:
     * https://docs.flutter.dev/platform-integration/web/initialization
   -->
+  <script>
+    // Compass for the Qibla page in the browser (iPhone Safari needs permission from a tap).
+    window.mwqCompass = {
+      heading: -1,
+      started: false,
+      start: async function () {
+        try {
+          if (typeof DeviceOrientationEvent !== 'undefined' &&
+              typeof DeviceOrientationEvent.requestPermission === 'function') {
+            const r = await DeviceOrientationEvent.requestPermission();
+            if (r !== 'granted') return 'denied';
+          }
+          if (!this.started) {
+            const self = this;
+            const h = function (e) {
+              if (typeof e.webkitCompassHeading === 'number') self.heading = e.webkitCompassHeading;
+              else if (e.absolute && typeof e.alpha === 'number') self.heading = (360 - e.alpha) % 360;
+            };
+            window.addEventListener('deviceorientationabsolute', h, true);
+            window.addEventListener('deviceorientation', h, true);
+            this.started = true;
+          }
+          return 'ok';
+        } catch (err) { return 'error'; }
+      }
+    };
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>
