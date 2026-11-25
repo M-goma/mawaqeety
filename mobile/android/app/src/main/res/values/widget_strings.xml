@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_small_label">مواقيتي – الصلاة القادمة</string>
+    <string name="widget_large_label">مواقيتي – مواقيت اليوم</string>
+    <string name="widget_small_desc">الصلاة القادمة مع عدّاد تنازلي</string>
+    <string name="widget_large_desc">الصلاة القادمة ومواقيت اليوم كاملة</string>
+</resources>

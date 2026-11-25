@@ -16,6 +16,7 @@ import 'app_updater.dart';
 import 'narration.dart';
 import 'notification_service.dart';
 import 'recitation.dart';
+import 'widget_service.dart';
 
 class PrayerStatus {
   final Prayer? current;
@@ -35,6 +36,7 @@ class AppState extends ChangeNotifier {
   final recitation = Recitation();
   final narration = Narration();
   final updater = AppUpdater();
+  final widgets = WidgetService();
   late SharedPreferences _prefs;
   Settings settings = Settings();
   bool ready = false;
@@ -73,7 +75,10 @@ class AppState extends ChangeNotifier {
     if (reschedule) await this.reschedule();
   }
 
-  Future<void> reschedule() => notifications.schedule(this);
+  Future<void> reschedule() async {
+    await notifications.schedule(this);
+    await widgets.update(this);
+  }
 
   // ---------------- time ----------------
   tz.Location get location {
