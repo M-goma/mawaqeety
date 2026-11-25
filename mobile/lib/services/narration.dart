@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -38,6 +40,26 @@ class Narration extends ChangeNotifier {
     });
   }
 
+  Future<void> _saveCopies(List<(Uri, File)> files) async {
+    final client = http.Client();
+    try {
+      for (final (uri, file) in files) {
+        try {
+          final r = await client.get(uri).timeout(const Duration(minutes: 3));
+          if (r.statusCode == 200 && r.bodyBytes.length > 10000) {
+            final tmp = File('${file.path}.part');
+            await tmp.writeAsBytes(r.bodyBytes, flush: true);
+            await tmp.rename(file.path);
+          }
+        } catch (e) {
+          debugPrint('story cache failed: $e');
+        }
+      }
+    } finally {
+      client.close();
+    }
+  }
+
   /// True when the story has a studio recording in this voice.
   bool hasRecording(String storyId, String gender) => (_recorded[gender]?[storyId] ?? 0) > 0;
 
@@ -51,6 +73,7 @@ class Narration extends ChangeNotifier {
       final dir = kIsWeb ? null : Directory('${(await getApplicationSupportDirectory()).path}/stories');
       if (dir != null) await dir.create(recursive: true);
       final sources = <AudioSource>[];
+      final missing = <(Uri, File)>[];
       for (var i = 1; i <= parts; i++) {
         final name = '$gender-$storyId-$i.mp3';
         final uri = Uri.parse('$_base$name');
@@ -59,8 +82,15 @@ class Narration extends ChangeNotifier {
           continue;
         }
         final file = File('${dir.path}/$name');
-        sources.add(await file.exists() ? AudioSource.file(file.path) : LockCachingAudioSource(uri, cacheFile: file));
+        if (await file.exists() && await file.length() > 10000) {
+          sources.add(AudioSource.file(file.path));
+        } else {
+          sources.add(AudioSource.uri(uri));
+          missing.add((uri, file));
+        }
       }
+      // Save a copy in the background so the story plays offline next time.
+      if (missing.isNotEmpty) unawaited(_saveCopies(missing));
       if (session != _session) return;
       await _player.setAudioSources(sources);
       speaking = true;
