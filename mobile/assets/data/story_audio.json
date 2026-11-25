@@ -1,5 +1,20 @@
 {
  "base": "https://github.com/M-goma/mawaqeety/releases/download/stories-audio/",
- "male": {"adam": 2, "idris": 1, "nuh": 2, "hud": 2, "salih": 2, "ibrahim": 2},
- "female": {"adam": 2, "idris": 1, "nuh": 2, "hud": 2, "salih": 2, "ibrahim": 2}
+ "male": {
+  "adam": 2,
+  "idris": 1,
+  "nuh": 2,
+  "hud": 2,
+  "salih": 2,
+  "ibrahim": 2,
+  "lut": 2
+ },
+ "female": {
+  "adam": 2,
+  "idris": 1,
+  "nuh": 2,
+  "hud": 2,
+  "salih": 2,
+  "ibrahim": 2
+ }
 }
