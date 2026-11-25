@@ -81,6 +81,13 @@ class SettingsPage extends StatelessWidget {
                     value: s.notify[p] ?? false,
                     onChanged: (v) => app.update((x) => x.notify[p] = v),
                   ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  SwitchListTile(
+                    title: const Text('إشعار دائم بالوقت المتبقي للصلاة القادمة'),
+                    subtitle: const Text('عدّاد تنازلي في شريط الإشعارات، بدون صوت', style: TextStyle(fontSize: 12)),
+                    value: s.ongoingCountdown,
+                    onChanged: (v) => app.update((x) => x.ongoingCountdown = v),
+                  ),
                 _Dropdown<int>(
                   label: 'التذكير قبل الصلاة',
                   value: s.preAlertMinutes,

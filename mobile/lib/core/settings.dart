@@ -56,6 +56,11 @@ class Settings {
   String reciterId = 'Alafasy_128kbps';
   bool continueNextSurah = true;
   String narrationVoice = 'male'; // 'male' | 'female'
+  // Per-gender voice tuning (device voice name, pitch, speed). Empty name = automatic.
+  String voiceMale = '', voiceFemale = '';
+  double pitchMale = 0.62, pitchFemale = 1.1;
+  double rateMale = 0.42, rateFemale = 0.47;
+  bool ongoingCountdown = true; // Android: persistent notification with the time left to the next prayer
   Bookmark? lastRead;
   List<Bookmark> bookmarks = [];
 
@@ -71,7 +76,9 @@ class Settings {
         'adjust': {for (final e in adjust.entries) e.key.name: e.value},
         'notify': {for (final e in notify.entries) e.key.name: e.value},
         'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
-        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice,
+        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
+        'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
+        'ongoingCountdown': ongoingCountdown,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -105,6 +112,13 @@ class Settings {
       r.reciterId = j['reciterId'] ?? r.reciterId;
       r.continueNextSurah = j['continueNextSurah'] ?? true;
       r.narrationVoice = j['narrationVoice'] ?? 'male';
+      r.voiceMale = j['voiceMale'] ?? '';
+      r.voiceFemale = j['voiceFemale'] ?? '';
+      r.pitchMale = (j['pitchMale'] ?? 0.62).toDouble();
+      r.pitchFemale = (j['pitchFemale'] ?? 1.1).toDouble();
+      r.rateMale = (j['rateMale'] ?? 0.42).toDouble();
+      r.rateFemale = (j['rateFemale'] ?? 0.47).toDouble();
+      r.ongoingCountdown = j['ongoingCountdown'] ?? true;
       if (j['lastRead'] != null) r.lastRead = Bookmark.fromJson(j['lastRead']);
       r.bookmarks = ((j['bookmarks'] ?? []) as List).map((e) => Bookmark.fromJson(e)).toList();
     } catch (_) {/* corrupted -> defaults */}

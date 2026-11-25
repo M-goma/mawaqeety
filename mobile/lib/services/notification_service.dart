@@ -60,6 +60,70 @@ class NotificationService {
     iOS: DarwinNotificationDetails(presentSound: true, presentAlert: true),
   );
 
+  static const _countdownBaseId = 9000;
+
+  static AndroidNotificationDetails _countdownDetails(DateTime nextUtc, Duration visibleFor) => AndroidNotificationDetails(
+        'prayer_countdown_v1', 'الوقت المتبقي للصلاة',
+        channelDescription: 'إشعار دائم يعرض العد التنازلي للصلاة القادمة',
+        importance: Importance.low,
+        priority: Priority.low,
+        playSound: false,
+        enableVibration: false,
+        silent: true,
+        onlyAlertOnce: true,
+        ongoing: true,
+        autoCancel: false,
+        channelShowBadge: false,
+        showWhen: true,
+        when: nextUtc.millisecondsSinceEpoch,
+        usesChronometer: true,
+        chronometerCountDown: true,
+        // Disappears exactly when the next countdown (scheduled for that moment) appears.
+        timeoutAfter: visibleFor.inMilliseconds,
+        visibility: NotificationVisibility.public,
+        category: AndroidNotificationCategory.status,
+      );
+
+  /// Android only: a silent, persistent notification counting down to the next prayer,
+  /// pre-scheduled for every prayer of the coming days so it keeps rolling without the app running.
+  Future<void> _scheduleCountdown(AppState app) async {
+    if (defaultTargetPlatform != TargetPlatform.android || !app.settings.ongoingCountdown) return;
+    final s = app.settings;
+    final nowUtc = DateTime.now().toUtc();
+    final timeline = <(Prayer, DateTime)>[];
+    for (var d = -1; d < 8; d++) {
+      final day = app.day(app.today.add(Duration(days: d)));
+      for (final p in Prayer.values) {
+        timeline.add((p, day[p]));
+      }
+    }
+    timeline.sort((a, b) => a.$2.compareTo(b.$2));
+    String title(Prayer p, DateTime t) => p == Prayer.sunrise
+        ? 'الشروق • ${_fmt(app.local(t), s.use24h)}'
+        : 'صلاة ${p.nameAr} • ${_fmt(app.local(t), s.use24h)}';
+    final body = 'الوقت المتبقي للصلاة القادمة • ${s.place.nameAr}';
+    var id = _countdownBaseId;
+    for (var i = 1; i < timeline.length; i++) {
+      final (prevP, prevT) = timeline[i - 1];
+      final (nextP, nextT) = timeline[i];
+      if (!nextT.isAfter(nowUtc)) continue;
+      final details = NotificationDetails(android: _countdownDetails(nextT, nextT.difference(prevT.isAfter(nowUtc) ? prevT : nowUtc)));
+      if (!prevT.isAfter(nowUtc)) {
+        // Current period: show it right away.
+        await _plugin.show(id: id++, title: title(nextP, nextT), body: body, notificationDetails: details);
+      } else {
+        await _plugin.zonedSchedule(
+          id: id++,
+          scheduledDate: tz.TZDateTime.from(prevT, tz.UTC),
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          title: title(nextP, nextT),
+          body: body,
+        );
+      }
+    }
+  }
+
   Future<void> schedule(AppState app) async {
     if (!_ok) return;
     try {
@@ -103,6 +167,7 @@ class NotificationService {
           }
         }
       }
+      await _scheduleCountdown(app);
     } catch (e) {
       debugPrint('scheduling failed: $e');
     }

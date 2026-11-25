@@ -53,8 +53,13 @@ class ProphetPage extends StatelessWidget {
       '${p.nameAr}. ${p.title}. ${p.summary}',
       for (final s in p.sections) ...['${s.heading}.', ...s.body.split('\n\n')],
       if (p.lessons.isNotEmpty) 'دروس وعبر. ${p.lessons.join(' ')}',
-    ], gender: app.settings.narrationVoice);
+    ], gender: app.settings.narrationVoice, voice: _voiceOf(), pitch: _pitchOf(), rate: _rateOf());
   }
+
+  static bool get _female => app.settings.narrationVoice == 'female';
+  static String _voiceOf() => _female ? app.settings.voiceFemale : app.settings.voiceMale;
+  static double _pitchOf() => _female ? app.settings.pitchFemale : app.settings.pitchMale;
+  static double _rateOf() => _female ? app.settings.rateFemale : app.settings.rateMale;
 
   @override
   Widget build(BuildContext context) {
@@ -106,9 +111,16 @@ class ProphetPage extends StatelessWidget {
                       if (wasSpeaking) _narrate(p);
                     },
                   ),
-                  if (!app.narration.exactVoice)
-                    const Text('لا يوجد في جهازك صوت عربي من هذا النوع، فتم تعديل نبرة الصوت المتاح.',
-                        style: TextStyle(color: Color(0xFFE6F3EE), fontSize: 12)),
+                  TextButton.icon(
+                    style: TextButton.styleFrom(foregroundColor: Colors.white),
+                    onPressed: () => showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) => VoiceTuningSheet(gender: app.settings.narrationVoice),
+                    ),
+                    icon: const Icon(Icons.tune, size: 18),
+                    label: const Text('ضبط الصوت'),
+                  ),
                 ]),
               ),
             ]),
@@ -203,6 +215,138 @@ class _AyatCard extends StatelessWidget {
                 icon: const Icon(Icons.play_circle_outline),
                 label: const Text('استماع للتلاوة'),
               ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+
+/// Lets the user pick the device voice and tune pitch/speed for the male or female narrator.
+class VoiceTuningSheet extends StatefulWidget {
+  final String gender;
+  const VoiceTuningSheet({super.key, required this.gender});
+  @override
+  State<VoiceTuningSheet> createState() => _VoiceTuningSheetState();
+}
+
+class _VoiceTuningSheetState extends State<VoiceTuningSheet> {
+  late String _gender = widget.gender;
+  List<Map<String, String>> _voices = [];
+  late String _voice;
+  late double _pitch, _rate;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+    app.narration.arabicVoices().then((v) {
+      if (mounted) setState(() => _voices = v);
+    });
+  }
+
+  void _load() {
+    final s = app.settings;
+    final f = _gender == 'female';
+    _voice = f ? s.voiceFemale : s.voiceMale;
+    _pitch = f ? s.pitchFemale : s.pitchMale;
+    _rate = f ? s.rateFemale : s.rateMale;
+  }
+
+  Future<void> _save() => app.update((x) {
+        x.narrationVoice = _gender;
+        if (_gender == 'female') {
+          x.voiceFemale = _voice; x.pitchFemale = _pitch; x.rateFemale = _rate;
+        } else {
+          x.voiceMale = _voice; x.pitchMale = _pitch; x.rateMale = _rate;
+        }
+      }, reschedule: false);
+
+  String _label(Map<String, String> v) {
+    final g = v['gender'] == 'male' ? ' • رجل' : v['gender'] == 'female' ? ' • امرأة' : '';
+    return '${v['name']} (${v['locale']})$g';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final names = _voices.map((v) => v['name']!).toSet();
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(20, 16, 20, 20 + MediaQuery.of(context).viewInsets.bottom),
+        child: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            const Text('ضبط صوت قراءة القصص', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+            const SizedBox(height: 12),
+            SegmentedButton<String>(
+              segments: const [
+                ButtonSegment(value: 'male', icon: Icon(Icons.man), label: Text('صوت رجل')),
+                ButtonSegment(value: 'female', icon: Icon(Icons.woman), label: Text('صوت امرأة')),
+              ],
+              selected: {_gender},
+              onSelectionChanged: (v) => setState(() { _gender = v.first; _load(); }),
+            ),
+            const SizedBox(height: 14),
+            const Text('الصوت من أصوات الجهاز'),
+            DropdownButton<String>(
+              isExpanded: true,
+              value: names.contains(_voice) ? _voice : '',
+              items: [
+                const DropdownMenuItem(value: '', child: Text('تلقائي')),
+                for (final v in _voices) DropdownMenuItem(value: v['name'], child: Text(_label(v), overflow: TextOverflow.ellipsis)),
+              ],
+              onChanged: (v) => setState(() => _voice = v ?? ''),
+            ),
+            if (_voices.length <= 1)
+              const Text('جهازك فيه صوت عربي واحد. للحصول على أصوات أكثر (منها أصوات رجال): الإعدادات ← تحويل النص إلى كلام ← محرك Google ← تثبيت بيانات الصوت ← العربية.',
+                  style: TextStyle(fontSize: 12, color: AppColors.gold)),
+            const SizedBox(height: 12),
+            Row(children: [
+              const Text('طبقة الصوت'),
+              const Spacer(),
+              Text(_pitch < 0.8 ? 'عميق (أجش)' : _pitch > 1.05 ? 'رفيع' : 'طبيعي', style: const TextStyle(color: AppColors.gold)),
+            ]),
+            Row(children: [
+              const Text('أعمق', style: TextStyle(fontSize: 12)),
+              Expanded(child: Slider(min: 0.5, max: 1.6, divisions: 22, value: _pitch.clamp(0.5, 1.6), onChanged: (v) => setState(() => _pitch = v))),
+              const Text('أرفع', style: TextStyle(fontSize: 12)),
+            ]),
+            const Text('سرعة القراءة'),
+            Row(children: [
+              const Text('أبطأ', style: TextStyle(fontSize: 12)),
+              Expanded(child: Slider(min: 0.25, max: 0.7, divisions: 9, value: _rate.clamp(0.25, 0.7), onChanged: (v) => setState(() => _rate = v))),
+              const Text('أسرع', style: TextStyle(fontSize: 12)),
+            ]),
+            const SizedBox(height: 8),
+            Row(children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => app.narration.preview(_gender, voice: _voice, pitch: _pitch, rate: _rate),
+                  icon: const Icon(Icons.play_arrow),
+                  label: const Text('تجربة'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: FilledButton.icon(
+                  onPressed: () async {
+                    await _save();
+                    await app.narration.stop();
+                    if (context.mounted) Navigator.pop(context);
+                  },
+                  icon: const Icon(Icons.check),
+                  label: const Text('حفظ'),
+                ),
+              ),
+            ]),
+            TextButton(
+              onPressed: () => setState(() {
+                _voice = '';
+                _pitch = _gender == 'female' ? 1.1 : 0.62;
+                _rate = _gender == 'female' ? 0.47 : 0.42;
+              }),
+              child: const Text('استعادة الإعدادات الافتراضية'),
             ),
           ]),
         ),
