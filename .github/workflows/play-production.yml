@@ -1,0 +1,50 @@
+name: play-production
+# Checks once a day whether Google Play allows production releases yet.
+# The first time it does, the newest tested build is sent to production and an issue is opened to notify the owner.
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Promote even if production already has a release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEY: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        if: env.HAS_KEY == 'true'
+      - name: Try production release
+        id: promote
+        if: env.HAS_KEY == 'true'
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          FORCE: ${{ inputs.force || 'false' }}
+        run: |
+          pip install --quiet google-api-python-client google-auth
+          python tools/play_promote.py
+      - name: Notify the owner
+        if: steps.promote.outputs.result == 'published'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner, repo: context.repo.repo,
+              title: '🎉 مواقيتي أُرسل للنشر العام على Google Play',
+              assignees: [context.repo.owner],
+              body: [
+                'وافقت Google على النشر العام، وأُرسل الإصدار رقم ${{ steps.promote.outputs.version }} إلى مسار الإنتاج (Production).',
+                '',
+                'تراجعه Google عادةً خلال يوم إلى 7 أيام، ثم يظهر للجميع في المتجر:',
+                'https://play.google.com/store/apps/details?id=com.mawaqeety.app',
+              ].join('\n'),
+            });
