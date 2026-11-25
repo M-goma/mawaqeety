@@ -45,8 +45,11 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
     private data class Item(val name: String, val time: Long, val label: String)
     private data class Day(val date: String, val greg: String, val hijri: String, val items: List<Item>)
 
-    private fun load(context: Context): Pair<String, List<Day>> {
-        val raw = HomeWidgetPlugin.getData(context).getString("mawaqeety_data", null) ?: return "" to emptyList()
+    private data class Data(val place: String, val style: String, val use24h: Boolean, val days: List<Day>)
+
+    private fun load(context: Context): Data {
+        val raw = HomeWidgetPlugin.getData(context).getString("mawaqeety_data", null)
+            ?: return Data("", "clock", false, emptyList())
         return try {
             val root = JSONObject(raw)
             val days = root.getJSONArray("days")
@@ -59,53 +62,98 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
                         Item(o.getString("n"), o.getLong("t"), o.getString("l"))
                     })
             }
-            root.optString("place") to list
+            Data(root.optString("place"), root.optString("style", "clock"), root.optBoolean("use24h", false), list)
         } catch (e: Exception) {
-            "" to emptyList()
+            Data("", "clock", false, emptyList())
         }
     }
 
     private fun render(context: Context, manager: AppWidgetManager, ids: IntArray) {
-        val (place, days) = load(context)
+        val data = load(context)
+        val days = data.days
+        val place = data.place
+        // The 4x1 widget has no prayer cells, so the "cell" style falls back to the clock style there.
+        val style = if (!large && data.style == "cell") "clock" else data.style
         val now = System.currentTimeMillis()
         val all = days.flatMap { it.items }.sortedBy { it.time }
         val nextIndex = all.indexOfFirst { it.time > now }
         val next = if (nextIndex >= 0) all[nextIndex] else null
+        val base = SystemClock.elapsedRealtime() + ((next?.time ?: now) - now)
 
         for (id in ids) {
             val views = RemoteViews(context.packageName, layout)
             views.setOnClickPendingIntent(R.id.widget_root, HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java))
+            val clockFormat = if (data.use24h) "HH:mm" else "h:mm"
+            views.setCharSequence(R.id.clock, "setFormat12Hour", clockFormat)
+            views.setCharSequence(R.id.clock, "setFormat24Hour", clockFormat)
+
+            val bigCountdown = style == "countdown"
+            views.setViewVisibility(R.id.clock_box, if (bigCountdown) View.GONE else View.VISIBLE)
+            views.setViewVisibility(R.id.countdown, if (bigCountdown && next != null) View.VISIBLE else View.GONE)
+            views.setViewVisibility(R.id.badge, if (style == "clock" && next != null) View.VISIBLE else View.GONE)
+            if (large) views.setViewVisibility(R.id.hijri_line, View.GONE)
+            views.setViewVisibility(R.id.next_time, View.VISIBLE)
+
             if (next == null) {
                 views.setTextViewText(R.id.next_name, "مواقيتي")
                 views.setTextViewText(R.id.next_time, "افتح التطبيق لتحديث المواقيت")
-                views.setViewVisibility(R.id.countdown, View.GONE)
             } else {
-                views.setTextViewText(R.id.next_name, next.name)
-                views.setTextViewText(R.id.next_time, next.label + if (place.isNotEmpty()) "  •  $place" else "")
-                views.setViewVisibility(R.id.countdown, View.VISIBLE)
-                views.setChronometer(R.id.countdown, SystemClock.elapsedRealtime() + (next.time - now), null, true)
-                views.setChronometerCountDown(R.id.countdown, true)
+                if (bigCountdown) {
+                    views.setChronometer(R.id.countdown, base, null, true)
+                    views.setChronometerCountDown(R.id.countdown, true)
+                } else {
+                    views.setChronometer(R.id.countdown_small, base, null, true)
+                    views.setChronometerCountDown(R.id.countdown_small, true)
+                }
+                if (!large && style == "clock") {
+                    // One line: "الفجر  4:58 ص", the countdown badge below it.
+                    views.setTextViewText(R.id.next_name, "${next.name}  ${next.label}")
+                    views.setViewVisibility(R.id.next_time, View.GONE)
+                } else {
+                    views.setTextViewText(R.id.next_name, next.name)
+                    views.setTextViewText(R.id.next_time, next.label + if (place.isNotEmpty()) "  •  $place" else "")
+                }
             }
-            if (large) renderDay(views, days, next, now)
+            if (large) renderDay(views, days, next, now, style, base, place)
             manager.updateAppWidget(id, views)
         }
         if (next != null) scheduleTick(context, next.time + 1500)
     }
 
-    private fun renderDay(views: RemoteViews, days: List<Day>, next: Item?, now: Long) {
+    private fun renderDay(views: RemoteViews, days: List<Day>, next: Item?, now: Long, style: String, base: Long, place: String) {
         val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date(now))
         val day = days.firstOrNull { it.date == today } ?: days.firstOrNull { d -> d.items.any { it == next } }
         val cols = listOf(R.id.c0, R.id.c1, R.id.c2, R.id.c3, R.id.c4, R.id.c5)
         val names = listOf(R.id.n0, R.id.n1, R.id.n2, R.id.n3, R.id.n4, R.id.n5)
         val times = listOf(R.id.t0, R.id.t1, R.id.t2, R.id.t3, R.id.t4, R.id.t5)
+        val cds = listOf(R.id.cd0, R.id.cd1, R.id.cd2, R.id.cd3, R.id.cd4, R.id.cd5)
         for (i in 0 until 6) {
             val item = day?.items?.getOrNull(i)
+            val isNext = item != null && item == next
             views.setTextViewText(names[i], item?.name ?: "")
             views.setTextViewText(times[i], item?.label?.substringBefore(' ') ?: "")
             views.setInt(cols[i], "setBackgroundResource",
-                if (item != null && item == next) R.drawable.widget_cell_next else android.R.color.transparent)
+                if (isNext) R.drawable.widget_cell_next else android.R.color.transparent)
+            if (style == "cell" && isNext) {
+                views.setViewVisibility(cds[i], View.VISIBLE)
+                views.setChronometer(cds[i], base, null, true)
+                views.setChronometerCountDown(cds[i], true)
+            } else {
+                views.setViewVisibility(cds[i], View.GONE)
+            }
         }
-        views.setTextViewText(R.id.date_line, if (day == null) "" else "${day.hijri}  •  ${day.greg}")
+        if (style == "cell" && day != null) {
+            // Header shows the date; the countdown lives in the next prayer's cell.
+            val parts = day.greg.split(' ', limit = 2)
+            views.setTextViewText(R.id.next_name, parts.getOrNull(0) ?: day.greg)
+            views.setTextViewText(R.id.next_time, (parts.getOrNull(1) ?: "") + if (place.isNotEmpty()) "  •  $place" else "")
+            views.setTextViewText(R.id.hijri_line, day.hijri)
+            views.setViewVisibility(R.id.hijri_line, View.VISIBLE)
+            views.setViewVisibility(R.id.date_line, View.GONE)
+        } else {
+            views.setViewVisibility(R.id.date_line, View.VISIBLE)
+            views.setTextViewText(R.id.date_line, if (day == null) "" else "${day.hijri}  •  ${day.greg}")
+        }
     }
 
     /** Wakes the widget right after the next prayer time so it moves on to the following prayer. */

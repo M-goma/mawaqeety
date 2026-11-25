@@ -61,7 +61,9 @@ class Settings {
   String voiceMale = '', voiceFemale = '';
   double pitchMale = 0.62, pitchFemale = 1.1;
   double rateMale = 0.42, rateFemale = 0.47;
-  bool ongoingCountdown = true; // Android: persistent notification with the time left to the next prayer
+  bool ongoingCountdown = true;
+  /// Home-screen widget style: 'clock' (clock + countdown badge), 'cell' (countdown in the prayer cell), 'countdown' (big countdown).
+  String widgetStyle = 'clock'; // Android: persistent notification with the time left to the next prayer
   Bookmark? lastRead;
   List<Bookmark> bookmarks = [];
 
@@ -79,7 +81,7 @@ class Settings {
         'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
-        'ongoingCountdown': ongoingCountdown,
+        'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -121,6 +123,7 @@ class Settings {
       r.rateMale = (j['rateMale'] ?? 0.42).toDouble();
       r.rateFemale = (j['rateFemale'] ?? 0.47).toDouble();
       r.ongoingCountdown = j['ongoingCountdown'] ?? true;
+      r.widgetStyle = j['widgetStyle'] ?? 'clock';
       if (j['lastRead'] != null) r.lastRead = Bookmark.fromJson(j['lastRead']);
       r.bookmarks = ((j['bookmarks'] ?? []) as List).map((e) => Bookmark.fromJson(e)).toList();
     } catch (_) {/* corrupted -> defaults */}

@@ -88,6 +88,20 @@ class SettingsPage extends StatelessWidget {
                     value: s.ongoingCountdown,
                     onChanged: (v) => app.update((x) => x.ongoingCountdown = v),
                   ),
+                if (Theme.of(context).platform == TargetPlatform.android)
+                  _Dropdown<String>(
+                    label: 'شكل الودجت على الشاشة الرئيسية',
+                    value: s.widgetStyle,
+                    items: const {
+                      'clock': 'الساعة + عدّاد بجوار الصلاة القادمة',
+                      'cell': 'الساعة + عدّاد داخل خانة الصلاة',
+                      'countdown': 'عدّاد كبير (الشكل السابق)',
+                    },
+                    onChanged: (v) async {
+                      await app.update((x) => x.widgetStyle = v, reschedule: false);
+                      await app.widgets.update(app);
+                    },
+                  ),
                 _Dropdown<int>(
                   label: 'التذكير قبل الصلاة',
                   value: s.preAlertMinutes,

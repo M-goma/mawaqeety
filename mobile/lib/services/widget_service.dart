@@ -40,7 +40,7 @@ class WidgetService {
           ],
         });
       }
-      await HomeWidget.saveWidgetData<String>(_key, jsonEncode({'place': s.place.nameAr, 'days': days}));
+      await HomeWidget.saveWidgetData<String>(_key, jsonEncode({'place': s.place.nameAr, 'style': s.widgetStyle, 'use24h': s.use24h, 'days': days}));
       await HomeWidget.updateWidget(androidName: 'PrayerWidgetSmall');
       await HomeWidget.updateWidget(androidName: 'PrayerWidgetLarge');
     } catch (e) {
