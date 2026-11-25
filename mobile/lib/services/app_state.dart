@@ -15,6 +15,7 @@ import 'adhan_player.dart';
 import 'app_updater.dart';
 import 'narration.dart';
 import 'notification_service.dart';
+import 'quran_downloads.dart';
 import 'recitation.dart';
 import 'widget_service.dart';
 
@@ -34,6 +35,7 @@ class AppState extends ChangeNotifier {
   final notifications = NotificationService();
   final adhan = AdhanPlayer();
   final recitation = Recitation();
+  final downloads = QuranDownloads();
   final narration = Narration();
   final updater = AppUpdater();
   final widgets = WidgetService();
@@ -53,6 +55,8 @@ class AppState extends ChangeNotifier {
     _prefs = await SharedPreferences.getInstance();
     settings = Settings.fromJsonString(_prefs.getString(_key));
     await repo.load();
+    await downloads.init();
+    recitation.downloads = downloads;
     await notifications.init(onTap: (_) => playAdhanForCurrent());
     ready = true;
     notifyListeners();

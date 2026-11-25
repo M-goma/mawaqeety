@@ -1,7 +1,7 @@
 name: mawaqeety
 description: "مواقيتي – مواقيت الصلاة والأذان والقرآن الكريم وقصص الأنبياء"
 publish_to: 'none'
-version: 1.6.0+6
+version: 1.7.0+7
 
 environment:
   sdk: ^3.10.0

@@ -4,6 +4,7 @@ import '../core/arabic.dart';
 import '../core/settings.dart';
 import '../data/repository.dart';
 import '../main.dart';
+import 'downloads_page.dart';
 import 'format.dart';
 import 'theme.dart';
 
@@ -38,6 +39,9 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
             actions: [
               IconButton(tooltip: 'بحث في الآيات', icon: const Icon(Icons.search),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuranSearchPage()))),
+              if (app.downloads.supported)
+                IconButton(tooltip: 'الاستماع دون إنترنت', icon: const Icon(Icons.download_for_offline_outlined),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DownloadsPage()))),
               IconButton(tooltip: 'العلامات', icon: const Icon(Icons.bookmarks_outlined),
                   onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const BookmarksPage()))),
             ],
@@ -153,6 +157,17 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
           height: MediaQuery.of(c).size.height * 0.6,
           child: ListView(children: [
             const Padding(padding: EdgeInsets.all(16), child: Text('اختر القارئ', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
+            ListTile(
+              leading: Icon(Icons.download_for_offline_outlined, color: AppColors.gold),
+              title: const Text('الاستماع دون إنترنت'),
+              subtitle: const Text('تنزيل المصحف أو السور على الهاتف'),
+              trailing: const Icon(Icons.chevron_left),
+              onTap: () {
+                Navigator.pop(c);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const DownloadsPage()));
+              },
+            ),
+            const Divider(),
             for (final r in app.repo.reciters)
               ListTile(
                 leading: Icon(r.id == app.settings.reciterId ? Icons.radio_button_checked : Icons.radio_button_off, color: AppColors.emerald),
@@ -253,6 +268,38 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
       appBar: AppBar(
         title: Text('سورة ${s.name}'),
         actions: [
+          if (app.downloads.supported)
+            ListenableBuilder(
+              listenable: app.downloads,
+              builder: (context, _) {
+                final id = app.settings.reciterId;
+                final job = app.downloads.job(id);
+                if (app.downloads.isReady(id, _surah)) {
+                  return IconButton(
+                    tooltip: 'السورة محفوظة للاستماع دون إنترنت',
+                    icon: Icon(Icons.offline_pin, color: AppColors.emerald),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DownloadsPage())),
+                  );
+                }
+                if (job != null && job.surahs.contains(_surah)) {
+                  return Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.gold)),
+                  );
+                }
+                return IconButton(
+                  tooltip: 'تنزيل السورة للاستماع دون إنترنت',
+                  icon: const Icon(Icons.download_for_offline_outlined),
+                  onPressed: job != null
+                      ? null
+                      : () {
+                          app.downloads.download(app.repo, id, surahs: [_surah]);
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                              content: Text('جارٍ تنزيل سورة ${s.name} بصوت ${app.repo.reciter(id).name}')));
+                        },
+                );
+              },
+            ),
           IconButton(
             tooltip: 'القارئ',
             icon: const Icon(Icons.record_voice_over_outlined),

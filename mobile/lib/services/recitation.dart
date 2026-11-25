@@ -4,10 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
 import '../data/repository.dart';
+import 'quran_downloads.dart';
 
 /// Verse-by-verse Qur'an recitation from everyayah.com, with the current ayah exposed for highlighting.
 class Recitation extends ChangeNotifier {
   final _player = AudioPlayer();
+  /// Saved recitations, used instead of the internet when available.
+  QuranDownloads? downloads;
   List<(int, int, bool)> _queue = []; // surah, ayah, isBasmala
   int surah = 0, ayah = 0;
   bool active = false;
@@ -48,11 +51,17 @@ class Recitation extends ChangeNotifier {
     ayah = from;
     notifyListeners();
     try {
-      await _player.setAudioSources([for (final q in _queue) AudioSource.uri(Uri.parse(url(reciter, q.$1, q.$2)))]);
+      await _player.setAudioSources([
+        for (final q in _queue)
+          switch (downloads?.localPath(reciter, q.$1, q.$2)) {
+            final String path => AudioSource.file(path),
+            null => AudioSource.uri(Uri.parse(url(reciter, q.$1, q.$2))),
+          }
+      ]);
       unawaited(_player.play());
     } catch (e) {
       debugPrint('recitation failed: $e');
-      error = 'تعذّر تشغيل التلاوة. تأكد من الاتصال بالإنترنت.';
+      error = 'تعذّر تشغيل التلاوة. تأكد من الاتصال بالإنترنت، أو نزّل السورة للاستماع دون إنترنت.';
       active = false;
       notifyListeners();
     }
