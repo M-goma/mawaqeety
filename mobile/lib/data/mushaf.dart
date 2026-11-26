@@ -87,5 +87,8 @@ class MushafIndex {
     return (q ~/ 4 + 1, q % 4);
   }
 
+  /// First ayah of a juz, as (surah, ayah).
+  (int, int) juzStart(int juz) => (_juz[juz - 1] ~/ 1000, _juz[juz - 1] % 1000);
+
   int juzStartPage(int juz) => pageOf(_juz[juz - 1] ~/ 1000, _juz[juz - 1] % 1000);
 }

@@ -47,14 +47,16 @@ class MushafTone {
   Color get muted => Color.lerp(fg, bg, 0.45)!;
 }
 
-void openMushaf(BuildContext context, int page, {bool replace = false}) {
-  final route = MaterialPageRoute(builder: (_) => MushafPage(initialPage: page));
+void openMushaf(BuildContext context, int page, {bool replace = false, Bookmark? highlight}) {
+  final route = MaterialPageRoute(builder: (_) => MushafPage(initialPage: page, highlight: highlight));
   replace ? Navigator.pushReplacement(context, route) : Navigator.push(context, route);
 }
 
 class MushafPage extends StatefulWidget {
   final int initialPage;
-  const MushafPage({super.key, required this.initialPage});
+  /// An ayah to highlight for a few seconds when the page opens (from search, bookmarks, the reading position).
+  final Bookmark? highlight;
+  const MushafPage({super.key, required this.initialPage, this.highlight});
   @override
   State<MushafPage> createState() => _MushafPageState();
 }
@@ -76,6 +78,12 @@ class _MushafPageState extends State<MushafPage> {
     idx.loadAyahs().then((_) {
       if (mounted) setState(() {});
     });
+    if (widget.highlight != null) {
+      _selected = widget.highlight;
+      Future.delayed(const Duration(seconds: 4), () {
+        if (mounted && _selected == widget.highlight) setState(() => _selected = null);
+      });
+    }
     if (!app.settings.mushafHint) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -200,14 +208,6 @@ class _MushafPageState extends State<MushafPage> {
               setState(() {});
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.notes),
-            title: const Text('عرض الصفحة نصًّا'),
-            onTap: () {
-              Navigator.pop(c);
-              _toText();
-            },
-          ),
         ]),
       ),
     );
@@ -257,12 +257,6 @@ class _MushafPageState extends State<MushafPage> {
     ).whenComplete(() {
       if (mounted) setState(() => _selected = null);
     });
-  }
-
-  void _toText() {
-    final (s, a) = idx.startOf(_page);
-    app.update((x) => x.quranView = 'text', reschedule: false);
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => QuranReaderPage(surah: s, initialAyah: a)));
   }
 
   @override
@@ -336,7 +330,6 @@ class _MushafPageState extends State<MushafPage> {
                     onReadHere: _toggleReadHere,
                     onPlay: _play,
                     onLook: _openLook,
-                    onText: _toText,
                   ),
                 ),
               ]),
@@ -369,9 +362,9 @@ class _MushafPageState extends State<MushafPage> {
 class _Toolbar extends StatelessWidget {
   final MushafTone tone;
   final bool playing, readHere;
-  final VoidCallback onIndex, onReadHere, onPlay, onLook, onText;
+  final VoidCallback onIndex, onReadHere, onPlay, onLook;
   const _Toolbar({required this.tone, required this.playing, required this.readHere, required this.onIndex,
-      required this.onReadHere, required this.onPlay, required this.onLook, required this.onText});
+      required this.onReadHere, required this.onPlay, required this.onLook});
 
   @override
   Widget build(BuildContext context) {
@@ -399,7 +392,10 @@ class _Toolbar extends StatelessWidget {
           onPressed: onPlay,
         ),
         IconButton(tooltip: 'المظهر والسطوع', icon: Icon(Icons.brightness_6_outlined, color: c), onPressed: onLook),
-        IconButton(tooltip: 'عرض نصي', icon: Icon(Icons.notes, color: c), onPressed: onText),
+        IconButton(
+            tooltip: 'بحث في الآيات',
+            icon: Icon(Icons.search, color: c),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QuranSearchPage()))),
       ]),
     );
   }
