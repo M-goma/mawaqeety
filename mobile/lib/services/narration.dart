@@ -36,6 +36,7 @@ class Narration extends ChangeNotifier {
       if (st.processingState == ProcessingState.completed && speaking) {
         speaking = false;
         notifyListeners();
+        _finished();
       }
     });
   }
@@ -197,6 +198,12 @@ class Narration extends ChangeNotifier {
         if (session != _session) return;
         await _tts.speak(c);
       }
+      if (session == _session) {
+        speaking = false;
+        notifyListeners();
+        _finished();
+        return;
+      }
     } catch (e) {
       debugPrint('tts failed: $e');
       error = 'تعذّر تشغيل القراءة الصوتية على هذا الجهاز.';
@@ -207,7 +214,48 @@ class Narration extends ChangeNotifier {
     }
   }
 
+  // ---------------- auto-play of the next story ----------------
+  /// Called when a story ends by itself (not when the user stops it).
+  void Function()? onFinished;
+  /// Called when the countdown ends, with the id of the story to play next.
+  void Function(String storyId)? onAdvance;
+  String? pendingNext;
+  int secondsLeft = 0;
+  Timer? _nextTimer;
+
+  void _finished() => onFinished?.call();
+
+  /// Shows "next story in 5 seconds" and then asks the page to move on.
+  void scheduleNext(String storyId, {int seconds = 5}) {
+    cancelNext(notify: false);
+    pendingNext = storyId;
+    secondsLeft = seconds;
+    notifyListeners();
+    _nextTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+      secondsLeft--;
+      if (secondsLeft <= 0) {
+        t.cancel();
+        final id = pendingNext;
+        pendingNext = null;
+        notifyListeners();
+        if (id != null) onAdvance?.call(id);
+      } else {
+        notifyListeners();
+      }
+    });
+  }
+
+  void cancelNext({bool notify = true}) {
+    _nextTimer?.cancel();
+    _nextTimer = null;
+    if (pendingNext != null) {
+      pendingNext = null;
+      if (notify) notifyListeners();
+    }
+  }
+
   Future<void> stop() async {
+    cancelNext();
     _session++;
     await _tts.stop();
     await _player.stop();

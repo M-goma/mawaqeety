@@ -50,6 +50,12 @@ class ProphetPage extends StatelessWidget {
 
   static void _narrate(Prophet p) {
     app.recitation.stop();
+    app.narration.onFinished = () {
+      if (!app.settings.storyAutoplay) return;
+      final list = app.repo.prophets;
+      final i = list.indexWhere((x) => x.id == p.id);
+      if (i >= 0 && i + 1 < list.length) app.narration.scheduleNext(list[i + 1].id);
+    };
     if (app.narration.hasRecording(p.id, app.settings.narrationVoice)) {
       app.narration.playRecorded(p.id, app.settings.narrationVoice);
       return;
@@ -71,10 +77,54 @@ class ProphetPage extends StatelessWidget {
     final p = prophet;
     final theme = Theme.of(context);
     final body = theme.textTheme.bodyLarge?.copyWith(fontSize: 16.5, height: 1.9);
+    // When the countdown ends, open the next story here and start it.
+    app.narration.onAdvance = (id) {
+      final next = app.repo.prophets.firstWhere((x) => x.id == id, orElse: () => p);
+      if (context.mounted) {
+        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => ProphetPage(prophet: next)));
+      }
+      _narrate(next);
+    };
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) => Scaffold(
         appBar: AppBar(title: Text(p.nameAr)),
+        bottomNavigationBar: ListenableBuilder(
+          listenable: app.narration,
+          builder: (context, _) {
+            final id = app.narration.pendingNext;
+            if (id == null) return const SizedBox.shrink();
+            final next = app.repo.prophets.firstWhere((x) => x.id == id, orElse: () => p);
+            return SafeArea(
+              child: Container(
+                margin: const EdgeInsets.fromLTRB(12, 0, 12, 10),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(color: AppColors.navy3, borderRadius: BorderRadius.circular(16)),
+                child: Row(children: [
+                  Container(
+                    width: 36, height: 36, alignment: Alignment.center,
+                    decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.gold, width: 3)),
+                    child: Text(Arabic.digits(app.narration.secondsLeft),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+                      Text('القصة التالية: ${next.nameAr}',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                      Text('تبدأ بعد ${Arabic.digits(app.narration.secondsLeft)} ثوانٍ',
+                          style: TextStyle(color: AppColors.heroText, fontSize: 12)),
+                    ]),
+                  ),
+                  TextButton(
+                    onPressed: app.narration.cancelNext,
+                    child: Text('إلغاء', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700)),
+                  ),
+                ]),
+              ),
+            );
+          },
+        ),
         body: ListView(padding: const EdgeInsets.fromLTRB(18, 8, 18, 32), children: [
           Container(
             padding: const EdgeInsets.all(18),
@@ -115,6 +165,24 @@ class ProphetPage extends StatelessWidget {
                       await app.update((x) => x.narrationVoice = v.first, reschedule: false);
                       if (wasSpeaking) _narrate(p);
                     },
+                  ),
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: app.settings.storyAutoplay ? AppColors.goldLight : null,
+                      foregroundColor: app.settings.storyAutoplay ? AppColors.navy : Colors.white,
+                      side: BorderSide(color: app.settings.storyAutoplay ? AppColors.goldLight : Colors.white54),
+                    ),
+                    onPressed: () {
+                      final on = !app.settings.storyAutoplay;
+                      app.update((x) => x.storyAutoplay = on, reschedule: false);
+                      if (!on) app.narration.cancelNext();
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        duration: const Duration(seconds: 2),
+                        content: Text(on ? 'التشغيل التلقائي مفعّل: تبدأ القصة التالية بعد انتهاء الحالية' : 'تم إيقاف التشغيل التلقائي'),
+                      ));
+                    },
+                    icon: const Icon(Icons.skip_next),
+                    label: const Text('تلقائي'),
                   ),
                   if (app.narration.hasRecording(p.id, app.settings.narrationVoice))
                     Text('🎙 تسجيل بصوت ${Narration.recordedNames[app.settings.narrationVoice]}',
