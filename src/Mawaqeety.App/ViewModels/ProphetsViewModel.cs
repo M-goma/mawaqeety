@@ -1,3 +1,4 @@
+using System.Windows.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Mawaqeety.Core.Content;
@@ -52,11 +53,74 @@ public sealed partial class ProphetsViewModel : ObservableObject
     /// <summary>Opens the passage in the Qur'an reader.</summary>
     // ---------------- audio ----------------
     public bool IsNarrating => App.Instance.Narration.IsSpeaking;
-    public string NarrateLabel => IsNarrating ? "إيقاف القراءة" : "استمع إلى القصة";
+    public bool IsNarrationPaused => App.Instance.Narration.IsPaused;
+    public string NarrateLabel => !IsNarrating ? "استمع إلى القصة" : IsNarrationPaused ? "متابعة" : "إيقاف مؤقت";
+    public string NarrateGlyph => IsNarrating && !IsNarrationPaused ? "\uE769" : "\uE768";
+
+    // ---------------- auto-play of the next story ----------------
+    public bool Autoplay
+    {
+        get => App.Instance.Settings.Current.StoryAutoplay;
+        set { App.Instance.Settings.Update(s => s.StoryAutoplay = value); OnPropertyChanged(); if (!value) CancelNext(); }
+    }
+
+    private DispatcherTimer? _nextTimer;
+    private int _secondsLeft;
+    [ObservableProperty] private bool _nextPending;
+    [ObservableProperty] private string _nextText = "";
+
+    private ProphetListItem? Neighbour(int step)
+    {
+        if (Selected is null) return null;
+        var i = Prophets.ToList().IndexOf(Selected) + step;
+        return i >= 0 && i < Prophets.Count ? Prophets[i] : null;
+    }
+
+    private void OnStoryFinished(string id)
+    {
+        if (!Autoplay || Neighbour(1) is not { } next || Selected?.Prophet.Id != id) return;
+        _secondsLeft = 5;
+        NextPending = true;
+        NextText = $"القصة التالية: {next.DisplayName} بعد {QuranRepository.ArabicDigits(_secondsLeft)} ثوانٍ";
+        _nextTimer?.Stop();
+        _nextTimer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Normal, (_, _) =>
+        {
+            _secondsLeft--;
+            if (_secondsLeft > 0)
+            {
+                NextText = $"القصة التالية: {next.DisplayName} بعد {QuranRepository.ArabicDigits(_secondsLeft)} ثوانٍ";
+                return;
+            }
+            CancelNext();
+            Selected = next;
+            Narrate();
+        }, App.Instance.Dispatcher);
+        _nextTimer.Start();
+    }
+
+    [RelayCommand]
+    private void CancelNext()
+    {
+        _nextTimer?.Stop();
+        _nextTimer = null;
+        NextPending = false;
+    }
+
+    [RelayCommand]
+    private void PlayNextNow()
+    {
+        if (Neighbour(1) is not { } next) return;
+        CancelNext();
+        Selected = next;
+        Narrate();
+    }
+
+    [RelayCommand] private void SeekBack() => App.Instance.Narration.Seek(-15);
+    [RelayCommand] private void SeekForward() => App.Instance.Narration.Seek(15);
     [ObservableProperty] private string _audioStatus = "";
 
     public IReadOnlyList<KeyValuePair<string, string>> VoiceOptions { get; } =
-        [new("Male", "صوت رجل"), new("Female", "صوت امرأة")];
+        [new("Male", "صوت رجل (نبيل)"), new("Female", "صوت امرأة (عرين)")];
 
     public string NarrationVoice
     {
@@ -66,9 +130,7 @@ public sealed partial class ProphetsViewModel : ObservableObject
             if (value == NarrationVoice) return;
             App.Instance.Settings.Update(s => s.NarrationVoice = value);
             OnPropertyChanged();
-            AudioStatus = App.Instance.Narration.ExactGenderAvailable
-                ? ""
-                : "لا يوجد في Windows صوت عربي بهذا النوع، فتم تعديل نبرة الصوت المتاح. لصوت أوضح: الإعدادات ← الوقت واللغة ← الكلام ← إضافة أصوات ← العربية.";
+            AudioStatus = "";
             if (App.Instance.Narration.IsSpeaking)
             {
                 App.Instance.Narration.Stop();
@@ -83,14 +145,24 @@ public sealed partial class ProphetsViewModel : ObservableObject
         App.Instance.Narration.StateChanged += () => App.Instance.Dispatcher.BeginInvoke(() =>
         {
             OnPropertyChanged(nameof(IsNarrating));
+            OnPropertyChanged(nameof(IsNarrationPaused));
             OnPropertyChanged(nameof(NarrateLabel));
+            OnPropertyChanged(nameof(NarrateGlyph));
+        });
+        App.Instance.Narration.Finished += id => App.Instance.Dispatcher.BeginInvoke(() => OnStoryFinished(id));
+        App.Instance.Narration.SkipRequested += step => App.Instance.Dispatcher.BeginInvoke(() =>
+        {
+            if (Neighbour(step) is not { } p) return;
+            CancelNext();
+            Selected = p;
+            Narrate();
         });
         App.Instance.Recitation.Error += msg => App.Instance.Dispatcher.BeginInvoke(() => AudioStatus = msg);
     }
 
     partial void OnSelectedChanged(ProphetListItem? value)
     {
-        App.Instance.Narration.Stop();
+        if (App.Instance.Narration.CurrentId != value?.Prophet.Id) App.Instance.Narration.Stop();
         AudioStatus = "";
     }
 
@@ -98,8 +170,9 @@ public sealed partial class ProphetsViewModel : ObservableObject
     private void Narrate()
     {
         var n = App.Instance.Narration;
-        if (n.IsSpeaking) { n.Stop(); return; }
+        if (n.IsSpeaking && n.CurrentId == Selected?.Prophet.Id) { n.TogglePause(); return; }
         if (Selected is null) return;
+        CancelNext();
         App.Instance.Recitation.Stop();
         var p = Selected.Prophet;
         var chunks = new List<string> { $"{Title}. {p.Title}. {p.Summary}" };
@@ -109,7 +182,7 @@ public sealed partial class ProphetsViewModel : ObservableObject
             chunks.AddRange(s.Body.Split("\n\n", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
         }
         if (p.Lessons.Count > 0) chunks.Add("دروس وعبر. " + string.Join(" ", p.Lessons));
-        AudioStatus = n.Speak(chunks)
+        AudioStatus = n.Play(p.Id, Title, chunks)
             ? ""
             : "لا يوجد صوت عربي مثبّت في Windows. ثبّته من: الإعدادات ← الوقت واللغة ← اللغة والمنطقة ← العربية ← خيارات اللغة ← الكلام، ثم أعد المحاولة.";
     }
@@ -128,6 +201,7 @@ public sealed partial class ProphetsViewModel : ObservableObject
     [RelayCommand]
     private void StopAudio()
     {
+        CancelNext();
         App.Instance.Narration.Stop();
         App.Instance.Recitation.Stop();
     }

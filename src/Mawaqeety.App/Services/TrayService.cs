@@ -19,6 +19,7 @@ public sealed class TrayService : IDisposable
     private readonly ToolStripMenuItem _resume;
     private readonly ToolStripMenuItem _stopSound;
     private readonly ToolStripMenuItem _exit;
+    private readonly ToolStripMenuItem _widget;
     private readonly ToolStripMenuItem[] _pauseItems;
     private bool _balloonShown;
 
@@ -27,6 +28,7 @@ public sealed class TrayService : IDisposable
     public event Action? ResumeRequested;
     public event Action? StopSoundRequested;
     public event Action? ExitRequested;
+    public event Action? WidgetToggleRequested;
 
     public TrayService()
     {
@@ -63,8 +65,10 @@ public sealed class TrayService : IDisposable
         _stopSound.Click += (_, _) => StopSoundRequested?.Invoke();
         _exit = new ToolStripMenuItem();
         _exit.Click += (_, _) => ExitRequested?.Invoke();
+        _widget = new ToolStripMenuItem { CheckOnClick = false };
+        _widget.Click += (_, _) => WidgetToggleRequested?.Invoke();
 
-        _menu.Items.AddRange([_header, new ToolStripSeparator(), _open, _stopSound, _pause, _resume, new ToolStripSeparator(), _exit]);
+        _menu.Items.AddRange([_header, new ToolStripSeparator(), _open, _widget, _stopSound, _pause, _resume, new ToolStripSeparator(), _exit]);
 
         _icon = new NotifyIcon
         {
@@ -110,9 +114,12 @@ public sealed class TrayService : IDisposable
         mi?.Invoke(_icon, null);
     }
 
+    public void SetWidgetChecked(bool on) => _widget.Checked = on;
+
     private void ApplyLanguage()
     {
         var l = Loc.I;
+        _widget.Text = l["TrayWidget"];
         _menu.RightToLeft = l.IsArabic ? RightToLeft.Yes : RightToLeft.No;
         _pause.DropDown.RightToLeft = _menu.RightToLeft;
         _open.Text = l["TrayOpen"];

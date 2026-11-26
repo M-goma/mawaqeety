@@ -21,6 +21,7 @@ public partial class App : Application
     private readonly SingleInstance _instance;
     private readonly bool _startInBackground;
     private MainWindow? _window;
+    private WidgetWindow? _widget;
     private DispatcherTimer? _trayTimer;
     private DispatcherTimer? _adhanTimer;
     private bool _exiting;
@@ -41,6 +42,8 @@ public partial class App : Application
     public AdhanLibrary Adhan { get; private set; } = null!;
     public QuranAudioService Recitation { get; private set; } = null!;
     public NarrationService Narration { get; private set; } = null!;
+    public MushafPages Pages { get; private set; } = null!;
+    public DownloadManager Downloads { get; private set; } = null!;
     public HttpClient Http { get; private set; } = null!;
     public MainViewModel? MainVm { get; private set; }
 
@@ -72,7 +75,7 @@ public partial class App : Application
         Settings = new SettingsStore(Db, Log);
         var s = Settings.Current;
         Loc.I.SetLanguage(s.Language);
-        ThemeService.Apply(s.Theme);
+        ThemeService.Apply(s.Theme, s.Palette);
 
         Http = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
         Http.DefaultRequestHeaders.UserAgent.ParseAdd($"Mawaqeety/{typeof(App).Assembly.GetName().Version?.ToString(3)} (Windows desktop prayer times)");
@@ -86,6 +89,9 @@ public partial class App : Application
         Narration = new NarrationService(Dispatcher, Log) { PreferredGender = () => Settings.Current.NarrationVoice };
 
         Toast = new ToastService(Log);
+        Pages = new MushafPages(Log);
+        Downloads = new DownloadManager(Recitation, Pages, Toast, Log);
+        Downloads.ProgressChanged += SetTaskbarProgress;
         Sound = new SoundService(Dispatcher, Log);
         Tray = new TrayService();
         WireTray();
@@ -124,6 +130,7 @@ public partial class App : Application
         _adhanTimer.Start();
         System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += (_, ev) => { if (ev.IsAvailable) _ = PrefetchAdhanAsync(); };
         UpdateTray();
+        UpdateWidget();
 
         _ = Task.Run(BackgroundMaintenanceAsync);
 
@@ -134,6 +141,14 @@ public partial class App : Application
         if (!s.FirstRunCompleted)
         {
             Settings.Update(x => x.FirstRunCompleted = true);
+        }
+
+        var smoke = Array.IndexOf(Environment.GetCommandLineArgs(), SmokeTest.Arg);
+        if (smoke > 0)
+        {
+            var args = Environment.GetCommandLineArgs();
+            var dir = smoke + 1 < args.Length ? args[smoke + 1] : "smoke";
+            Dispatcher.BeginInvoke(async () => await SmokeTest.RunAsync(this, dir));
         }
     }
 
@@ -191,6 +206,11 @@ public partial class App : Application
             if (playing) { Recitation.Pause(); Narration.Stop(); } // the adhan takes priority
         };
         Toast.OpenRequested += () => Dispatcher.BeginInvoke(ShowMainWindow);
+        Tray.WidgetToggleRequested += () => Dispatcher.BeginInvoke(() =>
+        {
+            Settings.Update(s => s.WidgetEnabled = !s.WidgetEnabled);
+            UpdateWidget();
+        });
         Toast.StopSoundRequested += () => Sound.Stop();
     }
 
@@ -246,6 +266,35 @@ public partial class App : Application
         MainVm?.OnWindowShown();
     }
 
+    /// <summary>Download progress on the taskbar icon.</summary>
+    private void SetTaskbarProgress(double? value)
+    {
+        if (_window is null) return;
+        _window.TaskbarItemInfo ??= new System.Windows.Shell.TaskbarItemInfo();
+        _window.TaskbarItemInfo.ProgressState = value is null ? System.Windows.Shell.TaskbarItemProgressState.None : System.Windows.Shell.TaskbarItemProgressState.Normal;
+        _window.TaskbarItemInfo.ProgressValue = value ?? 0;
+    }
+
+    /// <summary>Shows, updates or closes the desktop widget according to the settings.</summary>
+    public void UpdateWidget()
+    {
+        var s = Settings.Current;
+        Tray.SetWidgetChecked(s.WidgetEnabled);
+        if (!s.WidgetEnabled)
+        {
+            _widget?.Close();
+            _widget = null;
+            return;
+        }
+        if (_widget is null)
+        {
+            _widget = new WidgetWindow();
+            _widget.Closed += (_, _) => _widget = null;
+            _widget.Show();
+        }
+        _widget.ApplySettings();
+    }
+
     public void ExitApp()
     {
         if (_exiting) return;
@@ -258,6 +307,7 @@ public partial class App : Application
         Recitation.Stop();
         Narration.Stop();
         Tray.Dispose();
+        _widget?.Close();
         _window?.Close();
         try { Scheduler.DisposeAsync().AsTask().Wait(TimeSpan.FromSeconds(2)); } catch { }
         Shutdown();

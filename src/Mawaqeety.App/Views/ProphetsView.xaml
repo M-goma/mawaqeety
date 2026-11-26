@@ -44,7 +44,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
                             <Button Command="{Binding NarrateCommand}" Padding="16,6" Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF">
                                 <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="&#xE767;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
+                                    <TextBlock Text="{Binding NarrateGlyph}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
                                     <TextBlock Text="{Binding NarrateLabel}"/>
                                 </StackPanel>
                             </Button>
@@ -52,9 +52,34 @@
                                     BorderBrush="#66FFFFFF" ToolTip="إيقاف الصوت">
                                 <TextBlock Text="&#xE71A;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
                             </Button>
-                            <ComboBox Width="140" Margin="10,0,0,0" ItemsSource="{Binding VoiceOptions}" DisplayMemberPath="Value"
+                            <Button Command="{Binding SeekBackCommand}" Margin="8,0,0,0" Padding="8,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="رجوع ١٥ ثانية" Visibility="{Binding IsNarrating, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="&#xED3C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                            <Button Command="{Binding SeekForwardCommand}" Margin="4,0,0,0" Padding="8,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="تقديم ١٥ ثانية" Visibility="{Binding IsNarrating, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="&#xED3D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                            <ComboBox Width="170" Margin="10,0,0,0" ItemsSource="{Binding VoiceOptions}" DisplayMemberPath="Value"
                                       SelectedValuePath="Key" SelectedValue="{Binding NarrationVoice}" ToolTip="صوت القارئ للقصة"/>
+                            <ToggleButton IsChecked="{Binding Autoplay}" Margin="10,0,0,0" Padding="12,6" Background="#26FFFFFF" Foreground="White"
+                                          BorderBrush="#66FFFFFF" ToolTip="عند انتهاء القصة تبدأ القصة التالية بعد ٥ ثوانٍ">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE8EE;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                    <TextBlock Text="تلقائي"/>
+                                </StackPanel>
+                            </ToggleButton>
                         </StackPanel>
+                        <Border Margin="0,12,0,0" Padding="12,8" CornerRadius="10" Background="#33000000"
+                                Visibility="{Binding NextPending, Converter={StaticResource BoolVis}}">
+                            <DockPanel>
+                                <Button DockPanel.Dock="Right" Content="إلغاء" Command="{Binding CancelNextCommand}" Padding="10,3" Margin="6,0,0,0"
+                                        Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF"/>
+                                <Button DockPanel.Dock="Right" Content="تشغيل الآن" Command="{Binding PlayNextNowCommand}" Padding="10,3"
+                                        Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF"/>
+                                <TextBlock Text="{Binding NextText}" Foreground="#E9C75A" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </DockPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
                 <TextBlock Text="{Binding AudioStatus}" TextWrapping="Wrap" Foreground="{DynamicResource GoldBrush}" Margin="4,0,4,12"

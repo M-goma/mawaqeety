@@ -1,0 +1,116 @@
+using System.Collections.ObjectModel;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using Mawaqeety.Core.Calculation;
+using Mawaqeety.Core.Models;
+using Mawaqeety.Core.Content;
+
+namespace Mawaqeety.App.ViewModels;
+
+public sealed partial class DhikrItem : ObservableObject
+{
+    public required string Text { get; init; }
+    public bool IsQuran { get; init; }
+    public required string Source { get; init; }
+    public string Virtue { get; init; } = "";
+    public bool HasVirtue => Virtue.Length > 0;
+    public int Count { get; init; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CounterText), nameof(Done), nameof(Progress))]
+    private int _tapped;
+
+    public bool Done => Tapped >= Count;
+    public double Progress => Count == 0 ? 0 : Math.Min(1, Tapped / (double)Count);
+    public string CounterText => Done ? "✓" : $"{QuranRepository.ArabicDigits(Count - Tapped)}";
+    public string CountLabel => Count == 1 ? "مرة واحدة" : Count == 2 ? "مرتان" : $"{QuranRepository.ArabicDigits(Count)} مرات";
+}
+
+/// <summary>Morning and evening remembrances, chosen by the time of day, with a tap counter for each.</summary>
+public sealed partial class AdhkarViewModel : ObservableObject
+{
+    private static readonly QuranRepository Q = QuranRepository.Default;
+    public ObservableCollection<DhikrItem> Items { get; } = [];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Title), nameof(Hint))]
+    private bool _isMorning;
+
+    public string Title => IsMorning ? "أذكار الصباح" : "أذكار المساء";
+    public string Hint => IsMorning
+        ? "وقتها من الفجر إلى العصر. اضغط على الذكر بعد قوله ليُعدّ."
+        : "وقتها من العصر إلى الليل. اضغط على الذكر بعد قوله ليُعدّ.";
+
+    [ObservableProperty] private string _progressText = "";
+
+    public AdhkarViewModel()
+    {
+        IsMorning = AutoMorning();
+        Load();
+    }
+
+    /// <summary>Morning from Fajr until Asr (the current prayer period decides).</summary>
+    private static bool AutoMorning()
+    {
+        try
+        {
+            var st = App.Instance.ComputeStatus(DateTimeOffset.Now);
+            return st.Current is Prayer.Fajr or Prayer.Sunrise or Prayer.Dhuhr;
+        }
+        catch { return DateTime.Now.Hour is >= 4 and < 15; }
+    }
+
+    partial void OnIsMorningChanged(bool value) => Load();
+
+    [RelayCommand] private void ShowMorning() => IsMorning = true;
+    [RelayCommand] private void ShowEvening() => IsMorning = false;
+
+    private void Load()
+    {
+        Items.Clear();
+        foreach (var d in Dhikr.All.Where(d => d.AvailableAt(IsMorning)))
+        {
+            string text;
+            if (d.Quran.Count > 0)
+            {
+                var parts = new List<string>();
+                var intro = d.TextFor(IsMorning);
+                if (!string.IsNullOrEmpty(intro)) parts.Add(intro + ":");
+                if (d.Basmala) parts.Add("بِسۡمِ ٱللَّهِ ٱلرَّحۡمَٰنِ ٱلرَّحِيمِ");
+                foreach (var q in d.Quran)
+                {
+                    var s = Q[q[0]];
+                    for (var a = q[1]; a <= q[2] && a <= s.Verses.Count; a++)
+                        parts.Add($"{s.Verses[a - 1]} ﴿{QuranRepository.ArabicDigits(a)}﴾");
+                }
+                text = string.Join(" ", parts);
+            }
+            else text = d.TextFor(IsMorning)!;
+            var item = new DhikrItem { Text = text, IsQuran = d.Quran.Count > 0, Source = d.Source, Virtue = d.Virtue, Count = Math.Max(1, d.Count) };
+            item.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(DhikrItem.Done)) UpdateProgress(); };
+            Items.Add(item);
+        }
+        UpdateProgress();
+    }
+
+    private void UpdateProgress()
+    {
+        var done = Items.Count(i => i.Done);
+        ProgressText = done == Items.Count && Items.Count > 0
+            ? "أتممت الأذكار، تقبّل الله منك 🤍"
+            : $"أتممت {QuranRepository.ArabicDigits(done)} من {QuranRepository.ArabicDigits(Items.Count)}";
+    }
+
+    [RelayCommand]
+    private void Count(DhikrItem? d)
+    {
+        if (d is null || d.Done) return;
+        d.Tapped++;
+    }
+
+    [RelayCommand]
+    private void Reset()
+    {
+        foreach (var i in Items) i.Tapped = 0;
+    }
+}

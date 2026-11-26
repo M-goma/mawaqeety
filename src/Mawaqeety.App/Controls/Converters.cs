@@ -50,3 +50,38 @@ public sealed class Scale(double factor) : IValueConverter
         value is double d ? d * factor : value;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
+
+/// <summary>"#RRGGBB" → brush (palette swatches).</summary>
+public sealed class HexBrush : IValueConverter
+{
+    public static readonly HexBrush Instance = new();
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+    {
+        try { return new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString((string)value)); }
+        catch { return System.Windows.Media.Brushes.Transparent; }
+    }
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
+/// <summary>True when all bound values are equal.</summary>
+public sealed class Equal : IMultiValueConverter
+{
+    public static readonly Equal Instance = new();
+    public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture) =>
+        values.Length > 1 && values.Skip(1).All(v => Equals(v, values[0]));
+    public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture) => [];
+}
+
+public sealed class Not : IValueConverter
+{
+    public static readonly Not Instance = new();
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
+}
+
+public sealed class NotNullVisibility : IValueConverter
+{
+    public static readonly NotNullVisibility Instance = new();
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value is null ? Visibility.Collapsed : Visibility.Visible;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}

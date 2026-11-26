@@ -530,6 +530,35 @@ public sealed partial class SettingsViewModel : ObservableObject
         set { _store.Update(s => s.Theme = value); ThemeService.Apply(value); OnPropertyChanged(); }
     }
 
+    public IReadOnlyList<Core.Content.Palette> Palettes => Core.Content.Palette.All;
+
+    public string PaletteId
+    {
+        get => Core.Content.Palette.Find(S.Palette).Id;
+        set
+        {
+            if (value == PaletteId) return;
+            _store.Update(s => s.Palette = value);
+            ThemeService.Apply(S.Theme, value);
+            OnPropertyChanged();
+        }
+    }
+
+    [RelayCommand]
+    private void SelectPalette(string? id) { if (id is not null) PaletteId = id; }
+
+    public bool WidgetEnabled
+    {
+        get => S.WidgetEnabled;
+        set { _store.Update(s => s.WidgetEnabled = value); App.Instance.UpdateWidget(); OnPropertyChanged(); }
+    }
+
+    public bool WidgetTopmost
+    {
+        get => S.WidgetTopmost;
+        set { _store.Update(s => s.WidgetTopmost = value); App.Instance.UpdateWidget(); OnPropertyChanged(); }
+    }
+
     public AppLanguage Language
     {
         get => S.Language;

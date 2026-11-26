@@ -8,6 +8,11 @@
     <EmbeddedResource Include="Resources\quran.json" />
     <EmbeddedResource Include="Resources\prophets.json" />
     <EmbeddedResource Include="Resources\reciters.json" />
+    <EmbeddedResource Include="Resources\adhkar.json" />
+    <EmbeddedResource Include="Resources\palettes.json" />
+    <EmbeddedResource Include="Resources\mushaf.json" />
+    <EmbeddedResource Include="Resources\mushaf_ayahs.json" />
+    <EmbeddedResource Include="Resources\story_audio.json" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />

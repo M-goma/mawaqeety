@@ -1,0 +1,162 @@
+[
+{
+"id": "emerald",
+"name": "زمرّدي وذهبي",
+"bg": "#07152A",
+"surface": "#0F2544",
+"surface2": "#14305A",
+"primary": "#12A372",
+"accent": "#D4AF37",
+"accentLight": "#E9C75A",
+"heroText": "#CCE9DD",
+"hero": [
+"#0E8A5F",
+"#0B5E52",
+"#0B2A4A"
+]
+},
+{
+"id": "royal",
+"name": "أزرق ملكي",
+"bg": "#060E24",
+"surface": "#0E1B3D",
+"surface2": "#16275A",
+"primary": "#3B82F6",
+"accent": "#F5C451",
+"accentLight": "#FFD873",
+"heroText": "#D6E4FF",
+"hero": [
+"#2563EB",
+"#1E3A8A",
+"#0B1437"
+]
+},
+{
+"id": "violet",
+"name": "بنفسجي ليلي",
+"bg": "#110A24",
+"surface": "#1D1438",
+"surface2": "#2A1D52",
+"primary": "#8B5CF6",
+"accent": "#F0B90B",
+"accentLight": "#FFD25C",
+"heroText": "#E6DCFF",
+"hero": [
+"#7C3AED",
+"#4C1D95",
+"#1A0F33"
+]
+},
+{
+"id": "maroon",
+"name": "عنّابي",
+"bg": "#1A0A0E",
+"surface": "#2A1218",
+"surface2": "#3B1A22",
+"primary": "#C2415D",
+"accent": "#E8B86A",
+"accentLight": "#F5CF8C",
+"heroText": "#F8DCE2",
+"hero": [
+"#B0304F",
+"#6E1A2F",
+"#2A0D15"
+]
+},
+{
+"id": "desert",
+"name": "رملي صحراوي",
+"bg": "#1A130B",
+"surface": "#2A2014",
+"surface2": "#3A2C1C",
+"primary": "#D08C3C",
+"accent": "#F2D49B",
+"accentLight": "#F8E2B6",
+"heroText": "#F6E6CC",
+"hero": [
+"#C07A2C",
+"#7A4A1C",
+"#2B1D0E"
+]
+},
+{
+"id": "turquoise",
+"name": "فيروزي",
+"bg": "#041A1D",
+"surface": "#0A2A2F",
+"surface2": "#103A40",
+"primary": "#14B8A6",
+"accent": "#F7C948",
+"accentLight": "#FFDD7A",
+"heroText": "#D2F5F0",
+"hero": [
+"#0D9488",
+"#115E59",
+"#062A2D"
+]
+},
+{
+"id": "amoled",
+"name": "أسود فحمي",
+"bg": "#000000",
+"surface": "#111111",
+"surface2": "#1C1C1C",
+"primary": "#22C55E",
+"accent": "#E5C158",
+"accentLight": "#F0D47A",
+"heroText": "#DDDDDD",
+"hero": [
+"#1F1F1F",
+"#121212",
+"#000000"
+]
+},
+{
+"id": "sunset",
+"name": "غروب",
+"bg": "#1B0F17",
+"surface": "#2B1724",
+"surface2": "#3C2032",
+"primary": "#F97316",
+"accent": "#FCD34D",
+"accentLight": "#FDE68A",
+"heroText": "#FFE4D2",
+"hero": [
+"#EA580C",
+"#9D174D",
+"#2E1065"
+]
+},
+{
+"id": "olive",
+"name": "زيتوني",
+"bg": "#0E140A",
+"surface": "#1A2414",
+"surface2": "#26341D",
+"primary": "#84A93A",
+"accent": "#E4C46A",
+"accentLight": "#F0D88E",
+"heroText": "#E5EFD2",
+"hero": [
+"#6B8E23",
+"#3F5A1A",
+"#151F0D"
+]
+},
+{
+"id": "silver",
+"name": "فضّي",
+"bg": "#0F1216",
+"surface": "#1A1F26",
+"surface2": "#252C35",
+"primary": "#94A3B8",
+"accent": "#7DD3FC",
+"accentLight": "#A5E1FD",
+"heroText": "#E2E8F0",
+"hero": [
+"#64748B",
+"#334155",
+"#0F172A"
+]
+}
+]

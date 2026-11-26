@@ -96,6 +96,27 @@ public sealed class AppSettings
     /// <summary>Bookmarked ayahs as "surah:ayah".</summary>
     public List<string> Bookmarks { get; set; } = [];
 
+    /// <summary>Interface colour style (see Content.Palette).</summary>
+    public string Palette { get; set; } = "emerald";
+    /// <summary>Play the next prophet story automatically when one ends.</summary>
+    public bool StoryAutoplay { get; set; }
+
+    // Mushaf (printed pages)
+    /// <summary>"Mushaf" (printed pages) or "Text".</summary>
+    public string QuranView { get; set; } = "Mushaf";
+    /// <summary>"auto" (follows the app theme), "paper", "white", "navy", "sepia", "charcoal".</summary>
+    public string MushafTone { get; set; } = "auto";
+    public string MushafNight { get; set; } = "navy";
+    /// <summary>Extra dimming inside the Mushaf, 0..0.6.</summary>
+    public double MushafDim { get; set; }
+    public int MushafPage { get; set; } = 1;
+
+    // Desktop widget
+    public bool WidgetEnabled { get; set; }
+    public bool WidgetTopmost { get; set; } = true;
+    public double? WidgetLeft { get; set; }
+    public double? WidgetTop { get; set; }
+
     public PrayerAlertSettings AlertFor(Prayer p)
     {
         if (!Alerts.TryGetValue(p, out var a))

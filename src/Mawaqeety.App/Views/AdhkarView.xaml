@@ -1,0 +1,81 @@
+<UserControl x:Class="Mawaqeety.App.Views.AdhkarView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls">
+    <UserControl.Resources>
+        <c:BoolToVisibilityConverter x:Key="BoolVis"/>
+    </UserControl.Resources>
+    <DockPanel Margin="24,24,24,16">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource HeroBrush}" CornerRadius="18" Padding="22,16" Margin="0,0,0,14">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <RadioButton Style="{StaticResource Segment}" Tag="&#xE706;" Content="الصباح" GroupName="adh" Foreground="White"
+                                 IsChecked="{Binding IsMorning, Mode=OneWay}" Command="{Binding ShowMorningCommand}" MinWidth="120"/>
+                    <RadioButton Style="{StaticResource Segment}" Tag="&#xE708;" Content="المساء" GroupName="adh" Foreground="White" Margin="8,0,0,0"
+                                 IsChecked="{Binding IsMorning, Mode=OneWay, Converter={x:Static c:Not.Instance}}" Command="{Binding ShowEveningCommand}" MinWidth="120"/>
+                </StackPanel>
+                <StackPanel>
+                    <TextBlock Text="{Binding Title}" Foreground="White" FontSize="26" FontWeight="Bold"/>
+                    <TextBlock Text="{Binding Hint}" Foreground="{DynamicResource HeroMutedBrush}" FontSize="13.5"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock Text="{Binding ProgressText}" Foreground="#E9C75A" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <Button Content="إعادة العدّ" Margin="12,0,0,0" Padding="12,3" Command="{Binding ResetCommand}"
+                                Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF"/>
+                    </StackPanel>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <ItemsControl ItemsSource="{Binding Items}" MaxWidth="900" Margin="0,0,8,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Command="{Binding DataContext.CountCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}"
+                                Cursor="Hand" Margin="0,0,0,10" HorizontalContentAlignment="Stretch" Focusable="False">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="Card" Background="{DynamicResource SurfaceBrush}" CornerRadius="14" Padding="18,14"
+                                            BorderBrush="{DynamicResource LineBrush}" BorderThickness="1">
+                                        <ContentPresenter/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                            <DockPanel x:Name="Root">
+                                <Grid DockPanel.Dock="Left" Width="64" Height="64" Margin="0,0,16,0" VerticalAlignment="Center">
+                                    <Ellipse Stroke="{DynamicResource LineBrush}" StrokeThickness="5"/>
+                                    <c:Arc Progress="{Binding Progress}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="5"/>
+                                    <TextBlock Text="{Binding CounterText}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Grid>
+                                <StackPanel>
+                                    <TextBlock x:Name="Body" Text="{Binding Text}" TextWrapping="Wrap" TextAlignment="Justify" FontSize="17" LineHeight="34"
+                                               Foreground="{DynamicResource TextBrush}"/>
+                                    <TextBlock Text="{Binding Virtue}" TextWrapping="Wrap" FontSize="13" Foreground="{DynamicResource GoldBrush}" Margin="0,6,0,0"
+                                               Visibility="{Binding HasVirtue, Converter={StaticResource BoolVis}}"/>
+                                    <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="{DynamicResource TextMutedBrush}" Margin="0,6,0,0">
+                                        <Run Text="{Binding CountLabel, Mode=OneWay}" FontWeight="SemiBold"/>
+                                        <Run Text=" • "/>
+                                        <Run Text="{Binding Source, Mode=OneWay}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DockPanel>
+                        </Button>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsQuran}" Value="True">
+                                <Setter TargetName="Body" Property="FontFamily" Value="{StaticResource QuranFont}"/>
+                                <Setter TargetName="Body" Property="FontSize" Value="22"/>
+                                <Setter TargetName="Body" Property="LineHeight" Value="44"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Done}" Value="True">
+                                <Setter TargetName="Root" Property="Opacity" Value="0.55"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </DockPanel>
+</UserControl>

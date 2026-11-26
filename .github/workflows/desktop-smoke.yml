@@ -1,0 +1,46 @@
+name: desktop-smoke
+# Opens every page of the Windows app on a real Windows machine, saves screenshots and any errors
+# to the "desktop-smoke" pre-release (so they can be reviewed without signing in).
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["src/**", ".github/workflows/desktop-smoke.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Build
+        run: dotnet build src/Mawaqeety.App/Mawaqeety.App.csproj -c Release -o out/app
+      - name: Run the app through every page
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force smoke | Out-Null
+          $p = Start-Process -FilePath out/app/Mawaqeety.exe -ArgumentList "--smoke-test", "$PWD\smoke" -PassThru
+          if (-not $p.WaitForExit(240000)) { $p.Kill(); "TIMEOUT: the app did not finish in 4 minutes" | Add-Content smoke/errors.txt }
+          Copy-Item "$env:APPDATA\Mawaqeety\logs\*" smoke -ErrorAction SilentlyContinue
+          Get-ChildItem smoke
+          Get-Content smoke/errors.txt -ErrorAction SilentlyContinue
+      - name: Publish screenshots
+        if: always()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: desktop-smoke
+          name: "Desktop smoke test (screenshots)"
+          prerelease: true
+          make_latest: false
+          body: "Automatic screenshots of the Windows app from the latest commit (${{ github.sha }})."
+          files: smoke/*
+      - name: Fail if the app reported errors
+        shell: pwsh
+        run: |
+          $e = Get-Content smoke/errors.txt -ErrorAction SilentlyContinue
+          if ($e -ne "OK") { Write-Error ($e -join "`n"); exit 1 }

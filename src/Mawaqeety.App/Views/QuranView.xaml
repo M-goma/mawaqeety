@@ -2,14 +2,66 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:c="clr-namespace:Mawaqeety.App.Controls"
->
+             xmlns:v="clr-namespace:Mawaqeety.App.Views">
     <UserControl.Resources>
         <c:BoolToVisibilityConverter x:Key="BoolVis"/>
         <c:EmptyToVisibilityConverter x:Key="Empty"/>
         <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
     </UserControl.Resources>
 
-    <Grid Margin="24,24,24,16">
+    <DockPanel Margin="24,16,24,16">
+    <!-- ===== Mushaf / text switch and offline downloads ===== -->
+    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+        <Border DockPanel.Dock="Left" CornerRadius="10" Background="{DynamicResource SurfaceBrush}" Padding="3">
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Style="{StaticResource Segment}" Tag="&#xE736;" Content="المصحف" GroupName="qview" IsChecked="{Binding IsMushaf}" MinWidth="110"/>
+                <RadioButton Style="{StaticResource Segment}" Tag="&#xE8A5;" Content="نص" GroupName="qview" IsChecked="{Binding IsText}" MinWidth="90"/>
+            </StackPanel>
+        </Border>
+        <ToggleButton x:Name="DlButton" DockPanel.Dock="Right" IsChecked="{Binding DownloadsOpen}" Padding="12,6" ToolTip="الاستماع والقراءة دون إنترنت">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                <TextBlock Text="التنزيل دون إنترنت"/>
+            </StackPanel>
+        </ToggleButton>
+        <Popup IsOpen="{Binding DownloadsOpen}" PlacementTarget="{Binding ElementName=DlButton}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+            <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="14" Padding="18" Width="420" Margin="6">
+                <Border.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.35"/></Border.Effect>
+                <StackPanel>
+                    <TextBlock Text="التلاوة" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding ReciterSavedText}" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,2,0,6"/>
+                    <TextBlock Text="{Binding Downloads.QuranText}" TextWrapping="Wrap" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,6"
+                               Visibility="{Binding Downloads.QuranText, Converter={StaticResource NotEmpty}}"/>
+                    <WrapPanel>
+                        <Button Content="تنزيل السورة الحالية" Command="{Binding DownloadSurahCommand}" Padding="10,5" Margin="0,0,6,6"
+                                IsEnabled="{Binding Downloads.QuranRunning, Converter={x:Static c:Not.Instance}}"/>
+                        <Button Style="{StaticResource PrimaryButton}" Content="تنزيل المصحف كاملًا بهذا الصوت" Command="{Binding DownloadAllRecitationCommand}" Padding="10,5" Margin="0,0,6,6"
+                                IsEnabled="{Binding Downloads.QuranRunning, Converter={x:Static c:Not.Instance}}"/>
+                        <Button Content="إيقاف" Command="{Binding CancelRecitationDownloadCommand}" Padding="10,5" Margin="0,0,6,6"
+                                Visibility="{Binding Downloads.QuranRunning, Converter={StaticResource BoolVis}}"/>
+                    </WrapPanel>
+                    <Border Height="1" Background="{DynamicResource LineBrush}" Margin="0,8"/>
+                    <TextBlock Text="صفحات المصحف" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding MushafSavedText}" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,2,0,6"/>
+                    <TextBlock Text="{Binding Downloads.MushafText}" TextWrapping="Wrap" Foreground="{DynamicResource AccentBrush}" Margin="0,0,0,6"
+                               Visibility="{Binding Downloads.MushafText, Converter={StaticResource NotEmpty}}"/>
+                    <WrapPanel>
+                        <Button Style="{StaticResource PrimaryButton}" Content="تنزيل المصحف كاملًا" Command="{Binding DownloadMushafCommand}" Padding="10,5" Margin="0,0,6,6"
+                                IsEnabled="{Binding Downloads.MushafRunning, Converter={x:Static c:Not.Instance}}"/>
+                        <Button Content="إيقاف" Command="{Binding CancelMushafDownloadCommand}" Padding="10,5" Margin="0,0,6,6"
+                                Visibility="{Binding Downloads.MushafRunning, Converter={StaticResource BoolVis}}"/>
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0,6,0,0"
+                               Text="يستمر التنزيل إذا أغلقت النافذة (البرنامج يبقى بجوار الساعة)، ويظهر تقدّمه على أيقونة شريط المهام، ثم يصلك إشعار عند انتهائه."/>
+                </StackPanel>
+            </Border>
+        </Popup>
+        <TextBlock Text="{Binding Downloads.QuranText}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="14,0" TextTrimming="CharacterEllipsis"
+                   Visibility="{Binding Downloads.QuranRunning, Converter={StaticResource BoolVis}}"/>
+    </DockPanel>
+    <Grid>
+    <v:MushafView DataContext="{Binding Mushaf}" Visibility="{Binding DataContext.IsMushaf, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolVis}}"/>
+    <Grid Visibility="{Binding IsText, Converter={StaticResource BoolVis}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="300"/>
             <ColumnDefinition Width="20"/>
@@ -138,6 +190,8 @@
                                         <Separator/>
                                         <MenuItem Header="حفظ موضع القراءة هنا"
                                                   Command="{Binding PlacementTarget.Tag.SaveLastReadCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}"/>
+                                        <MenuItem Header="إزالة موضع القراءة"
+                                                  Command="{Binding PlacementTarget.Tag.ClearLastReadCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
                                         <MenuItem Header="إضافة / إزالة علامة"
                                                   Command="{Binding PlacementTarget.Tag.ToggleBookmarkCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}" CommandParameter="{Binding}"/>
                                         <MenuItem Header="نسخ الآية"
@@ -179,4 +233,6 @@
             </DockPanel>
         </Border>
     </Grid>
+    </Grid>
+    </DockPanel>
 </UserControl>

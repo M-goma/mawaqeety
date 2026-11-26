@@ -1,5 +1,4 @@
 using System.Net.Http;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Mawaqeety.Core.Content;
 using Mawaqeety.Core.Services;
@@ -17,7 +16,7 @@ public sealed class QuranAudioService
     private readonly Dispatcher _dispatcher;
     private readonly IAppLog _log;
     private readonly Func<string> _reciter;
-    private MediaPlayer? _player;
+    private readonly MediaSession _media;
     private List<(int Surah, int Ayah, bool IsBasmala)> _queue = [];
     private int _index;
     private int _session;
@@ -39,6 +38,42 @@ public sealed class QuranAudioService
         _dispatcher = dispatcher;
         _log = log;
         _reciter = reciter;
+        _media = new MediaSession(dispatcher, log);
+        _media.Ended += () => { if (IsPlaying) { _index++; _ = PlayCurrentAsync(_session); } };
+        _media.Failed += msg => { if (IsPlaying) { _index++; _ = PlayCurrentAsync(_session); } };
+        _media.ButtonPressed += b =>
+        {
+            if (!IsPlaying) return;
+            switch (b)
+            {
+                case Windows.Media.SystemMediaTransportControlsButton.Play: if (IsPaused) TogglePause(); break;
+                case Windows.Media.SystemMediaTransportControlsButton.Pause: if (!IsPaused) TogglePause(); break;
+                case Windows.Media.SystemMediaTransportControlsButton.Stop: Stop(); break;
+                case Windows.Media.SystemMediaTransportControlsButton.Next: Next(); break;
+                case Windows.Media.SystemMediaTransportControlsButton.Previous: Previous(); break;
+            }
+        };
+    }
+
+    /// <summary>Next ayah (or, at the end, what <see cref="OnFinished"/> decides).</summary>
+    public void Next()
+    {
+        if (!IsPlaying) return;
+        _session++;
+        _index++;
+        IsPaused = false;
+        _ = PlayCurrentAsync(_session);
+    }
+
+    /// <summary>Restarts the ayah, or goes to the previous one when it just started.</summary>
+    public void Previous()
+    {
+        if (!IsPlaying) return;
+        if (_media.Position > TimeSpan.FromSeconds(3) || _index == 0) { _media.Position = TimeSpan.Zero; return; }
+        _session++;
+        _index--;
+        IsPaused = false;
+        _ = PlayCurrentAsync(_session);
     }
 
     private static string CacheDir(string reciter) => Path.Combine(AppPaths.DataDir, "quran", reciter);
@@ -73,16 +108,14 @@ public sealed class QuranAudioService
         await _dispatcher.InvokeAsync(() =>
         {
             if (session != _session) return;
-            _player?.Close();
-            var p = new MediaPlayer { Volume = 1.0 };
-            p.MediaEnded += (_, _) => { _index++; _ = PlayCurrentAsync(session); };
-            p.MediaFailed += (_, e) => { _log.Warn("Recitation playback failed", e.ErrorException); _index++; _ = PlayCurrentAsync(session); };
-            p.Open(new Uri(path));
-            p.Play();
-            _player = p;
+            _media.Open(path);
             var shownSurah = basmala ? _queue.Last().Surah : surah;
             CurrentSurah = shownSurah;
             CurrentAyah = basmala ? 0 : ayah;
+            var name = QuranRepository.Default[shownSurah].Name;
+            _media.SetInfo($"سورة {name} • {(basmala ? "البسملة" : "الآية " + QuranRepository.ArabicDigits(ayah))}",
+                Reciters.Find(reciter).Name, "القرآن الكريم – مواقيتي");
+            if (IsPaused) { IsPaused = false; StateChanged?.Invoke(); }
             AyahStarted?.Invoke(shownSurah, CurrentAyah);
         });
     }
@@ -120,25 +153,23 @@ public sealed class QuranAudioService
 
     public void TogglePause()
     {
-        if (_player is null) return;
-        if (IsPaused) { _player.Play(); IsPaused = false; }
-        else { _player.Pause(); IsPaused = true; }
+        if (!IsPlaying) return;
+        if (IsPaused) { _media.Resume(); IsPaused = false; }
+        else { _media.Pause(); IsPaused = true; }
         StateChanged?.Invoke();
     }
 
     public void Pause()
     {
-        if (_player is null || IsPaused) return;
-        _dispatcher.BeginInvoke(() => { _player?.Pause(); IsPaused = true; StateChanged?.Invoke(); });
+        if (!IsPlaying || IsPaused) return;
+        _dispatcher.BeginInvoke(() => { _media.Pause(); IsPaused = true; StateChanged?.Invoke(); });
     }
 
     public void Stop()
     {
         if (!_dispatcher.CheckAccess()) { _dispatcher.BeginInvoke(Stop); return; }
         _session++;
-        _player?.Stop();
-        _player?.Close();
-        _player = null;
+        _media.Stop();
         var was = IsPlaying;
         IsPlaying = false;
         IsPaused = false;

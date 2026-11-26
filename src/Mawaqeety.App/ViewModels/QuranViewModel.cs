@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Mawaqeety.App.Services;
 using Mawaqeety.Core.Content;
 
 namespace Mawaqeety.App.ViewModels;
@@ -42,6 +43,109 @@ public sealed partial class QuranViewModel : ObservableObject
     [ObservableProperty] private string _status = "";
 
     public string BasmalaText => Basmala;
+
+    // ---------------- Mushaf (printed pages) / text ----------------
+    public bool IsMushaf
+    {
+        get => App.Instance.Settings.Current.QuranView != "Text";
+        set
+        {
+            if (value == IsMushaf) return;
+            App.Instance.Settings.Update(s => s.QuranView = value ? "Mushaf" : "Text");
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(IsText));
+            if (value) Mushaf.GoToAyah(SurahNumber, Math.Max(1, App.Instance.Settings.Current.LastReadSurah == SurahNumber ? App.Instance.Settings.Current.LastReadAyah : 1));
+            else Open(MushafIndex.Default.StartOf(Mushaf.RightPage).Surah, MushafIndex.Default.StartOf(Mushaf.RightPage).Ayah);
+        }
+    }
+
+    public bool IsText { get => !IsMushaf; set => IsMushaf = !value; }
+
+    public MushafViewModel Mushaf => _mushaf ??= new MushafViewModel(this);
+    private MushafViewModel? _mushaf;
+
+    public void StartRecitationAt(int surah, int ayah) => StartRecitation(surah, ayah);
+
+    public void SetLastRead(int surah, int ayah)
+    {
+        App.Instance.Settings.Update(s => { s.LastReadSurah = surah; s.LastReadAyah = ayah; });
+        foreach (var x in Ayahs) x.IsLastRead = x.Surah == surah && x.Number == ayah;
+        Status = "تم حفظ موضع القراءة";
+        if (Filter.Length == 0) RebuildIndex();
+        _mushaf?.AfterPositionChange();
+    }
+
+    [RelayCommand]
+    public void ClearLastRead()
+    {
+        App.Instance.Settings.Update(s => { s.LastReadSurah = 0; s.LastReadAyah = 0; });
+        foreach (var x in Ayahs) x.IsLastRead = false;
+        Status = "تمت إزالة موضع القراءة";
+        if (Filter.Length == 0) RebuildIndex();
+        _mushaf?.AfterPositionChange();
+    }
+
+    public bool IsBookmarked(int surah, int ayah) => App.Instance.Settings.Current.Bookmarks.Contains($"{surah}:{ayah}");
+
+    public void ToggleBookmarkAt(int surah, int ayah)
+    {
+        var key = $"{surah}:{ayah}";
+        App.Instance.Settings.Update(s => { if (!s.Bookmarks.Remove(key)) s.Bookmarks.Add(key); });
+        foreach (var x in Ayahs.Where(x => x.Surah == surah && x.Number == ayah)) x.IsBookmarked = IsBookmarked(surah, ayah);
+        if (Filter.Length == 0) RebuildIndex();
+    }
+
+    public void CopyAyahAt(int surah, int ayah)
+    {
+        try
+        {
+            Clipboard.SetText($"﴿{Q[surah].Verses[ayah - 1]}﴾ [{Q[surah].Name}: {ayah}]");
+            Status = "تم نسخ الآية";
+        }
+        catch (Exception ex) { App.Instance.Log.Warn("Clipboard failed", ex); }
+    }
+
+    // ---------------- offline downloads ----------------
+    public DownloadManager Downloads => App.Instance.Downloads;
+    [ObservableProperty] private bool _downloadsOpen;
+    [ObservableProperty] private string _reciterSavedText = "";
+    [ObservableProperty] private string _mushafSavedText = "";
+
+    partial void OnDownloadsOpenChanged(bool value) { if (value) RefreshSaved(); }
+
+    private void RefreshSaved()
+    {
+        var id = ReciterId;
+        var n = DownloadManager.SavedAyahs(id);
+        ReciterSavedText = $"محفوظ على الجهاز: {QuranRepository.ArabicDigits(Math.Min(100, n * 100 / 6237))}٪ من المصحف بصوت {Reciters.Find(id).Name}";
+        MushafSavedText = $"محفوظ على الجهاز: {QuranRepository.ArabicDigits(App.Instance.Pages.SavedCount())} من ٦٠٤ صفحة (الحجم الكامل نحو ٦٦ ميجابايت)";
+    }
+
+    [RelayCommand]
+    private async Task DownloadSurah()
+    {
+        var surah = IsMushaf ? MushafIndex.Default.SurahOf(Mushaf.RightPage) : SurahNumber;
+        await Downloads.DownloadRecitationAsync(ReciterId, [surah]);
+        RefreshSaved();
+    }
+
+    [RelayCommand]
+    private async Task DownloadAllRecitation()
+    {
+        await Downloads.DownloadRecitationAsync(ReciterId);
+        RefreshSaved();
+    }
+
+    [RelayCommand] private void CancelRecitationDownload() => Downloads.CancelRecitation();
+
+    [RelayCommand]
+    private async Task DownloadMushaf()
+    {
+        await Downloads.DownloadMushafAsync();
+        RefreshSaved();
+    }
+
+    [RelayCommand] private void CancelMushafDownload() => Downloads.CancelMushaf();
 
     public double FontSize
     {
@@ -121,7 +225,14 @@ public sealed partial class QuranViewModel : ObservableObject
                 x.IsPlaying = x.Number == ayah;
                 if (x.IsPlaying) current = x;
             }
-            if (current is not null) ScrollRequested?.Invoke(current);
+            if (current is not null && !IsMushaf) ScrollRequested?.Invoke(current);
+            // While listening, the saved reading position moves along with the recitation.
+            var st = App.Instance.Settings.Current;
+            if (ayah > 0 && (st.LastReadSurah != surah || st.LastReadAyah != ayah))
+            {
+                App.Instance.Settings.Update(x => { x.LastReadSurah = surah; x.LastReadAyah = ayah; });
+                foreach (var x in Ayahs) x.IsLastRead = x.Surah == surah && x.Number == ayah;
+            }
         });
     }
 
@@ -222,6 +333,7 @@ public sealed partial class QuranViewModel : ObservableObject
                 });
         }
         if (scroll) ScrollRequested?.Invoke(Ayahs[ayah - 1]);
+        if (scroll && IsMushaf) Mushaf.GoToAyah(surah, ayah);
     }
 
     [RelayCommand] private void NextSurah() { if (SurahNumber < 114) Open(SurahNumber + 1, 1); }
