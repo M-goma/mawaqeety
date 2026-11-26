@@ -9,8 +9,11 @@ import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../core/arabic.dart';
+import 'media_controls.dart';
+
 /// Reads the prophets' stories aloud with the device's Arabic text-to-speech voice.
-class Narration extends ChangeNotifier {
+class Narration extends ChangeNotifier implements MediaSource {
   final _tts = FlutterTts();
   final _player = AudioPlayer();
   bool speaking = false;
@@ -36,9 +39,14 @@ class Narration extends ChangeNotifier {
       if (st.processingState == ProcessingState.completed && speaking) {
         speaking = false;
         notifyListeners();
+        MediaControls.instance?.hide(this);
         _finished();
+      } else {
+        _publish();
       }
     });
+    _player.currentIndexStream.listen((_) => _publish());
+    _player.positionDiscontinuityStream.listen((_) => _publish());
   }
 
   Future<void> _saveCopies(List<(Uri, File)> files) async {
@@ -65,8 +73,19 @@ class Narration extends ChangeNotifier {
   bool hasRecording(String storyId, String gender) => (_recorded[gender]?[storyId] ?? 0) > 0;
 
   /// Plays the studio recording; each part is saved on the device the first time, so it then works offline.
-  Future<void> playRecorded(String storyId, String gender) async {
+  /// Story order (ids), used by the notification's previous/next buttons.
+  List<String> storyOrder = [];
+  String? _storyId;
+  String _storyTitle = '';
+  String _gender = 'male';
+  int _parts = 0;
+
+  Future<void> playRecorded(String storyId, String gender, {String title = ''}) async {
     await stop();
+    _storyId = storyId;
+    _storyTitle = title;
+    _gender = gender;
+    _parts = _recorded[gender]?[storyId] ?? 0;
     final session = ++_session;
     error = null;
     final parts = _recorded[gender]?[storyId] ?? 0;
@@ -254,14 +273,68 @@ class Narration extends ChangeNotifier {
     }
   }
 
+  @override
   Future<void> stop() async {
     cancelNext();
     _session++;
     await _tts.stop();
     await _player.stop();
+    _storyId = null;
+    MediaControls.instance?.hide(this);
     if (speaking) {
       speaking = false;
       notifyListeners();
     }
   }
+
+  // ---------------- notification / lock screen (recorded stories) ----------------
+  void _publish() {
+    final mc = MediaControls.instance;
+    final id = _storyId;
+    if (mc == null || id == null || !speaking) return;
+    final part = (_player.currentIndex ?? 0) + 1;
+    final ps = _player.processingState;
+    final honor = id == 'muhammad' ? 'ﷺ' : 'عليه السلام';
+    mc.show(this,
+        id: 'story-$id-$_gender-$part',
+        title: _storyTitle.isEmpty ? 'قصص الأنبياء' : 'قصة $_storyTitle $honor',
+        subtitle: 'بصوت ${recordedNames[_gender] ?? ''}${_parts > 1 ? ' • الجزء ${Arabic.digits(part)} من ${Arabic.digits(_parts)}' : ''}',
+        album: 'قصص الأنبياء',
+        playing: _player.playing,
+        loading: ps == ProcessingState.loading || ps == ProcessingState.buffering,
+        position: _player.position,
+        duration: _player.duration,
+        story: true);
+  }
+
+  /// Moves to the neighbouring story (delta = +1 next, -1 previous).
+  void _jump(int delta) {
+    final i = storyOrder.indexOf(_storyId ?? '');
+    final j = i + delta;
+    if (i < 0 || j < 0 || j >= storyOrder.length) return;
+    cancelNext(notify: false);
+    onAdvance?.call(storyOrder[j]);
+  }
+
+  bool get paused => speaking && !_player.playing;
+
+  @override
+  Future<void> resume() => _player.play();
+  @override
+  Future<void> pause() async {
+    await _player.pause();
+    notifyListeners();
+  }
+  @override
+  Future<void> next() async => _jump(1);
+  @override
+  Future<void> previous() async => _jump(-1);
+  @override
+  Future<void> seekTo(Duration position) => _player.seek(position);
+  @override
+  Future<void> rewind15() => _player.seek(_player.position - const Duration(seconds: 15) < Duration.zero
+      ? Duration.zero
+      : _player.position - const Duration(seconds: 15));
+  @override
+  Future<void> forward15() => _player.seek(_player.position + const Duration(seconds: 15));
 }

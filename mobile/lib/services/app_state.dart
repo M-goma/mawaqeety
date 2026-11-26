@@ -57,6 +57,7 @@ class AppState extends ChangeNotifier {
     await repo.load();
     await downloads.init();
     await narration.loadRecordings();
+    narration.storyOrder = [for (final p in repo.prophets) p.id];
     recitation.downloads = downloads;
     await notifications.init(onTap: (_) => playAdhanForCurrent());
     ready = true;
@@ -175,6 +176,8 @@ class AppState extends ChangeNotifier {
   Future<void> playAdhanForCurrent() async {
     final st = status();
     final p = st.current ?? Prayer.dhuhr;
+    await recitation.stop();
+    await narration.stop();
     await adhan.playFor(p, repo, settings);
   }
 

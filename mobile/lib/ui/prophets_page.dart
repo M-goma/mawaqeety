@@ -57,7 +57,7 @@ class ProphetPage extends StatelessWidget {
       if (i >= 0 && i + 1 < list.length) app.narration.scheduleNext(list[i + 1].id);
     };
     if (app.narration.hasRecording(p.id, app.settings.narrationVoice)) {
-      app.narration.playRecorded(p.id, app.settings.narrationVoice);
+      app.narration.playRecorded(p.id, app.settings.narrationVoice, title: p.nameAr);
       return;
     }
     app.narration.speak([

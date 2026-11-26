@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 
+import '../core/arabic.dart';
 import '../data/repository.dart';
+import 'media_controls.dart';
 import 'quran_downloads.dart';
 
 /// Verse-by-verse Qur'an recitation from everyayah.com, with the current ayah exposed for highlighting.
-class Recitation extends ChangeNotifier {
+class Recitation extends ChangeNotifier implements MediaSource {
   final _player = AudioPlayer();
   /// Saved recitations, used instead of the internet when available.
   QuranDownloads? downloads;
@@ -18,6 +20,8 @@ class Recitation extends ChangeNotifier {
 
   /// Called when a surah ends; return the next surah number to continue, or null to stop.
   int? Function(int lastSurah)? onFinished;
+  Repository? _repo;
+  String _reciterName = '';
 
   Recitation() {
     _player.currentIndexStream.listen((i) {
@@ -26,11 +30,14 @@ class Recitation extends ChangeNotifier {
       surah = basmala ? _queue.last.$1 : s;
       ayah = basmala ? 0 : a;
       notifyListeners();
+      _publish();
     });
     _player.playerStateStream.listen((st) {
       if (st.processingState == ProcessingState.completed && active) _finished();
       notifyListeners();
+      _publish();
     });
+    _player.positionDiscontinuityStream.listen((_) => _publish());
   }
 
   bool get playing => _player.playing;
@@ -40,6 +47,8 @@ class Recitation extends ChangeNotifier {
 
   Future<void> play(Repository repo, String reciter, int surah, int from, [int? to]) async {
     final s = repo.surahs[surah - 1];
+    _repo = repo;
+    _reciterName = repo.reciter(reciter).name;
     final end = (to ?? s.verses.length).clamp(from, s.verses.length);
     _queue = [
       if (from == 1 && surah != 1 && surah != 9) (1, 1, true),
@@ -83,10 +92,64 @@ class Recitation extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
   Future<void> stop() async {
     active = false;
     ayah = 0;
     await _player.stop();
     notifyListeners();
+    MediaControls.instance?.hide(this);
   }
+
+  // ---------------- notification / lock screen ----------------
+  void _publish() {
+    final mc = MediaControls.instance;
+    if (mc == null) return;
+    if (!active || _repo == null || surah < 1) {
+      mc.hide(this);
+      return;
+    }
+    final ps = _player.processingState;
+    mc.show(this,
+        id: 'quran-$surah-$ayah',
+        title: 'سورة ${_repo!.surahs[surah - 1].name} • ${ayah == 0 ? 'البسملة' : 'الآية ${Arabic.digits(ayah)}'}',
+        subtitle: _reciterName,
+        album: 'القرآن الكريم',
+        playing: _player.playing,
+        loading: ps == ProcessingState.loading || ps == ProcessingState.buffering,
+        position: _player.position,
+        duration: _player.duration);
+  }
+
+  @override
+  Future<void> resume() => _player.play();
+  @override
+  Future<void> pause() async {
+    await _player.pause();
+    notifyListeners();
+  }
+  @override
+  Future<void> next() async {
+    if (_player.hasNext) {
+      await _player.seekToNext();
+    } else {
+      _finished();
+    }
+  }
+  @override
+  Future<void> previous() async {
+    if (_player.position > const Duration(seconds: 3) || !_player.hasPrevious) {
+      await _player.seek(Duration.zero);
+    } else {
+      await _player.seekToPrevious();
+    }
+  }
+  @override
+  Future<void> seekTo(Duration position) => _player.seek(position);
+  @override
+  Future<void> rewind15() => _player.seek(_player.position - const Duration(seconds: 15) < Duration.zero
+      ? Duration.zero
+      : _player.position - const Duration(seconds: 15));
+  @override
+  Future<void> forward15() => _player.seek(_player.position + const Duration(seconds: 15));
 }

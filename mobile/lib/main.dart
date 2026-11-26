@@ -4,6 +4,7 @@ import 'package:intl/date_symbol_data_local.dart';
 
 import 'core/settings.dart';
 import 'services/app_state.dart';
+import 'services/media_controls.dart';
 import 'ui/home_shell.dart';
 import 'ui/theme.dart';
 
@@ -13,6 +14,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ar');
   runApp(const MawaqeetyApp());
+  await MediaControls.init();
   await app.init();
 }
 
