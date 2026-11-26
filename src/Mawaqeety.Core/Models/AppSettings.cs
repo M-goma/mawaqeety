@@ -102,8 +102,6 @@ public sealed class AppSettings
     public bool StoryAutoplay { get; set; }
 
     // Mushaf (printed pages)
-    /// <summary>"Mushaf" (printed pages) or "Text".</summary>
-    public string QuranView { get; set; } = "Mushaf";
     /// <summary>"auto" (follows the app theme), "paper", "white", "navy", "sepia", "charcoal".</summary>
     public string MushafTone { get; set; } = "auto";
     public string MushafNight { get; set; } = "navy";

@@ -291,6 +291,18 @@ public sealed partial class MushafViewModel : ObservableObject
     /// <summary>The ayah under a point of a page (image pixels), or null.</summary>
     public AyahBox? AyahAt(int page, double x, double y) => Idx.AyahsOn(page).FirstOrDefault(b => b.Contains(x, y));
 
+    private System.Windows.Threading.DispatcherTimer? _flash;
+
+    /// <summary>Highlights an ayah for a few seconds (opened from search, a bookmark or a story).</summary>
+    public void Flash(int surah, int ayah)
+    {
+        Select((surah, ayah));
+        _flash?.Stop();
+        _flash = new System.Windows.Threading.DispatcherTimer(TimeSpan.FromSeconds(4), System.Windows.Threading.DispatcherPriority.Normal,
+            (_, _) => { _flash?.Stop(); if (_selected == (surah, ayah)) Select(null); }, App.Instance.Dispatcher);
+        _flash.Start();
+    }
+
     public void Select((int Surah, int Ayah)? ayah)
     {
         _selected = ayah;

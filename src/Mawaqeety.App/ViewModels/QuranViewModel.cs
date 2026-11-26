@@ -45,21 +45,11 @@ public sealed partial class QuranViewModel : ObservableObject
     public string BasmalaText => Basmala;
 
     // ---------------- Mushaf (printed pages) / text ----------------
-    public bool IsMushaf
-    {
-        get => App.Instance.Settings.Current.QuranView != "Text";
-        set
-        {
-            if (value == IsMushaf) return;
-            App.Instance.Settings.Update(s => s.QuranView = value ? "Mushaf" : "Text");
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(IsText));
-            if (value) Mushaf.GoToAyah(SurahNumber, Math.Max(1, App.Instance.Settings.Current.LastReadSurah == SurahNumber ? App.Instance.Settings.Current.LastReadAyah : 1));
-            else Open(MushafIndex.Default.StartOf(Mushaf.RightPage).Surah, MushafIndex.Default.StartOf(Mushaf.RightPage).Ayah);
-        }
-    }
+    /// <summary>The Qur'an is read as printed Mushaf pages (the plain-text view was removed).</summary>
+    public bool IsMushaf => true;
 
-    public bool IsText { get => !IsMushaf; set => IsMushaf = !value; }
+    /// <summary>The side panel with the surahs, bookmarks and search.</summary>
+    [ObservableProperty] private bool _indexOpen;
 
     public MushafViewModel Mushaf => _mushaf ??= new MushafViewModel(this);
     private MushafViewModel? _mushaf;
@@ -308,6 +298,8 @@ public sealed partial class QuranViewModel : ObservableObject
     {
         if (item is null || item.IsHeader) return;
         Open(item.Surah, item.Ayah, scroll: true);
+        if (item.Kind != "surah") Mushaf.Flash(item.Surah, item.Ayah);
+        IndexOpen = false;
     }
 
     /// <summary>Opens a surah and scrolls to an ayah (used by the prophets' stories too).</summary>
@@ -333,7 +325,11 @@ public sealed partial class QuranViewModel : ObservableObject
                 });
         }
         if (scroll) ScrollRequested?.Invoke(Ayahs[ayah - 1]);
-        if (scroll && IsMushaf) Mushaf.GoToAyah(surah, ayah);
+        if (scroll)
+        {
+            Mushaf.GoToAyah(surah, ayah);
+            if (ayah > 1) Mushaf.Flash(surah, ayah);
+        }
     }
 
     [RelayCommand] private void NextSurah() { if (SurahNumber < 114) Open(SurahNumber + 1, 1); }

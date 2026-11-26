@@ -73,7 +73,6 @@ public static class SmokeTest
         await Page(ViewModels.Page.Dashboard, "01-dashboard");
         await Step("mushaf", async () =>
         {
-            vm.Quran.IsMushaf = true;
             vm.Page = ViewModels.Page.Quran;
             vm.Quran.Mushaf.GoTo(49);
             await Task.Delay(9000); // pages come from the internet on first view
@@ -90,10 +89,12 @@ public static class SmokeTest
             await Task.Delay(800);
             Shot(w, "05-downloads");
             vm.Quran.DownloadsOpen = false;
-            vm.Quran.IsText = true;
+            vm.Quran.IndexOpen = true;
+            vm.Quran.Filter = "الصبر";
             await Task.Delay(1500);
-            Shot(w, "06-quran-text");
-            vm.Quran.IsMushaf = true;
+            Shot(w, "06-quran-index-search");
+            vm.Quran.Filter = "";
+            vm.Quran.IndexOpen = false;
         });
         await Page(ViewModels.Page.Adhkar, "07-adhkar");
         await Page(ViewModels.Page.Qibla, "08-qibla");
