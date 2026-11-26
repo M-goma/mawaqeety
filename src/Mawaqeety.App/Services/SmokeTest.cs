@@ -98,6 +98,25 @@ public static class SmokeTest
         });
         await Page(ViewModels.Page.Adhkar, "07-adhkar");
         await Page(ViewModels.Page.Qibla, "08-qibla");
+        await Step("tracker", async () =>
+        {
+            var today = app.Today;
+            app.Tracker.SetPrayer(today, Core.Models.Prayer.Fajr, Core.Tracking.PrayerLog.Mosque);
+            app.Tracker.SetPrayer(today.AddDays(-1), Core.Models.Prayer.Asr, Core.Tracking.PrayerLog.Jamaah);
+            app.Tracker.SetAdhkar(today, morning: true);
+            vm.Page = ViewModels.Page.Tasbeeh;
+            await Task.Delay(800);
+            for (var i = 0; i < 7; i++) vm.Tasbeeh.Count();
+            await Task.Delay(800);
+            Shot(w, "08b-tasbeeh");
+            vm.Page = ViewModels.Page.Stats;
+            await Task.Delay(1200);
+            Shot(w, "08c-stats");
+            vm.Page = ViewModels.Page.Dashboard;
+            await Task.Delay(1500);
+            Shot(w, "08d-dashboard-harvest");
+            if (app.Tracker.Day(today).Tasbeeh < 7) errors.Add("tasbeeh did not count");
+        });
         await Page(ViewModels.Page.Prophets, "09-prophets");
         await Step("stories-download", async () =>
         {

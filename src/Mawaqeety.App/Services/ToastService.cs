@@ -13,6 +13,8 @@ public sealed class ToastService
 
     public event Action? OpenRequested;
     public event Action? StopSoundRequested;
+    /// <summary>A "did you pray?" button: date, prayer, how it was prayed.</summary>
+    public event Action<DateOnly, Prayer, Core.Tracking.PrayerLog>? PrayerLogged;
 
     public ToastService(IAppLog log)
     {
@@ -24,6 +26,13 @@ public sealed class ToastService
                 var args = ToastArguments.Parse(e.Argument);
                 args.TryGetValue("action", out var action);
                 if (action == "stopSound") StopSoundRequested?.Invoke();
+                else if (action == "log")
+                {
+                    if (args.TryGetValue("d", out var d) && DateOnly.TryParse(d, out var date) &&
+                        args.TryGetValue("p", out var p) && Enum.TryParse<Prayer>(p, out var prayer) &&
+                        args.TryGetValue("v", out var v) && int.TryParse(v, out var n))
+                        PrayerLogged?.Invoke(date, prayer, (Core.Tracking.PrayerLog)n);
+                }
                 else if (action != "dismiss") OpenRequested?.Invoke();
             };
         }
@@ -75,6 +84,26 @@ public sealed class ToastService
             });
         }
         catch (Exception ex) { _log.Error("Showing notification failed", ex); }
+    }
+
+    /// <summary>"Did you pray?" with buttons that log the prayer without opening the app.</summary>
+    public void ShowPrayerCheck(DateOnly date, Prayer prayer, string name)
+    {
+        try
+        {
+            var b = new ToastContentBuilder()
+                .AddArgument("action", "open")
+                .AddText($"هل صليت {name}؟ 🤍")
+                .AddText("سجّل صلاتك لتكتمل إحصائيتك اليوم.")
+                .AddAttributionText(Loc.T("AppName"))
+                .AddAudio(new ToastAudio { Silent = true });
+            if (File.Exists(AppPaths.LogoPng)) b.AddAppLogoOverride(new Uri(AppPaths.LogoPng), ToastGenericAppLogoCrop.Default);
+            foreach (var (label, v) in new[] { ("🕌 في المسجد", 1), ("👥 جماعة", 2), ("🧍 منفردًا", 3) })
+                b.AddButton(new ToastButton().SetContent(label).AddArgument("action", "log").AddArgument("d", date.ToString("yyyy-MM-dd"))
+                    .AddArgument("p", prayer.ToString()).AddArgument("v", v).SetBackgroundActivation());
+            b.Show(t => { t.Tag = $"check-{prayer}"; t.Group = "check"; t.ExpirationTime = DateTimeOffset.Now.AddHours(3); });
+        }
+        catch (Exception ex) { _log.Error("Showing prayer check failed", ex); }
     }
 
     public static void UninstallRegistration()

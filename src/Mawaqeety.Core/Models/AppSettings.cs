@@ -109,6 +109,18 @@ public sealed class AppSettings
     public double MushafDim { get; set; }
     public int MushafPage { get; set; } = 1;
 
+    // Tasbeeh and the daily tracker
+    /// <summary>Daily tasbeeh goal (0 = none).</summary>
+    public int WirdGoal { get; set; } = 100;
+    /// <summary>Ask "did you pray?" about 30 minutes after each prayer.</summary>
+    public bool PrayerCheck { get; set; } = true;
+    public int TasbeehPhrase { get; set; }
+    /// <summary>33, 100, 0 = free counting, -1 = after-prayer sequence (33+33+34).</summary>
+    public int TasbeehTarget { get; set; } = 33;
+    public List<string> TasbeehCustom { get; set; } = [];
+    public int TasbeehCount { get; set; }
+    public int TasbeehStep { get; set; }
+
     // Desktop widget
     public bool WidgetEnabled { get; set; }
     public bool WidgetTopmost { get; set; } = true;

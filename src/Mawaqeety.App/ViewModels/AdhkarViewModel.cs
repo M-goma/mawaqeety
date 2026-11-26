@@ -96,6 +96,8 @@ public sealed partial class AdhkarViewModel : ObservableObject
     private void UpdateProgress()
     {
         var done = Items.Count(i => i.Done);
+        if (done == Items.Count && Items.Count > 0 && Items.Any(i => i.Tapped > 0))
+            App.Instance.Tracker.SetAdhkar(App.Instance.Today, morning: IsMorning); // counts toward today's statistics
         ProgressText = done == Items.Count && Items.Count > 0
             ? "أتممت الأذكار، تقبّل الله منك 🤍"
             : $"أتممت {QuranRepository.ArabicDigits(done)} من {QuranRepository.ArabicDigits(Items.Count)}";

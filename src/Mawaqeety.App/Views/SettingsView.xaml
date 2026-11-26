@@ -386,6 +386,7 @@
                         <TextBlock Text="{l:Tr SecWidget}" Style="{StaticResource H2}"/>
                     </StackPanel>
                     <CheckBox Style="{StaticResource Switch}" Content="{l:Tr WidgetEnabled}" IsChecked="{Binding WidgetEnabled}"/>
+                    <CheckBox Style="{StaticResource Switch}" Content="{l:Tr PrayerCheck}" IsChecked="{Binding PrayerCheck}"/>
                     <CheckBox Style="{StaticResource Switch}" Content="{l:Tr WidgetTopmost}" IsChecked="{Binding WidgetTopmost}" IsEnabled="{Binding WidgetEnabled}"/>
                     <TextBlock Text="{l:Tr WidgetHint}" Style="{StaticResource Muted}" FontSize="12" Margin="2,4,0,0"/>
                 </StackPanel>

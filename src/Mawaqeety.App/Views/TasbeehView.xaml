@@ -1,0 +1,118 @@
+<UserControl x:Class="Mawaqeety.App.Views.TasbeehView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls"
+             Focusable="True" FocusVisualStyle="{x:Null}">
+    <UserControl.Resources>
+        <c:BoolToVisibilityConverter x:Key="BoolVis"/>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
+        <Style x:Key="Chip" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+            <Setter Property="Margin" Value="0,0,6,6"/>
+            <Setter Property="Padding" Value="12,4"/>
+        </Style>
+    </UserControl.Resources>
+    <Grid Margin="24,24,24,16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="320"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Counter: click anywhere here or press Space -->
+        <Border Style="{StaticResource Card}" Margin="0" MouseLeftButtonUp="Counter_Click" Cursor="Hand" Background="{DynamicResource SurfaceBrush}">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top">
+                    <ItemsControl ItemsSource="{Binding PhraseOptions}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Style="{StaticResource Chip}" Content="{Binding Label}" IsChecked="{Binding Selected, Mode=OneWay}"
+                                              Command="{Binding DataContext.SelectPhraseCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding Value}" ToolTip="كليك يمين لحذف ذكر أضفته">
+                                    <ToggleButton.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="حذف هذا الذكر" Command="{Binding PlacementTarget.Tag.RemovePhraseCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                      CommandParameter="{Binding Value}"/>
+                                        </ContextMenu>
+                                    </ToggleButton.ContextMenu>
+                                    <ToggleButton.Tag>
+                                        <Binding Path="DataContext" RelativeSource="{RelativeSource AncestorType=ItemsControl}"/>
+                                    </ToggleButton.Tag>
+                                </ToggleButton>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <DockPanel Margin="0,0,0,6">
+                        <Button DockPanel.Dock="Right" Content="＋ إضافة" Command="{Binding AddPhraseCommand}" Padding="10,4" Margin="6,0,0,0"/>
+                        <Grid>
+                            <TextBox x:Name="NewBox" Text="{Binding NewPhrase, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox.InputBindings><KeyBinding Key="Enter" Command="{Binding AddPhraseCommand}"/></TextBox.InputBindings>
+                            </TextBox>
+                            <TextBlock Text="ذكر خاص تكتبه بنفسك…" Foreground="{DynamicResource TextMutedBrush}" IsHitTestVisible="False" Margin="10,0" VerticalAlignment="Center"
+                                       Visibility="{Binding Text, ElementName=NewBox, Converter={x:Static c:EmptyVisibility.Instance}}"/>
+                        </Grid>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding TargetOptions}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton Style="{StaticResource Chip}" Content="{Binding Label}" IsChecked="{Binding Selected, Mode=OneWay}"
+                                              Command="{Binding DataContext.SelectTargetCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                              CommandParameter="{Binding Value}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel VerticalAlignment="Center">
+                    <Grid Width="270" Height="270">
+                        <Ellipse Stroke="{DynamicResource LineBrush}" StrokeThickness="12"/>
+                        <c:Arc Progress="{Binding Ring}" Stroke="{DynamicResource GoldBrush}" StrokeThickness="12"/>
+                        <Ellipse Margin="22" Fill="{DynamicResource HeroBrush}">
+                            <Ellipse.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.45"/></Ellipse.Effect>
+                        </Ellipse>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="{Binding CountText}" Foreground="White" FontSize="72" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding TargetText}" Foreground="{DynamicResource HeroMutedBrush}" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{Binding Phrase}" FontFamily="{StaticResource QuranFont}" FontSize="34" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+                    <TextBlock Text="{Binding StepText}" Foreground="{DynamicResource GoldBrush}" HorizontalAlignment="Center"
+                               Visibility="{Binding StepText, Converter={StaticResource NotEmpty}}"/>
+                    <TextBlock Text="اضغط هنا بالماوس أو اضغط زر المسافة (Space)" Style="{StaticResource Muted}" HorizontalAlignment="Center" Margin="0,4,0,0"/>
+                </StackPanel>
+            </DockPanel>
+        </Border>
+
+        <!-- Totals and the daily wird -->
+        <StackPanel Grid.Column="2">
+            <Border Background="{DynamicResource HeroBrush}" CornerRadius="18" Padding="18,14">
+                <UniformGrid Columns="3">
+                    <StackPanel><TextBlock Text="{Binding TodayText}" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="اليوم" Foreground="{DynamicResource HeroMutedBrush}" HorizontalAlignment="Center"/></StackPanel>
+                    <StackPanel><TextBlock Text="{Binding MonthText}" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="هذا الشهر" Foreground="{DynamicResource HeroMutedBrush}" HorizontalAlignment="Center"/></StackPanel>
+                    <StackPanel><TextBlock Text="{Binding TotalText}" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="المجموع" Foreground="{DynamicResource HeroMutedBrush}" HorizontalAlignment="Center"/></StackPanel>
+                </UniformGrid>
+            </Border>
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding WirdText}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold"/>
+                        <TextBlock Text="وردك اليومي" FontWeight="Bold" FontSize="15"/>
+                    </DockPanel>
+                    <ProgressBar Value="{Binding WirdProgress, Mode=OneWay}" Maximum="1" Height="8" Margin="0,8,0,4" Foreground="{DynamicResource GoldBrush}"
+                                 Background="{DynamicResource LineBrush}" BorderThickness="0"/>
+                    <TextBlock Text="✓ أتممت وردك اليوم، تقبّل الله منك" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"
+                               Visibility="{Binding WirdDone, Converter={StaticResource BoolVis}}"/>
+                    <DockPanel Margin="0,10,0,0">
+                        <TextBlock DockPanel.Dock="Left" Text="الهدف اليومي:" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <TextBox Text="{Binding WirdGoal, UpdateSourceTrigger=LostFocus}" Width="90" HorizontalAlignment="Left" TextAlignment="Center"/>
+                    </DockPanel>
+                    <TextBlock Style="{StaticResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0,6,0,0" Text="اكتب ٠ لإلغاء الورد. يدخل الورد في «حصاد اليوم» وفي إحصائياتك."/>
+                </StackPanel>
+            </Border>
+            <Button Content="↺ تصفير العدّاد" Command="{Binding ResetCommand}" Margin="0,14,0,0" HorizontalAlignment="Left"/>
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -553,6 +553,12 @@ public sealed partial class SettingsViewModel : ObservableObject
         set { _store.Update(s => s.WidgetEnabled = value); App.Instance.UpdateWidget(); OnPropertyChanged(); }
     }
 
+    public bool PrayerCheck
+    {
+        get => S.PrayerCheck;
+        set { _store.Update(s => s.PrayerCheck = value); OnPropertyChanged(); }
+    }
+
     public bool WidgetTopmost
     {
         get => S.WidgetTopmost;

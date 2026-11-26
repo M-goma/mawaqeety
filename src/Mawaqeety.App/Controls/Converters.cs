@@ -46,6 +46,8 @@ public sealed class LocationNameConverter : IValueConverter
 public sealed class Scale(double factor) : IValueConverter
 {
     public static readonly Scale ByTwo = new(1.9);
+    /// <summary>0..1 → bar height in the statistics (140 px).</summary>
+    public static readonly Scale Bar = new(134);
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
         value is double d ? d * factor : value;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;

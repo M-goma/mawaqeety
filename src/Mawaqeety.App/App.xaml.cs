@@ -44,6 +44,9 @@ public partial class App : Application
     public NarrationService Narration { get; private set; } = null!;
     public MushafPages Pages { get; private set; } = null!;
     public DownloadManager Downloads { get; private set; } = null!;
+    public Core.Tracking.Tracker Tracker { get; private set; } = null!;
+    private readonly HashSet<string> _asked = [];
+    private DispatcherTimer? _checkTimer;
     public HttpClient Http { get; private set; } = null!;
     public MainViewModel? MainVm { get; private set; }
 
@@ -89,6 +92,8 @@ public partial class App : Application
         Narration = new NarrationService(Dispatcher, Log) { PreferredGender = () => Settings.Current.NarrationVoice };
 
         Toast = new ToastService(Log);
+        Tracker = new Core.Tracking.Tracker(Path.Combine(AppPaths.DataDir, "tracker.json")) { WirdGoal = () => Settings.Current.WirdGoal };
+        Toast.PrayerLogged += (d, p, l) => Dispatcher.BeginInvoke(() => Tracker.SetPrayer(d, p, l));
         Pages = new MushafPages(Log);
         Downloads = new DownloadManager(Recitation, Pages, Toast, Log);
         Downloads.ProgressChanged += SetTaskbarProgress;
@@ -128,6 +133,8 @@ public partial class App : Application
         // Retry adhan downloads later if the PC was offline at startup.
         _adhanTimer = new DispatcherTimer(TimeSpan.FromMinutes(15), DispatcherPriority.Background, (_, _) => _ = PrefetchAdhanAsync(), Dispatcher);
         _adhanTimer.Start();
+        _checkTimer = new DispatcherTimer(TimeSpan.FromMinutes(1), DispatcherPriority.Background, (_, _) => CheckPrayerPrompts(), Dispatcher);
+        _checkTimer.Start();
         System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += (_, ev) => { if (ev.IsAvailable) _ = PrefetchAdhanAsync(); };
         UpdateTray();
         UpdateWidget();
@@ -264,6 +271,33 @@ public partial class App : Application
         _window.Topmost = true;  // reliably bring to front when activated from tray/second instance
         _window.Topmost = false;
         MainVm?.OnWindowShown();
+    }
+
+    /// <summary>Today's local date at the chosen location.</summary>
+    public DateOnly Today => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.Now, Settings.Current.ResolveZone()).DateTime);
+
+    /// <summary>About 30 minutes after each prayer: "did you pray?" (once, and only if it is not logged yet).</summary>
+    private void CheckPrayerPrompts()
+    {
+        try
+        {
+            var s = Settings.Current;
+            if (!s.PrayerCheck) return;
+            var today = Today;
+            var times = Times.GetDay(today, s);
+            var now = DateTimeOffset.Now;
+            foreach (var p in Core.Tracking.DayLog.Tracked)
+            {
+                var since = now - times[p];
+                var key = $"{today}-{p}";
+                if (since < TimeSpan.FromMinutes(30) || since > TimeSpan.FromHours(2) || _asked.Contains(key)) continue;
+                _asked.Add(key);
+                if (Tracker.Day(today).Of(p) != Core.Tracking.PrayerLog.None) continue;
+                var name = p == Prayer.Dhuhr && today.DayOfWeek == DayOfWeek.Friday ? "الجمعة" : Loc.I.Prayer(p);
+                Toast.ShowPrayerCheck(today, p, name);
+            }
+        }
+        catch (Exception ex) { Log.Warn("Prayer check failed", ex); }
     }
 
     /// <summary>Today's Hijri date in the current language.</summary>

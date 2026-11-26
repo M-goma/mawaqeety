@@ -6,6 +6,7 @@ using Mawaqeety.App.Localization;
 using Mawaqeety.Core;
 using Mawaqeety.Core.Calculation;
 using Mawaqeety.Core.Models;
+using Mawaqeety.Core.Tracking;
 
 namespace Mawaqeety.App.ViewModels;
 
@@ -19,6 +20,10 @@ public sealed partial class PrayerRowViewModel : ObservableObject
     [ObservableProperty] private bool _isCurrent;
     [ObservableProperty] private bool _isPassed;
     [ObservableProperty] private string _badge = "";
+    /// <summary>The prayer time has come, so it can be logged (not for sunrise).</summary>
+    [ObservableProperty] private bool _canLog;
+    [ObservableProperty] private PrayerLog _log;
+    [ObservableProperty] private string _logText = "";
 }
 
 public sealed partial class DashboardViewModel : ObservableObject
@@ -26,6 +31,8 @@ public sealed partial class DashboardViewModel : ObservableObject
     private readonly DispatcherTimer _timer;
     private DateOnly _loadedDate;
     private DailyPrayerTimes? _today;
+    private DateOnly _harvestDate;
+    private int _harvestTick;
 
     public ObservableCollection<PrayerRowViewModel> Rows { get; } = new(PrayerExtensions.All.Select(p => new PrayerRowViewModel
     {
@@ -56,12 +63,64 @@ public sealed partial class DashboardViewModel : ObservableObject
     [ObservableProperty] private string _pausedText = "";
     [ObservableProperty] private bool _isPaused;
 
+    // ---------------- today's harvest ----------------
+    [ObservableProperty] private double _harvest;
+    [ObservableProperty] private string _harvestPercent = "";
+    [ObservableProperty] private string _harvestLeft = "";
+    [ObservableProperty] private string _prayersChip = "";
+    [ObservableProperty] private bool _morningDone;
+    [ObservableProperty] private bool _eveningDone;
+    [ObservableProperty] private string _wirdChip = "";
+    [ObservableProperty] private bool _hasWird;
+
+    private void UpdateHarvest(DateOnly date)
+    {
+        var t = App.Instance.Tracker;
+        var d = t.Day(date);
+        var goal = App.Instance.Settings.Current.WirdGoal;
+        Harvest = t.Completion(date);
+        HarvestPercent = Core.Content.QuranRepository.ArabicDigits((int)Math.Round(Harvest * 100)) + "٪";
+        var left = new List<string>();
+        if (d.PrayersDone < 5) left.Add($"{Core.Content.QuranRepository.ArabicDigits(5 - d.PrayersDone)} صلوات");
+        if (!d.Morning) left.Add("أذكار الصباح");
+        if (!d.Evening) left.Add("أذكار المساء");
+        if (goal > 0 && d.Tasbeeh < goal) left.Add("الورد");
+        HarvestLeft = left.Count == 0 ? "أتممت يومك، تقبّل الله منك 🤍" : "باقي: " + string.Join("، ", left);
+        PrayersChip = $"🕌 {Core.Content.QuranRepository.ArabicDigits(d.PrayersDone)}/٥";
+        MorningDone = d.Morning;
+        EveningDone = d.Evening;
+        HasWird = goal > 0;
+        WirdChip = $"📿 {Core.Content.QuranRepository.ArabicDigits(d.Tasbeeh)}/{Core.Content.QuranRepository.ArabicDigits(goal)}";
+        foreach (var r in Rows)
+        {
+            r.Log = d.Of(r.Prayer);
+            r.LogText = r.Log == PrayerLog.None ? "＋ سجّل صلاتك" : $"{r.Log.Emoji()} {r.Log.Label()}";
+        }
+    }
+
+    /// <summary>Logs how a prayer was prayed today (None removes it).</summary>
+    public void LogPrayer(PrayerRowViewModel row, PrayerLog log)
+    {
+        var app = App.Instance;
+        var today = app.Today;
+        app.Tracker.SetPrayer(today, row.Prayer, log);
+        var d = app.Tracker.Day(today);
+        var streak = app.Tracker.PrayersStreak(today);
+        if (d.AllFiveOnTime && new[] { 3, 7, 14, 21, 30, 40, 60, 100, 200, 365 }.Contains(streak))
+            app.Toast.Show($"🔥 أحسنت! {Core.Content.QuranRepository.ArabicDigits(streak)} أيام متتالية للصلوات الخمس", "استمر، أحب الأعمال إلى الله أدومها وإن قلّ.", tag: "streak");
+    }
+
+    [RelayCommand] private void ToggleMorning() => App.Instance.Tracker.SetAdhkar(App.Instance.Today, morning: true, done: !MorningDone);
+    [RelayCommand] private void ToggleEvening() => App.Instance.Tracker.SetAdhkar(App.Instance.Today, morning: false, done: !EveningDone);
+    [RelayCommand] private void OpenStats() { if (App.Instance.MainVm is { } m) m.Page = Page.Stats; }
+
     public DashboardViewModel()
     {
         _timer = new DispatcherTimer(DispatcherPriority.Render) { Interval = TimeSpan.FromSeconds(1) };
         _timer.Tick += (_, _) => Tick();
         Loc.I.LanguageChanged += (_, _) => Reload();
         App.Instance.Settings.Changed += _ => App.Instance.Dispatcher.BeginInvoke(Reload);
+        App.Instance.Tracker.Changed += () => App.Instance.Dispatcher.BeginInvoke(() => UpdateHarvest(App.Instance.Today));
         Reload();
     }
 
@@ -123,7 +182,9 @@ public sealed partial class DashboardViewModel : ObservableObject
             r.IsCurrent = st.Current == r.Prayer && st.CurrentStart == t;
             r.IsPassed = t <= now && !r.IsCurrent;
             r.Badge = r.IsNext ? loc["Next"] : r.IsCurrent ? loc["Now"] : "";
+            r.CanLog = r.Prayer != Prayer.Sunrise && t <= now;
         }
+        if (_harvestDate != date || _harvestTick++ % 30 == 0) { _harvestDate = date; UpdateHarvest(date); }
 
         IsPaused = s.PausedUntil is { } p && p > now;
         PausedText = IsPaused ? string.Format(loc["AlertsPaused"], loc.FormatTime(TimeZoneInfo.ConvertTime(s.PausedUntil!.Value, zone), s.Use24HourClock)) : "";

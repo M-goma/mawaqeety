@@ -47,3 +47,28 @@ public class ExtrasTests
         Assert.Empty(StoryAudio.Default.Parts("nobody", "Male"));
     }
 }
+
+public class TrackerTests
+{
+    [Fact]
+    public void Tracker_saves_and_computes_streaks()
+    {
+        var file = Path.Combine(Path.GetTempPath(), $"tracker-{Guid.NewGuid():N}.json");
+        var t = new Mawaqeety.Core.Tracking.Tracker(file) { WirdGoal = () => 100 };
+        var today = new DateOnly(2026, 11, 26);
+        foreach (var d in new[] { today.AddDays(-2), today.AddDays(-1) })
+            foreach (var p in Mawaqeety.Core.Tracking.DayLog.Tracked)
+                t.SetPrayer(d, p, Mawaqeety.Core.Tracking.PrayerLog.Mosque);
+        t.SetPrayer(today, Mawaqeety.Core.Models.Prayer.Fajr, Mawaqeety.Core.Tracking.PrayerLog.Alone);
+        t.SetAdhkar(today, morning: true);
+        t.AddTasbeeh(today, 100);
+        Assert.Equal(2, t.PrayersStreak(today));          // today not complete yet → counts from yesterday
+        Assert.Equal(2, t.FajrMosqueStreak(today));
+        Assert.Equal(3 / 8.0, t.Completion(today), 3);   // fajr + morning + wird
+        var reloaded = new Mawaqeety.Core.Tracking.Tracker(file);
+        Assert.Equal(Mawaqeety.Core.Tracking.PrayerLog.Alone, reloaded.Day(today).Of(Mawaqeety.Core.Models.Prayer.Fajr));
+        Assert.Equal(100, reloaded.Day(today).Tasbeeh);
+        Assert.Equal(11, reloaded.Distribution(today.AddDays(-2), today).Values.Sum());
+        File.Delete(file);
+    }
+}
