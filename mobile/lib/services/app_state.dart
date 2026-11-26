@@ -20,6 +20,7 @@ import 'mushaf_store.dart';
 import 'notification_service.dart';
 import 'quran_downloads.dart';
 import 'story_downloads.dart';
+import 'tracker.dart';
 import 'recitation.dart';
 import 'widget_service.dart';
 
@@ -43,6 +44,7 @@ class AppState extends ChangeNotifier {
   final mushaf = MushafIndex();
   final mushafStore = MushafStore();
   final stories = StoryDownloads();
+  final tracker = Tracker();
   late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories);
   final narration = Narration();
   final updater = AppUpdater();
@@ -68,14 +70,21 @@ class AppState extends ChangeNotifier {
     await mushafStore.init(mushaf);
     await narration.loadRecordings();
     await stories.init();
+    tracker.wirdGoal = () => settings.wirdGoal;
+    await tracker.load();
     narration.onSaved = stories.noteSaved;
     narration.storyOrder = [for (final p in repo.prophets) p.id];
     recitation.downloads = downloads;
     await notifications.init(onTap: (r) {
       if (r.actionId?.startsWith('dl_') ?? false) return downloadNotifier.handleAction(r.actionId);
-      if (r.payload == DownloadNotifier.payload) return; // just opens the app
+      if (r.actionId?.startsWith('pt_') ?? false) {
+        logPrayerAction(r.actionId!, r.payload ?? '');
+        return;
+      }
+      if (r.payload == DownloadNotifier.payload || (r.payload ?? '').startsWith('pt|')) return; // just opens the app
       playAdhanForCurrent();
     });
+    downloadNotifier.onPrayerAction = logPrayerAction;
     downloadNotifier.init();
     ready = true;
     notifyListeners();
@@ -96,6 +105,23 @@ class AppState extends ChangeNotifier {
     await _prefs.setString(_key, settings.toJsonString());
     notifyListeners();
     if (reschedule) await this.reschedule();
+  }
+
+  /// A "did you pray?" notification button (payload "pt|yyyy-mm-dd|prayer", action "pt_<PrayerLog index>").
+  Future<void> logPrayerAction(String action, String payload) async {
+    final parts = payload.split('|');
+    final v = int.tryParse(action.replaceFirst('pt_', ''));
+    if (parts.length != 3 || v == null || v >= PrayerLog.values.length) return;
+    final d = DateTime.tryParse(parts[1]);
+    final p = Prayer.values.where((x) => x.name == parts[2]).firstOrNull;
+    if (d == null || p == null) return;
+    await tracker.setPrayer(d, p, PrayerLog.values[v]);
+  }
+
+  /// Logs a prayer from the app and stops asking about it.
+  Future<void> logPrayer(DateTime date, Prayer p, PrayerLog log) async {
+    await tracker.setPrayer(date, p, log);
+    unawaited(notifications.refreshPrayerChecks(this));
   }
 
   Future<void> reschedule() async {

@@ -46,6 +46,8 @@ class _AdhkarPageState extends State<AdhkarPage> {
     setState(() => c[i]--);
     HapticFeedback.selectionClick();
     if (c[i] == 0) HapticFeedback.mediumImpact();
+    // All done: counts toward today's statistics.
+    if (c.every((n) => n == 0)) app.tracker.setAdhkar(app.today, morning: _morning);
   }
 
   @override

@@ -7,6 +7,12 @@ class Arabic {
         return d == null ? c : _digits[d];
       }).join();
 
+  /// Arabic-Indic digits → Latin digits (for parsing numbers typed with an Arabic keyboard).
+  static String latinDigits(String s) => s.split('').map((c) {
+        final i = _digits.indexOf(c);
+        return i < 0 ? c : '$i';
+      }).join();
+
   static final _marks = RegExp('[ؐ-ًؚ-ٰٟۖ-ۭـ]');
 
   /// Removes harakat/Quranic marks and unifies letter forms, for search.

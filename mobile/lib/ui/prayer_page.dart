@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../core/prayer_calculator.dart';
+import '../core/arabic.dart';
 import '../main.dart';
+import '../services/tracker.dart';
 import 'format.dart';
 import 'monthly_page.dart';
 import 'qibla_page.dart';
 import 'settings_page.dart';
+import 'stats_page.dart';
 import 'theme.dart';
 
 class PrayerPage extends StatelessWidget {
@@ -23,7 +26,7 @@ class PrayerPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([app, app.adhan]),
+      listenable: Listenable.merge([app, app.adhan, app.tracker]),
       builder: (context, _) {
         final s = app.settings;
         final now = app.now;
@@ -124,7 +127,7 @@ class PrayerPage extends StatelessWidget {
                   ),
                 ]),
               ),
-              const SizedBox(height: 8),
+              const _TodayHarvest(),
               // Today
               for (final p in Prayer.values)
                 _PrayerRow(
@@ -136,6 +139,8 @@ class PrayerPage extends StatelessWidget {
                   passed: today[p].isBefore(DateTime.now().toUtc()),
                   notify: s.notify[p] ?? false,
                   onToggle: () => app.update((x) => x.notify[p] = !(x.notify[p] ?? false)),
+                  log: p.isObligatory && !today[p].isAfter(DateTime.now().toUtc()) ? app.tracker.day(app.today).of(p) : null,
+                  onLog: () => showPrayerLogSheet(context, app.today, p),
                 ),
               if (app.isWeb)
                 const Padding(
@@ -156,15 +161,19 @@ class _PrayerRow extends StatelessWidget {
   final String name, time;
   final bool isNext, isCurrent, passed, notify;
   final VoidCallback onToggle;
+  /// How the prayer was logged today (null = not loggable yet / sunrise).
+  final PrayerLog? log;
+  final VoidCallback onLog;
   const _PrayerRow({required this.icon, required this.name, required this.time, required this.isNext,
-      required this.isCurrent, required this.passed, required this.notify, required this.onToggle});
+      required this.isCurrent, required this.passed, required this.notify, required this.onToggle,
+      required this.log, required this.onLog});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final highlight = isNext ? AppColors.gold : (isCurrent ? AppColors.emerald : null);
     return Opacity(
-      opacity: passed && !isCurrent ? 0.6 : 1,
+      opacity: passed && !isCurrent && log == null ? 0.6 : 1,
       child: Card(
         color: isNext ? AppColors.goldSoft : (isCurrent ? AppColors.emerald.withValues(alpha: 0.12) : null),
         shape: highlight == null ? null : RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: highlight)),
@@ -181,6 +190,29 @@ class _PrayerRow extends StatelessWidget {
                 child: Text(isNext ? 'القادمة' : 'الآن', style: TextStyle(fontSize: 11, color: AppColors.navy, fontWeight: FontWeight.w700)),
               ),
           ]),
+          subtitle: log == null
+              ? null
+              : Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: onLog,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: log == PrayerLog.none ? null : _logColor(log!).withValues(alpha: 0.16),
+                          border: log == PrayerLog.none ? Border.all(color: theme.hintColor.withValues(alpha: 0.5)) : null,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Text(log == PrayerLog.none ? '＋ سجّل صلاتك' : '${log!.emoji} ${log!.label}',
+                            style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700,
+                                color: log == PrayerLog.none ? theme.hintColor : _logColor(log!))),
+                      ),
+                    ),
+                  ),
+                ),
           trailing: Row(mainAxisSize: MainAxisSize.min, children: [
             Text(time, textDirection: TextDirection.ltr, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
             IconButton(
@@ -188,6 +220,135 @@ class _PrayerRow extends StatelessWidget {
               icon: Icon(notify ? Icons.notifications_active : Icons.notifications_off_outlined,
                   color: notify ? AppColors.emerald : theme.hintColor, size: 20),
               onPressed: onToggle,
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+}
+
+Color _logColor(PrayerLog l) => switch (l) {
+      PrayerLog.mosque => const Color(0xFF2FD39A),
+      PrayerLog.jamaah => const Color(0xFF7FB0FF),
+      PrayerLog.alone => AppColors.gold,
+      PrayerLog.qada => const Color(0xFFE57373),
+      PrayerLog.none => Colors.grey,
+    };
+
+/// "How did you pray it?" — logs the prayer for the statistics.
+void showPrayerLogSheet(BuildContext context, DateTime date, Prayer p) {
+  final current = app.tracker.day(date).of(p);
+  final name = p == Prayer.dhuhr && date.weekday == DateTime.friday ? 'الجمعة' : p.nameAr;
+  showModalBottomSheet(
+    context: context,
+    builder: (c) => SafeArea(
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
+          child: Text('صلاة $name — كيف صليتها؟', style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        ),
+        for (final l in PrayerLog.values.skip(1))
+          ListTile(
+            leading: Text(l.emoji, style: const TextStyle(fontSize: 22)),
+            title: Text(l.longLabel),
+            trailing: current == l ? Icon(Icons.check_circle, color: AppColors.emerald) : null,
+            onTap: () async {
+              Navigator.pop(c);
+              await app.logPrayer(date, p, l);
+              if (!context.mounted) return;
+              final streak = app.tracker.prayersStreak(app.today);
+              final d = app.tracker.day(date);
+              String? msg;
+              if (d.allFiveOnTime && const [3, 7, 14, 21, 30, 40, 60, 100, 200, 365].contains(streak)) {
+                msg = '🔥 أحسنت! ${Arabic.digits(streak)} أيام متتالية للصلوات الخمس. أحب الأعمال إلى الله أدومها وإن قلّ.';
+              } else if (d.prayersDone == 5) {
+                msg = 'أتممت الصلوات الخمس اليوم، تقبّل الله منك 🤍';
+              } else if (l == PrayerLog.mosque) {
+                msg = 'صلاة الجماعة تفضل صلاة الفذّ بسبع وعشرين درجة 🤍';
+              }
+              if (msg != null) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+            },
+          ),
+        if (current != PrayerLog.none)
+          TextButton(
+            onPressed: () {
+              Navigator.pop(c);
+              app.logPrayer(date, p, PrayerLog.none);
+            },
+            child: const Text('إلغاء التسجيل'),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Text('البيانات محفوظة على جهازك فقط', style: TextStyle(fontSize: 12, color: Theme.of(c).hintColor)),
+        ),
+      ]),
+    ),
+  );
+}
+
+/// Today's prayers, adhkar and wird in one ring.
+class _TodayHarvest extends StatelessWidget {
+  const _TodayHarvest();
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(listenable: Listenable.merge([app, app.tracker]), builder: (context, _) => _card(context));
+
+  Widget _card(BuildContext context) {
+    final t = app.tracker;
+    final day = t.day(app.today);
+    final value = t.completion(app.today);
+    final goal = app.settings.wirdGoal;
+    final left = <String>[
+      if (day.prayersDone < 5) '${Arabic.digits(5 - day.prayersDone)} صلوات',
+      if (!day.morning) 'أذكار الصباح',
+      if (!day.evening) 'أذكار المساء',
+      if (goal > 0 && day.tasbeeh < goal) 'الورد',
+    ];
+    Widget chip(String text, bool done, [VoidCallback? onTap]) => GestureDetector(
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            decoration: BoxDecoration(color: done ? Colors.white30 : Colors.white12, borderRadius: BorderRadius.circular(10)),
+            child: Text(done ? '$text ✓' : text, style: const TextStyle(color: Colors.white, fontSize: 11.5)),
+          ),
+        );
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StatsPage())),
+        child: Container(
+          decoration: BoxDecoration(gradient: heroGradient),
+          padding: const EdgeInsets.all(14),
+          child: Row(children: [
+            SizedBox(
+              width: 74,
+              height: 74,
+              child: Stack(alignment: Alignment.center, children: [
+                SizedBox.expand(
+                  child: CircularProgressIndicator(value: value, strokeWidth: 8, color: AppColors.goldLight, backgroundColor: Colors.white24),
+                ),
+                Text('${Arabic.digits((value * 100).round())}٪', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 17)),
+              ]),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Text('حصاد اليوم', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                  const Spacer(),
+                  Text('إحصائياتي ›', style: TextStyle(color: AppColors.goldLight, fontSize: 12.5)),
+                ]),
+                Text(left.isEmpty ? 'أتممت يومك، تقبّل الله منك 🤍' : 'باقي: ${left.join('، ')}',
+                    style: TextStyle(color: AppColors.heroText, fontSize: 12.5)),
+                const SizedBox(height: 6),
+                Wrap(spacing: 6, runSpacing: 4, children: [
+                  chip('🕌 ${Arabic.digits(day.prayersDone)}/٥', day.prayersDone == 5),
+                  chip('☀️ الصباح', day.morning, () => t.setAdhkar(app.today, morning: true, done: !day.morning)),
+                  chip('🌙 المساء', day.evening, () => t.setAdhkar(app.today, morning: false, done: !day.evening)),
+                  if (goal > 0) chip('📿 ${Arabic.digits(day.tasbeeh)}/${Arabic.digits(goal)}', day.tasbeeh >= goal),
+                ]),
+              ]),
             ),
           ]),
         ),

@@ -73,6 +73,14 @@ class Settings {
   double mushafDim = 0; // 0..0.6 extra dimming inside the Mushaf
   int mushafPage = 1; // last page opened
   bool mushafHint = false; // the long-press tip was shown
+  // Tasbeeh and the daily tracker
+  int wirdGoal = 100; // daily tasbeeh goal (0 = none)
+  bool prayerCheck = true; // "did you pray?" notification after each prayer
+  int tasbeehPhrase = 0; // index in the phrase list (built-in first, then custom)
+  int tasbeehTarget = 33; // 33, 100, 0 = free, -1 = after-prayer sequence (33+33+34)
+  List<String> tasbeehCustom = [];
+  int tasbeehCount = 0; // current round
+  int tasbeehStep = 0; // step of the after-prayer sequence
 
   CalculationOptions get options {
     var m = CalculationMethod.get(method);
@@ -89,7 +97,7 @@ class Settings {
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
-        'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint,
+        'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint, 'wirdGoal': wirdGoal, 'prayerCheck': prayerCheck, 'tasbeehPhrase': tasbeehPhrase, 'tasbeehTarget': tasbeehTarget, 'tasbeehCustom': tasbeehCustom, 'tasbeehCount': tasbeehCount, 'tasbeehStep': tasbeehStep,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -138,6 +146,13 @@ class Settings {
       r.mushafDim = (j['mushafDim'] ?? 0).toDouble();
       r.mushafPage = j['mushafPage'] ?? 1;
       r.mushafHint = j['mushafHint'] ?? false;
+      r.wirdGoal = j['wirdGoal'] ?? 100;
+      r.prayerCheck = j['prayerCheck'] ?? true;
+      r.tasbeehPhrase = j['tasbeehPhrase'] ?? 0;
+      r.tasbeehTarget = j['tasbeehTarget'] ?? 33;
+      r.tasbeehCustom = ((j['tasbeehCustom'] ?? []) as List).cast<String>();
+      r.tasbeehCount = j['tasbeehCount'] ?? 0;
+      r.tasbeehStep = j['tasbeehStep'] ?? 0;
       if (j['lastRead'] != null) r.lastRead = Bookmark.fromJson(j['lastRead']);
       r.bookmarks = ((j['bookmarks'] ?? []) as List).map((e) => Bookmark.fromJson(e)).toList();
     } catch (_) {/* corrupted -> defaults */}

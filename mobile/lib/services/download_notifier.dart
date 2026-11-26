@@ -12,12 +12,25 @@ import '../data/repository.dart';
 import 'mushaf_store.dart';
 import 'quran_downloads.dart';
 import 'story_downloads.dart';
+import 'tracker.dart';
 
 /// Buttons in a notification that do not open the app run in a separate isolate;
 /// they forward the button id to the app through this port.
 @pragma('vm:entry-point')
-void downloadActionInBackground(NotificationResponse r) {
-  IsolateNameServer.lookupPortByName(DownloadNotifier.portName)?.send(r.actionId);
+Future<void> downloadActionInBackground(NotificationResponse r) async {
+  final port = IsolateNameServer.lookupPortByName(DownloadNotifier.portName);
+  final action = r.actionId ?? '';
+  if (action.startsWith('pt_')) {
+    // "Did you pray?" buttons: tell the running app, or save directly when it is not running.
+    if (port != null) {
+      port.send('$action#${r.payload ?? ''}');
+    } else {
+      DartPluginRegistrant.ensureInitialized();
+      await logPrayerFromBackground(r.payload ?? '', action);
+    }
+    return;
+  }
+  port?.send(r.actionId);
 }
 
 /// Keeps Qur'an and Mushaf downloads running after the user leaves the app (Android foreground service),
@@ -46,11 +59,22 @@ class DownloadNotifier {
 
   bool get _supported => !kIsWeb && Platform.isAndroid;
 
+  /// A "did you pray?" button was pressed: (action id, payload).
+  void Function(String action, String payload)? onPrayerAction;
+
   void init() {
     if (!_supported) return;
     IsolateNameServer.removePortNameMapping(portName);
     IsolateNameServer.registerPortWithName(_port.sendPort, portName);
-    _port.listen((id) => handleAction(id as String?));
+    _port.listen((msg) {
+      final m = msg as String?;
+      if (m != null && m.startsWith('pt_')) {
+        final i = m.indexOf('#');
+        onPrayerAction?.call(m.substring(0, i), m.substring(i + 1));
+        return;
+      }
+      handleAction(m);
+    });
     quran.addListener(_changed);
     mushaf.addListener(_changed);
     stories.addListener(_changed);

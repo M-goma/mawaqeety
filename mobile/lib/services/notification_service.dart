@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../core/prayer_calculator.dart';
 import 'app_state.dart';
 import 'download_notifier.dart';
+import 'tracker.dart';
 
 /// Schedules local notifications for the coming days (Android & iOS). No-op on web.
 class NotificationService {
@@ -169,10 +170,60 @@ class NotificationService {
           }
         }
       }
+      await _schedulePrayerChecks(app);
       await _scheduleCountdown(app);
     } catch (e) {
       debugPrint('scheduling failed: $e');
     }
+  }
+
+  static const _checkBaseId = 8000;
+
+  /// Android only: about 30 minutes after each prayer, "Did you pray?" with buttons that log it directly.
+  Future<void> _schedulePrayerChecks(AppState app) async {
+    if (defaultTargetPlatform != TargetPlatform.android || !app.settings.prayerCheck) return;
+    final nowUtc = DateTime.now().toUtc();
+    var id = _checkBaseId;
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'prayer_check_v1', 'هل صليت؟',
+        channelDescription: 'سؤال بعد كل صلاة لتسجيلها في إحصائياتك',
+        importance: Importance.defaultImportance,
+        priority: Priority.defaultPriority,
+        playSound: false,
+        actions: [
+          AndroidNotificationAction('pt_1', '🕌 في المسجد'),
+          AndroidNotificationAction('pt_2', '👥 جماعة'),
+          AndroidNotificationAction('pt_3', '🧍 منفردًا'),
+        ],
+      ),
+    );
+    for (var d = 0; d < 3; d++) {
+      final date = app.today.add(Duration(days: d));
+      final times = app.day(date);
+      for (final p in trackedPrayers) {
+        final at = times[p].add(const Duration(minutes: 30));
+        if (!at.isAfter(nowUtc) || app.tracker.day(date).of(p) != PrayerLog.none) continue;
+        await _plugin.zonedSchedule(
+          id: id++,
+          scheduledDate: tz.TZDateTime.from(at, tz.UTC),
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          title: 'هل صليت ${p == Prayer.dhuhr && date.weekday == DateTime.friday ? 'الجمعة' : p.nameAr}؟ 🤍',
+          body: 'سجّل صلاتك لتكتمل إحصائيتك اليوم.',
+          payload: 'pt|${dayKey(date)}|${p.name}',
+        );
+      }
+    }
+  }
+
+  /// Re-plans the "did you pray?" questions (e.g. after a prayer was logged in the app, so it is not asked).
+  Future<void> refreshPrayerChecks(AppState app) async {
+    if (!_ok) return;
+    for (var i = 0; i < 15; i++) {
+      await _plugin.cancel(id: _checkBaseId + i);
+    }
+    await _schedulePrayerChecks(app);
   }
 
   static String _fmt(DateTime t, bool h24) {

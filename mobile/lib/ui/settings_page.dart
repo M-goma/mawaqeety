@@ -89,6 +89,13 @@ class SettingsPage extends StatelessWidget {
                     onChanged: (v) => app.update((x) => x.ongoingCountdown = v),
                   ),
                 if (Theme.of(context).platform == TargetPlatform.android)
+                  SwitchListTile(
+                    title: const Text('سؤال «هل صليت؟» بعد كل صلاة'),
+                    subtitle: const Text('بعد الأذان بنصف ساعة، تسجّل صلاتك من الإشعار مباشرة لإحصائياتك', style: TextStyle(fontSize: 12)),
+                    value: s.prayerCheck,
+                    onChanged: (v) => app.update((x) => x.prayerCheck = v),
+                  ),
+                if (Theme.of(context).platform == TargetPlatform.android)
                   _Dropdown<String>(
                     label: 'شكل الودجت على الشاشة الرئيسية',
                     value: s.widgetStyle,
