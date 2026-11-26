@@ -74,6 +74,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
               child: Text('نزّل المصحف كاملًا أو سورًا محددة لتستمع إليها دون اتصال بالإنترنت. '
                   'يُفضَّل التنزيل عبر Wi-Fi مع إبقاء التطبيق مفتوحًا حتى ينتهي.', style: TextStyle(fontSize: 13)),
             ),
+            const _MushafPagesCard(),
             _ReciterCard(id: current.id, name: current.name, isCurrent: true, size: _sizes[current.id],
                 onDelete: () => _confirmDelete(current.id, current.name), onChanged: _refreshSizes),
             if (others.isNotEmpty)
@@ -164,4 +165,49 @@ class _ReciterCard extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Printed Mushaf pages for reading without internet.
+class _MushafPagesCard extends StatelessWidget {
+  const _MushafPagesCard();
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+        listenable: app.mushafStore,
+        builder: (context, _) {
+          final m = app.mushafStore;
+          return Card(
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  Icon(Icons.menu_book, color: AppColors.emerald),
+                  const SizedBox(width: 8),
+                  const Expanded(child: Text('صفحات المصحف للقراءة', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5))),
+                  if (m.complete) Icon(Icons.offline_pin, color: AppColors.emerald),
+                ]),
+                const SizedBox(height: 6),
+                Text(m.complete
+                    ? 'المصحف كاملًا محفوظ على الهاتف (٦٠٤ صفحات).'
+                    : 'محفوظ ${Arabic.digits(m.savedCount)} من ٦٠٤ صفحة • الحجم الكامل نحو ٦٦ ميجابايت',
+                    style: const TextStyle(fontSize: 13)),
+                if (m.downloading) ...[
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: m.progress, color: AppColors.emerald),
+                ],
+                if (m.error != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(m.error!, style: const TextStyle(color: Colors.redAccent, fontSize: 12.5))),
+                const SizedBox(height: 8),
+                Row(children: [
+                  if (m.downloading)
+                    OutlinedButton.icon(onPressed: m.cancel, icon: const Icon(Icons.stop), label: const Text('إيقاف'))
+                  else if (!m.complete)
+                    FilledButton.icon(onPressed: m.downloadAll, icon: const Icon(Icons.download), label: const Text('تنزيل المصحف كاملًا')),
+                  const Spacer(),
+                  if (m.savedCount > 0 && !m.downloading)
+                    TextButton(onPressed: m.deleteAll, child: const Text('حذف الصفحات')),
+                ]),
+              ]),
+            ),
+          );
+        },
+      );
 }

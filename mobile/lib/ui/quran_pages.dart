@@ -5,6 +5,7 @@ import '../core/settings.dart';
 import '../data/repository.dart';
 import '../main.dart';
 import 'downloads_page.dart';
+import 'mushaf_page.dart';
 import 'format.dart';
 import 'theme.dart';
 
@@ -47,6 +48,17 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
             ],
           ),
           body: ListView(children: [
+            _ViewSwitch(),
+            if (app.settings.quranView == 'mushaf')
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.menu_book, color: AppColors.emerald, size: 30),
+                  title: const Text('المصحف الشريف', style: TextStyle(fontWeight: FontWeight.w700)),
+                  subtitle: Text('صفحة ${Arabic.digits(app.settings.mushafPage)} • سورة ${app.repo.surahs[app.mushaf.surahOf(app.settings.mushafPage) - 1].name}'),
+                  trailing: const Icon(Icons.chevron_left),
+                  onTap: () => openMushaf(context, app.settings.mushafPage),
+                ),
+              ),
             if (last != null)
               Card(
                 color: AppColors.goldSoft,
@@ -84,8 +96,81 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
   }
 }
 
-void openReader(BuildContext context, int surah, int ayah) =>
+void openReader(BuildContext context, int surah, int ayah) {
+  if (app.settings.quranView == 'mushaf') {
+    openMushaf(context, app.mushaf.pageOf(surah, ayah));
+  } else {
     Navigator.push(context, MaterialPageRoute(builder: (_) => QuranReaderPage(surah: surah, initialAyah: ayah)));
+  }
+}
+
+/// Starts verse-by-verse recitation, continuing into the next surah when enabled.
+void startQuranRecitation(int surah, int ayah) {
+  app.narration.stop();
+  app.adhan.stop();
+  app.recitation.onFinished = (last) {
+    if (!app.settings.continueNextSurah || last >= 114) return null;
+    app.recitation.play(app.repo, app.settings.reciterId, last + 1, 1);
+    return last + 1;
+  };
+  app.recitation.play(app.repo, app.settings.reciterId, surah, ayah);
+}
+
+void showReciterPicker(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (c) => SafeArea(
+      child: SizedBox(
+        height: MediaQuery.of(c).size.height * 0.6,
+        child: ListView(children: [
+          const Padding(padding: EdgeInsets.all(16), child: Text('اختر القارئ', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
+          if (app.downloads.supported) ...[
+            ListTile(
+              leading: Icon(Icons.download_for_offline_outlined, color: AppColors.gold),
+              title: const Text('الاستماع دون إنترنت'),
+              subtitle: const Text('تنزيل المصحف أو السور على الهاتف'),
+              trailing: const Icon(Icons.chevron_left),
+              onTap: () {
+                Navigator.pop(c);
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const DownloadsPage()));
+              },
+            ),
+            const Divider(),
+          ],
+          for (final r in app.repo.reciters)
+            ListTile(
+              leading: Icon(r.id == app.settings.reciterId ? Icons.radio_button_checked : Icons.radio_button_off, color: AppColors.emerald),
+              title: Text(r.name),
+              onTap: () {
+                final rec = app.recitation;
+                final wasActive = rec.active;
+                final (s, at) = (rec.surah, rec.ayah);
+                app.update((x) => x.reciterId = r.id, reschedule: false);
+                Navigator.pop(c);
+                if (wasActive && s > 0) startQuranRecitation(s, at > 0 ? at : 1);
+              },
+            ),
+        ]),
+      ),
+    ),
+  );
+}
+
+class _ViewSwitch extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 4),
+        child: SegmentedButton<String>(
+          segments: const [
+            ButtonSegment(value: 'mushaf', icon: Icon(Icons.menu_book), label: Text('المصحف')),
+            ButtonSegment(value: 'text', icon: Icon(Icons.notes), label: Text('نص')),
+          ],
+          selected: {app.settings.quranView},
+          onSelectionChanged: (v) => app.update((x) => x.quranView = v.first, reschedule: false),
+        ),
+      );
+}
 
 class _NumberBadge extends StatelessWidget {
   final int n;
@@ -144,55 +229,9 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
     }
   }
 
-  void _startRecitation(int ayah) {
-    app.narration.stop();
-    app.adhan.stop();
-    app.recitation.onFinished = (last) {
-      if (!app.settings.continueNextSurah || last >= 114) return null;
-      app.recitation.play(app.repo, app.settings.reciterId, last + 1, 1);
-      return last + 1;
-    };
-    app.recitation.play(app.repo, app.settings.reciterId, _surah, ayah);
-  }
+  void _startRecitation(int ayah) => startQuranRecitation(_surah, ayah);
 
-  void _pickReciter() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (c) => SafeArea(
-        child: SizedBox(
-          height: MediaQuery.of(c).size.height * 0.6,
-          child: ListView(children: [
-            const Padding(padding: EdgeInsets.all(16), child: Text('اختر القارئ', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700))),
-            ListTile(
-              leading: Icon(Icons.download_for_offline_outlined, color: AppColors.gold),
-              title: const Text('الاستماع دون إنترنت'),
-              subtitle: const Text('تنزيل المصحف أو السور على الهاتف'),
-              trailing: const Icon(Icons.chevron_left),
-              onTap: () {
-                Navigator.pop(c);
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const DownloadsPage()));
-              },
-            ),
-            const Divider(),
-            for (final r in app.repo.reciters)
-              ListTile(
-                leading: Icon(r.id == app.settings.reciterId ? Icons.radio_button_checked : Icons.radio_button_off, color: AppColors.emerald),
-                title: Text(r.name),
-                onTap: () {
-                  final wasActive = app.recitation.active;
-                  final at = app.recitation.ayah;
-                  app.update((x) => x.reciterId = r.id, reschedule: false);
-                  Navigator.pop(c);
-                  if (wasActive) _startRecitation(at > 0 ? at : 1);
-                  setState(() {});
-                },
-              ),
-          ]),
-        ),
-      ),
-    );
-  }
+  void _pickReciter() => showReciterPicker(context);
 
   void _jumpTo(int ayah) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -290,6 +329,14 @@ class _QuranReaderPageState extends State<QuranReaderPage> {
       appBar: AppBar(
         title: Text('سورة ${s.name}'),
         actions: [
+          IconButton(
+            tooltip: 'عرض المصحف',
+            icon: const Icon(Icons.menu_book),
+            onPressed: () {
+              app.update((x) => x.quranView = 'mushaf', reschedule: false);
+              openMushaf(context, app.mushaf.pageOf(_surah, _lastScrolled > 0 ? _lastScrolled : 1), replace: true);
+            },
+          ),
           if (app.downloads.supported)
             ListenableBuilder(
               listenable: app.downloads,

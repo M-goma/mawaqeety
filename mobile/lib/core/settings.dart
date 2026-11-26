@@ -67,6 +67,13 @@ class Settings {
   bool storyAutoplay = false; // play the next prophet story when one ends // Android: persistent notification with the time left to the next prayer
   Bookmark? lastRead;
   List<Bookmark> bookmarks = [];
+  /// Qur'an reading view: 'mushaf' (printed pages) or 'text'.
+  String quranView = 'mushaf';
+  /// Mushaf colours: 'auto' (follows the app theme), 'paper', 'white', 'navy', 'sepia', 'charcoal'.
+  String mushafMode = 'auto';
+  String mushafNight = 'navy'; // night colours used by 'auto'
+  double mushafDim = 0; // 0..0.6 extra dimming inside the Mushaf
+  int mushafPage = 1; // last page opened
 
   CalculationOptions get options {
     var m = CalculationMethod.get(method);
@@ -83,6 +90,7 @@ class Settings {
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
+        'quranView': quranView, 'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -126,6 +134,11 @@ class Settings {
       r.ongoingCountdown = j['ongoingCountdown'] ?? true;
       r.widgetStyle = j['widgetStyle'] ?? 'clock';
       r.storyAutoplay = j['storyAutoplay'] ?? false;
+      r.quranView = j['quranView'] ?? 'mushaf';
+      r.mushafMode = j['mushafMode'] ?? 'auto';
+      r.mushafNight = j['mushafNight'] ?? 'navy';
+      r.mushafDim = (j['mushafDim'] ?? 0).toDouble();
+      r.mushafPage = j['mushafPage'] ?? 1;
       if (j['lastRead'] != null) r.lastRead = Bookmark.fromJson(j['lastRead']);
       r.bookmarks = ((j['bookmarks'] ?? []) as List).map((e) => Bookmark.fromJson(e)).toList();
     } catch (_) {/* corrupted -> defaults */}
