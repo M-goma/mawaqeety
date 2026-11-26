@@ -19,6 +19,7 @@ import 'download_notifier.dart';
 import 'mushaf_store.dart';
 import 'notification_service.dart';
 import 'quran_downloads.dart';
+import 'story_downloads.dart';
 import 'recitation.dart';
 import 'widget_service.dart';
 
@@ -41,7 +42,8 @@ class AppState extends ChangeNotifier {
   final downloads = QuranDownloads();
   final mushaf = MushafIndex();
   final mushafStore = MushafStore();
-  late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo);
+  final stories = StoryDownloads();
+  late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories);
   final narration = Narration();
   final updater = AppUpdater();
   final widgets = WidgetService();
@@ -65,6 +67,8 @@ class AppState extends ChangeNotifier {
     await mushaf.load();
     await mushafStore.init(mushaf);
     await narration.loadRecordings();
+    await stories.init();
+    narration.onSaved = stories.noteSaved;
     narration.storyOrder = [for (final p in repo.prophets) p.id];
     recitation.downloads = downloads;
     await notifications.init(onTap: (r) {

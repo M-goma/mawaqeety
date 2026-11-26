@@ -5,8 +5,12 @@ using Mawaqeety.Core.Content;
 
 namespace Mawaqeety.App.ViewModels;
 
-public sealed record ProphetListItem(Prophet Prophet)
+public sealed partial class ProphetListItem(Prophet prophet) : ObservableObject
 {
+    public Prophet Prophet { get; } = prophet;
+    /// <summary>The recording in the chosen voice is on this PC.</summary>
+    [ObservableProperty] private bool _isSaved;
+
     public string OrderText => QuranRepository.ArabicDigits(Prophet.Order);
     public string DisplayName => Prophet.Id == "muhammad" || Prophet.NameAr.StartsWith("محمد") ? "محمد ﷺ" : $"{Prophet.NameAr} عليه السلام";
 }
@@ -115,6 +119,59 @@ public sealed partial class ProphetsViewModel : ObservableObject
         Narrate();
     }
 
+    // ---------------- offline download of the recorded stories ----------------
+    public Services.DownloadManager Downloads => App.Instance.Downloads;
+    [ObservableProperty] private bool _storiesDownloadOpen;
+    [ObservableProperty] private string _storiesChoice = "Male";
+    public string MaleSizeText => $"صوت رجل (نبيل) • {QuranRepository.ArabicDigits(StoryAudio.Default.SizeMb("Male"))} ميجابايت";
+    public string FemaleSizeText => $"صوت امرأة (عرين) • {QuranRepository.ArabicDigits(StoryAudio.Default.SizeMb("Female"))} ميجابايت";
+    public string BothSizeText => $"الصوتان معًا • {QuranRepository.ArabicDigits(StoryAudio.Default.SizeMb("Male") + StoryAudio.Default.SizeMb("Female"))} ميجابايت";
+    [ObservableProperty] private string _storiesSavedText = "";
+    public bool IsMaleChoice { get => StoriesChoice == "Male"; set { if (value) StoriesChoice = "Male"; } }
+    public bool IsFemaleChoice { get => StoriesChoice == "Female"; set { if (value) StoriesChoice = "Female"; } }
+    public bool IsBothChoice { get => StoriesChoice == "Both"; set { if (value) StoriesChoice = "Both"; } }
+
+    partial void OnStoriesDownloadOpenChanged(bool value) { if (value) { StoriesChoice = NarrationVoice; RefreshSaved(); } }
+    partial void OnStoriesChoiceChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsMaleChoice));
+        OnPropertyChanged(nameof(IsFemaleChoice));
+        OnPropertyChanged(nameof(IsBothChoice));
+    }
+
+    private void RefreshSaved()
+    {
+        foreach (var p in Prophets) p.IsSaved = Services.DownloadManager.IsStorySaved(p.Prophet.Id, NarrationVoice);
+        var mb = (int)(Services.DownloadManager.SavedStoriesBytes() / 1_000_000);
+        StoriesSavedText = $"محفوظ: {QuranRepository.ArabicDigits(Services.DownloadManager.SavedStories("Male"))} قصة بصوت نبيل، "
+            + $"{QuranRepository.ArabicDigits(Services.DownloadManager.SavedStories("Female"))} بصوت عرين ({QuranRepository.ArabicDigits(mb)} ميجابايت)";
+    }
+
+    [RelayCommand]
+    private async Task DownloadAllStories()
+    {
+        StoriesDownloadOpen = false;
+        await Downloads.DownloadStoriesAsync(StoriesChoice == "Both" ? ["Male", "Female"] : [StoriesChoice]);
+    }
+
+    [RelayCommand]
+    private async Task DownloadThisStory()
+    {
+        if (Selected is null) return;
+        await Downloads.DownloadStoriesAsync([NarrationVoice], [Selected.Prophet.Id]);
+    }
+
+    [RelayCommand] private void CancelStoriesDownload() => Downloads.CancelStories();
+
+    [RelayCommand]
+    private void DeleteStories()
+    {
+        if (System.Windows.MessageBox.Show("ستُحذف تسجيلات القصص من الجهاز، ويمكنك تنزيلها مرة أخرى في أي وقت.", "حذف القصص المحفوظة",
+                System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Question) != System.Windows.MessageBoxResult.OK) return;
+        Downloads.DeleteStories();
+        RefreshSaved();
+    }
+
     [RelayCommand] private void SeekBack() => App.Instance.Narration.Seek(-15);
     [RelayCommand] private void SeekForward() => App.Instance.Narration.Seek(15);
     [ObservableProperty] private string _audioStatus = "";
@@ -130,6 +187,7 @@ public sealed partial class ProphetsViewModel : ObservableObject
             if (value == NarrationVoice) return;
             App.Instance.Settings.Update(s => s.NarrationVoice = value);
             OnPropertyChanged();
+            RefreshSaved();
             AudioStatus = "";
             if (App.Instance.Narration.IsSpeaking)
             {
@@ -149,6 +207,8 @@ public sealed partial class ProphetsViewModel : ObservableObject
             OnPropertyChanged(nameof(NarrateLabel));
             OnPropertyChanged(nameof(NarrateGlyph));
         });
+        App.Instance.Downloads.StoriesChanged += RefreshSaved;
+        RefreshSaved();
         App.Instance.Narration.Finished += id => App.Instance.Dispatcher.BeginInvoke(() => OnStoryFinished(id));
         App.Instance.Narration.SkipRequested += step => App.Instance.Dispatcher.BeginInvoke(() =>
         {

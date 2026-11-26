@@ -14,34 +14,169 @@ class ProphetsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final list = app.repo.prophets;
-    return Scaffold(
-      appBar: AppBar(title: const Text('قصص الأنبياء')),
-      body: list.isEmpty
-          ? const Center(child: Text('سيتم إضافة القصص قريبًا'))
-          : ListView.builder(
-              padding: const EdgeInsets.only(bottom: 16),
-              itemCount: list.length,
-              itemBuilder: (c, i) {
-                final p = list[i];
-                return Card(
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    leading: Container(
-                      width: 44, height: 44, alignment: Alignment.center,
-                      decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(12)),
-                      child: Text(Arabic.digits(p.order), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                    ),
-                    title: Text('${p.nameAr} عليه السلام'.replaceAll('محمد ﷺ عليه السلام', 'محمد ﷺ'),
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
-                    subtitle: Text(p.title, style: TextStyle(color: AppColors.gold)),
-                    trailing: const Icon(Icons.chevron_left),
-                    onTap: () => Navigator.push(c, MaterialPageRoute(builder: (_) => ProphetPage(prophet: p))),
-                  ),
-                );
-              },
-            ),
+    final st = app.stories;
+    return ListenableBuilder(
+      listenable: Listenable.merge([app, st]),
+      builder: (context, _) {
+        final voice = app.settings.narrationVoice;
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text('قصص الأنبياء'),
+            actions: [
+              if (st.supported)
+                IconButton(
+                  tooltip: 'تنزيل القصص للاستماع دون إنترنت',
+                  icon: Icon(st.downloading ? Icons.downloading : Icons.download_for_offline_outlined),
+                  onPressed: () => showStoryDownloads(context),
+                ),
+            ],
+          ),
+          body: list.isEmpty
+              ? const Center(child: Text('سيتم إضافة القصص قريبًا'))
+              : ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  itemCount: list.length + 1,
+                  itemBuilder: (c, i) {
+                    if (i == 0) return st.downloading ? const _StoryProgress() : const SizedBox.shrink();
+                    final p = list[i - 1];
+                    final saved = st.isSaved(p.id, voice);
+                    return Card(
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        leading: Container(
+                          width: 44, height: 44, alignment: Alignment.center,
+                          decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(12)),
+                          child: Text(Arabic.digits(p.order), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        ),
+                        title: Text('${p.nameAr} عليه السلام'.replaceAll('محمد ﷺ عليه السلام', 'محمد ﷺ'),
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                        subtitle: Text(p.title, style: TextStyle(color: AppColors.gold)),
+                        trailing: !st.supported || !app.narration.hasRecording(p.id, voice)
+                            ? const Icon(Icons.chevron_left)
+                            : saved
+                                ? Tooltip(
+                                    message: 'محفوظة على الهاتف',
+                                    child: Icon(Icons.offline_pin, color: AppColors.emerald),
+                                  )
+                                : IconButton(
+                                    tooltip: 'تنزيل هذه القصة',
+                                    icon: const Icon(Icons.download_outlined),
+                                    onPressed: st.downloading ? null : () => st.download([voice], ids: [p.id]),
+                                  ),
+                        onTap: () => Navigator.push(c, MaterialPageRoute(builder: (_) => ProphetPage(prophet: p))),
+                      ),
+                    );
+                  },
+                ),
+        );
+      },
     );
   }
+}
+
+class _StoryProgress extends StatelessWidget {
+  const _StoryProgress();
+  @override
+  Widget build(BuildContext context) {
+    final st = app.stories;
+    final p = app.repo.prophets.where((x) => x.id == st.currentId).firstOrNull;
+    final voices = st.jobGenders.map((g) => Narration.recordedNames[g] ?? '').join(' و');
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(16)),
+      child: Row(children: [
+        const Icon(Icons.mic, color: Colors.white),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('جارٍ تنزيل القصص بصوت $voices', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+            Text('${p != null ? 'قصة ${p.nameAr} • ' : ''}${Arabic.digits((st.progress * 100).round())}٪',
+                style: TextStyle(color: AppColors.heroText, fontSize: 12.5)),
+            const SizedBox(height: 6),
+            LinearProgressIndicator(value: st.progress, color: AppColors.gold, backgroundColor: Colors.white24),
+          ]),
+        ),
+        TextButton(onPressed: st.cancel, child: const Text('إيقاف', style: TextStyle(color: Colors.white))),
+      ]),
+    );
+  }
+}
+
+/// Choose the voice(s) and download every story for offline listening.
+void showStoryDownloads(BuildContext context) {
+  final st = app.stories;
+  var choice = app.settings.narrationVoice; // 'male' | 'female' | 'both'
+  showModalBottomSheet(
+    context: context,
+    builder: (c) => StatefulBuilder(
+      builder: (c, set) {
+        Widget opt(String id, String label, int mb, int saved) => RadioListTile<String>(
+              value: id,
+              groupValue: choice,
+              onChanged: (v) => set(() => choice = v!),
+              title: Text(label),
+              subtitle: saved > 0 ? Text('محفوظ ${Arabic.digits(saved)} من ${Arabic.digits(st.storyCount('male'))} قصة') : null,
+              secondary: Text('${Arabic.digits(mb)} ميجابايت', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w600)),
+            );
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(8, 16, 8, 8),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Text('تنزيل القصص للاستماع دون إنترنت', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              ),
+              const Padding(
+                padding: EdgeInsets.fromLTRB(12, 4, 12, 8),
+                child: Text('٢٥ قصة مسجّلة. يُفضَّل التنزيل عبر Wi-Fi، ويستمر التنزيل إذا خرجت من التطبيق.', style: TextStyle(fontSize: 12.5)),
+              ),
+              opt('male', 'صوت رجل (نبيل)', st.sizeMB('male'), st.savedStories('male')),
+              opt('female', 'صوت امرأة (عرين)', st.sizeMB('female'), st.savedStories('female')),
+              opt('both', 'الصوتان معًا', st.sizeMB('male') + st.sizeMB('female'), 0),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.download),
+                    label: const Text('تنزيل كل القصص'),
+                    onPressed: st.downloading
+                        ? null
+                        : () {
+                            Navigator.pop(c);
+                            st.download(choice == 'both' ? ['male', 'female'] : [choice]);
+                          },
+                  ),
+                ),
+              ),
+              if (st.anySaved)
+                Center(
+                  child: TextButton(
+                    onPressed: () async {
+                      Navigator.pop(c);
+                      final ok = await showDialog<bool>(
+                        context: context,
+                        builder: (d) => AlertDialog(
+                          title: const Text('حذف القصص المحفوظة'),
+                          content: const Text('ستُحذف تسجيلات القصص من الهاتف، ويمكنك تنزيلها مرة أخرى في أي وقت.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('إلغاء')),
+                            FilledButton(onPressed: () => Navigator.pop(d, true), child: const Text('حذف')),
+                          ],
+                        ),
+                      );
+                      if (ok == true) await st.deleteAll();
+                    },
+                    child: const Text('حذف القصص المحفوظة', style: TextStyle(color: Colors.redAccent)),
+                  ),
+                ),
+            ]),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 class ProphetPage extends StatelessWidget {

@@ -23,6 +23,9 @@
                             <Border DockPanel.Dock="Left" Width="36" Height="36" CornerRadius="10" Background="{DynamicResource HeroBrush}" Margin="0,0,10,0">
                                 <TextBlock Text="{Binding OrderText}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
+                            <TextBlock DockPanel.Dock="Right" Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
+                                       Foreground="{DynamicResource AccentBrush}" VerticalAlignment="Center" Margin="6,0,2,0" ToolTip="محفوظة على الجهاز"
+                                       Visibility="{Binding IsSaved, Converter={StaticResource BoolVis}}"/>
                             <StackPanel VerticalAlignment="Center">
                                 <TextBlock Text="{Binding DisplayName}" FontSize="15" FontWeight="SemiBold"/>
                                 <TextBlock Text="{Binding Prophet.Title}" FontSize="12" Foreground="{DynamicResource GoldBrush}" TextTrimming="CharacterEllipsis"/>
@@ -68,7 +71,41 @@
                                     <TextBlock Text="تلقائي"/>
                                 </StackPanel>
                             </ToggleButton>
+                            <ToggleButton x:Name="StoriesDl" IsChecked="{Binding StoriesDownloadOpen}" Margin="10,0,0,0" Padding="12,6"
+                                          ToolTip="تنزيل القصص للاستماع دون إنترنت">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE896;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                    <TextBlock Text="تنزيل القصص"/>
+                                </StackPanel>
+                            </ToggleButton>
+                            <Popup IsOpen="{Binding StoriesDownloadOpen}" PlacementTarget="{Binding ElementName=StoriesDl}" Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+                                <Border Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="1" CornerRadius="14" Padding="18" Width="380" Margin="6">
+                                    <Border.Effect><DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.35"/></Border.Effect>
+                                    <StackPanel>
+                                        <TextBlock Text="تنزيل القصص للاستماع دون إنترنت" FontWeight="Bold" FontSize="15"/>
+                                        <TextBlock Text="{Binding StoriesSavedText}" Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,2,0,10"/>
+                                        <RadioButton GroupName="sv" Content="{Binding MaleSizeText}" IsChecked="{Binding IsMaleChoice}" Margin="0,3"/>
+                                        <RadioButton GroupName="sv" Content="{Binding FemaleSizeText}" IsChecked="{Binding IsFemaleChoice}" Margin="0,3"/>
+                                        <RadioButton GroupName="sv" Content="{Binding BothSizeText}" IsChecked="{Binding IsBothChoice}" Margin="0,3"/>
+                                        <WrapPanel Margin="0,10,0,0">
+                                            <Button Style="{StaticResource PrimaryButton}" Content="تنزيل كل القصص" Command="{Binding DownloadAllStoriesCommand}" Padding="12,5" Margin="0,0,6,6"
+                                                    IsEnabled="{Binding Downloads.StoriesRunning, Converter={x:Static c:Not.Instance}}"/>
+                                            <Button Content="تنزيل هذه القصة فقط" Command="{Binding DownloadThisStoryCommand}" Padding="12,5" Margin="0,0,6,6"
+                                                    IsEnabled="{Binding Downloads.StoriesRunning, Converter={x:Static c:Not.Instance}}"/>
+                                        </WrapPanel>
+                                        <Button Style="{StaticResource GhostButton}" Content="حذف القصص المحفوظة" Command="{Binding DeleteStoriesCommand}"
+                                                Foreground="{DynamicResource DangerBrush}" HorizontalAlignment="Left"/>
+                                        <TextBlock Style="{StaticResource Muted}" FontSize="11.5" TextWrapping="Wrap" Margin="0,6,0,0"
+                                                   Text="يستمر التنزيل إذا أغلقت النافذة، ويظهر تقدّمه على أيقونة شريط المهام، ثم يصلك إشعار عند انتهائه."/>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
                         </WrapPanel>
+                        <DockPanel Margin="0,10,0,0" Visibility="{Binding Downloads.StoriesText, Converter={StaticResource NotEmpty}}">
+                            <Button DockPanel.Dock="Right" Content="إيقاف" Command="{Binding CancelStoriesDownloadCommand}" Padding="10,3"
+                                    Visibility="{Binding Downloads.StoriesRunning, Converter={StaticResource BoolVis}}"/>
+                            <TextBlock Text="{Binding Downloads.StoriesText}" Foreground="#E9C75A" FontWeight="SemiBold" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                        </DockPanel>
                         <Border Margin="0,12,0,0" Padding="12,8" CornerRadius="10" Background="#33000000"
                                 Visibility="{Binding NextPending, Converter={StaticResource BoolVis}}">
                             <DockPanel>

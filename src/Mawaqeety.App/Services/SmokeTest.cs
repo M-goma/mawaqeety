@@ -99,6 +99,13 @@ public static class SmokeTest
         await Page(ViewModels.Page.Adhkar, "07-adhkar");
         await Page(ViewModels.Page.Qibla, "08-qibla");
         await Page(ViewModels.Page.Prophets, "09-prophets");
+        await Step("stories-download", async () =>
+        {
+            await vm.Prophets.DownloadThisStoryCommand.ExecuteAsync(null);
+            await Task.Delay(500);
+            Shot(w, "09b-story-downloaded");
+            if (!Services.DownloadManager.IsStorySaved("adam", "Male")) errors.Add("story download did not save adam (male)");
+        });
         await Page(ViewModels.Page.Settings, "10-settings");
         await Step("palette", async () =>
         {

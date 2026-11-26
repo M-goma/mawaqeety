@@ -11,6 +11,7 @@ import '../data/mushaf.dart';
 import '../data/repository.dart';
 import 'mushaf_store.dart';
 import 'quran_downloads.dart';
+import 'story_downloads.dart';
 
 /// Buttons in a notification that do not open the app run in a separate isolate;
 /// they forward the button id to the app through this port.
@@ -29,7 +30,8 @@ class DownloadNotifier {
   final QuranDownloads quran;
   final MushafStore mushaf;
   final Repository repo;
-  DownloadNotifier(this.quran, this.mushaf, this.repo);
+  final StoryDownloads stories;
+  DownloadNotifier(this.quran, this.mushaf, this.repo, this.stories);
 
   final _plugin = FlutterLocalNotificationsPlugin();
   final _port = ReceivePort();
@@ -39,6 +41,7 @@ class DownloadNotifier {
   // What is (or was) being downloaded, to report the result and to resume after a pause.
   final _quranJobs = <String, List<int>>{}; // reciter -> surahs
   bool _mushafJob = false;
+  (List<String>, List<String>?)? _storiesJob; // voices, story ids (null = all)
   bool _paused = false;
 
   bool get _supported => !kIsWeb && Platform.isAndroid;
@@ -50,15 +53,17 @@ class DownloadNotifier {
     _port.listen((id) => handleAction(id as String?));
     quran.addListener(_changed);
     mushaf.addListener(_changed);
+    stories.addListener(_changed);
   }
 
-  bool get _anyActive => quran.jobs.isNotEmpty || mushaf.downloading;
+  bool get _anyActive => quran.jobs.isNotEmpty || mushaf.downloading || stories.downloading;
 
   void _changed() {
     for (final j in quran.jobs.values) {
       _quranJobs.putIfAbsent(j.reciter, () => j.all ? [] : [...j.surahs]);
     }
     if (mushaf.downloading) _mushafJob = true;
+    if (stories.downloading) _storiesJob = (stories.jobGenders, stories.jobIds);
     if (_anyActive && !_running) _start();
     if (!_anyActive && _running) _finish();
   }
@@ -101,6 +106,13 @@ class DownloadNotifier {
       lines.add('${Arabic.digits(mushaf.savedCount)} من ${Arabic.digits(MushafIndex.pageCount)} صفحة');
       done += mushaf.savedCount;
       total += MushafIndex.pageCount;
+    }
+    if (stories.downloading) {
+      titles.add('جارٍ تنزيل قصص الأنبياء • ${_voices(stories.jobGenders)}');
+      final p = repo.prophets.where((x) => x.id == stories.currentId).firstOrNull;
+      lines.add('${p != null ? 'قصة ${p.nameAr} • ' : ''}${Arabic.digits((stories.progress * 100).round())}٪');
+      done += stories.doneFiles;
+      total += stories.totalFiles;
     }
     return (titles.isEmpty ? 'جارٍ التنزيل' : titles.first, lines.join('\n'), done, total);
   }
@@ -164,8 +176,10 @@ class DownloadNotifier {
         for (final r in _quranJobs.keys)
           if (quran.lastError.containsKey(r)) quran.lastError[r]!,
         if (_mushafJob && mushaf.error != null) mushaf.error!,
+        if (_storiesJob != null && stories.error != null) stories.error!,
       ];
-      final cancelled = _quranJobs.keys.any(quran.wasCancelled) || (_mushafJob && mushaf.wasCancelled);
+      final cancelled = _quranJobs.keys.any(quran.wasCancelled) || (_mushafJob && mushaf.wasCancelled) ||
+          (_storiesJob != null && stories.wasCancelled);
       if (errors.isNotEmpty) {
         title = 'توقّف التنزيل';
         body = errors.first;
@@ -179,6 +193,9 @@ class DownloadNotifier {
           parts.add('$what بصوت ${repo.reciter(e.key).name}');
         }
         if (_mushafJob) parts.add('صفحات المصحف (${Arabic.digits(mushaf.savedCount)} صفحة)');
+        if (_storiesJob case (final g, final ids)?) {
+          parts.add(ids == null ? 'قصص الأنبياء بصوت ${_voices(g)}' : 'قصة ${repo.prophets.firstWhere((x) => x.id == ids.first).nameAr}');
+        }
         if (parts.isNotEmpty) {
           title = '✓ اكتمل التنزيل';
           body = '${parts.join('، ')} جاهز دون إنترنت.';
@@ -188,6 +205,7 @@ class DownloadNotifier {
     if (!withResume) {
       _quranJobs.clear();
       _mushafJob = false;
+      _storiesJob = null;
     }
     _paused = false;
     if (title == null) return;
@@ -222,22 +240,28 @@ class DownloadNotifier {
         if (!_paused) {
           _quranJobs.clear();
           _mushafJob = false;
+          _storiesJob = null;
         }
         for (final r in quran.jobs.keys.toList()) {
           quran.cancel(r);
         }
         if (mushaf.downloading) mushaf.cancel();
+        if (stories.downloading) stories.cancel();
       case 'dl_resume':
         _plugin.cancel(id: _doneId);
         final jobs = Map.of(_quranJobs);
         final m = _mushafJob;
+        final st = _storiesJob;
         for (final e in jobs.entries) {
           quran.download(repo, e.key, surahs: e.value.isEmpty ? null : e.value);
         }
         if (m) mushaf.downloadAll();
+        if (st != null) stories.download(st.$1, ids: st.$2);
     }
   }
 }
+
+String _voices(List<String> g) => g.map((x) => x == 'female' ? 'عرين' : 'نبيل').join(' و');
 
 extension on AndroidNotificationDetails {
   /// Same details, with the multi-line body shown in full.

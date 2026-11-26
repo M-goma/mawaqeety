@@ -49,6 +49,9 @@ class Narration extends ChangeNotifier implements MediaSource {
     _player.positionDiscontinuityStream.listen((_) => _publish());
   }
 
+  /// Told about every story part saved for offline use.
+  void Function(String fileName)? onSaved;
+
   Future<void> _saveCopies(List<(Uri, File)> files) async {
     final client = http.Client();
     try {
@@ -59,6 +62,7 @@ class Narration extends ChangeNotifier implements MediaSource {
             final tmp = File('${file.path}.part');
             await tmp.writeAsBytes(r.bodyBytes, flush: true);
             await tmp.rename(file.path);
+            onSaved?.call(file.uri.pathSegments.last);
           }
         } catch (e) {
           debugPrint('story cache failed: $e');

@@ -10,15 +10,20 @@ namespace Mawaqeety.App.Services;
 /// </summary>
 public sealed partial class DownloadManager(QuranAudioService recitation, MushafPages pages, ToastService toast, IAppLog log) : ObservableObject
 {
-    private CancellationTokenSource? _quranCts, _mushafCts;
-    private int _quranDone, _quranTotal, _mushafDone;
+    private CancellationTokenSource? _quranCts, _mushafCts, _storiesCts;
+    private int _quranDone, _quranTotal, _mushafDone, _storiesDone, _storiesTotal;
 
     [ObservableProperty] private bool _quranRunning;
     [ObservableProperty] private bool _mushafRunning;
     [ObservableProperty] private string _quranText = "";
     [ObservableProperty] private string _mushafText = "";
+    [ObservableProperty] private bool _storiesRunning;
+    [ObservableProperty] private string _storiesText = "";
 
-    public bool Any => QuranRunning || MushafRunning;
+    /// <summary>Raised when story files were saved or deleted (to refresh the ✓ marks).</summary>
+    public event Action? StoriesChanged;
+
+    public bool Any => QuranRunning || MushafRunning || StoriesRunning;
 
     /// <summary>0..1 over everything that is downloading, or null when nothing is.</summary>
     public event Action<double?>? ProgressChanged;
@@ -29,6 +34,7 @@ public sealed partial class DownloadManager(QuranAudioService recitation, Mushaf
         double done = 0, total = 0;
         if (QuranRunning) { done += _quranDone; total += _quranTotal; }
         if (MushafRunning) { done += _mushafDone; total += MushafIndex.PageCount; }
+        if (StoriesRunning) { done += _storiesDone; total += _storiesTotal; }
         ProgressChanged?.Invoke(Any && total > 0 ? done / total : null);
     }
 
@@ -143,6 +149,101 @@ public sealed partial class DownloadManager(QuranAudioService recitation, Mushaf
             toast.Show("✓ اكتمل تنزيل المصحف", "٦٠٤ صفحة جاهزة للقراءة دون إنترنت.", tag: "download");
         }
         Report();
+    }
+
+    // ---------------- prophet stories ----------------
+    public static string StoriesDir => Path.Combine(AppPaths.DataDir, "stories");
+
+    public static bool IsStorySaved(string id, string gender)
+    {
+        var parts = StoryAudio.Default.Parts(id, gender);
+        return parts.Count > 0 && parts.All(f => File.Exists(Path.Combine(StoriesDir, f)));
+    }
+
+    public static int SavedStories(string gender) => StoryAudio.Default.Ids(gender).Count(id => IsStorySaved(id, gender));
+
+    public static long SavedStoriesBytes()
+    {
+        try { return Directory.Exists(StoriesDir) ? Directory.EnumerateFiles(StoriesDir, "*.mp3").Sum(f => new FileInfo(f).Length) : 0; }
+        catch { return 0; }
+    }
+
+    /// <summary>Downloads the recorded stories (all when <paramref name="ids"/> is null) in the given voices ("Male"/"Female").</summary>
+    public async Task DownloadStoriesAsync(IReadOnlyList<string> genders, IReadOnlyList<string>? ids = null)
+    {
+        if (StoriesRunning) return;
+        var files = genders.SelectMany(g => (ids ?? StoryAudio.Default.Ids(g)).SelectMany(id => StoryAudio.Default.Parts(id, g)))
+            .Where(f => !File.Exists(Path.Combine(StoriesDir, f))).ToList();
+        _storiesCts = new CancellationTokenSource();
+        var ct = _storiesCts.Token;
+        _storiesDone = 0;
+        _storiesTotal = Math.Max(1, files.Count);
+        StoriesRunning = true;
+        var voices = string.Join(" و", genders.Select(g => g == "Female" ? "عرين" : "نبيل"));
+        var what = ids is { Count: 1 } ? $"قصة {QuranRepository.Default.Prophets.FirstOrDefault(p => p.Id == ids[0])?.NameAr}" : "قصص الأنبياء";
+        StoriesText = $"جارٍ تنزيل {what} بصوت {voices}…";
+        Report();
+        var failed = 0;
+        var queue = new Queue<string>(files);
+        var gate = new object();
+        using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+        async Task Worker()
+        {
+            while (!ct.IsCancellationRequested)
+            {
+                string f;
+                lock (gate) { if (queue.Count == 0) return; f = queue.Dequeue(); }
+                var ok = false;
+                for (var attempt = 0; attempt < 3 && !ok && !ct.IsCancellationRequested; attempt++)
+                {
+                    try
+                    {
+                        var bytes = await http.GetByteArrayAsync(StoryAudio.Default.BaseUrl + f, ct);
+                        if (bytes.Length > 10_000)
+                        {
+                            Directory.CreateDirectory(StoriesDir);
+                            var dest = Path.Combine(StoriesDir, f);
+                            await File.WriteAllBytesAsync(dest + ".part", bytes, ct);
+                            File.Move(dest + ".part", dest, overwrite: true);
+                            ok = true;
+                        }
+                    }
+                    catch (OperationCanceledException) { return; }
+                    catch { await Task.Delay(TimeSpan.FromSeconds(2 * (attempt + 1))); }
+                }
+                if (!ok && !ct.IsCancellationRequested) Interlocked.Increment(ref failed);
+                Interlocked.Increment(ref _storiesDone);
+                _ = App.Instance.Dispatcher.BeginInvoke(() =>
+                {
+                    StoriesText = $"تنزيل {what} بصوت {voices}: {Pct(_storiesDone, _storiesTotal)}";
+                    Report();
+                    StoriesChanged?.Invoke();
+                });
+            }
+        }
+        try { await Task.WhenAll(Enumerable.Range(0, 3).Select(_ => Task.Run(Worker))); }
+        catch (Exception ex) { log.Warn("Story download failed", ex); }
+        StoriesRunning = false;
+        if (ct.IsCancellationRequested) StoriesText = "تم إيقاف التنزيل. ما نُزِّل محفوظ.";
+        else if (failed > 0) StoriesText = $"تعذّر تنزيل {QuranRepository.ArabicDigits(failed)} جزءًا. تأكد من الاتصال ثم أعد المحاولة.";
+        else
+        {
+            StoriesText = $"✓ {what} بصوت {voices} جاهزة دون إنترنت.";
+            toast.Show("✓ اكتمل التنزيل", $"{what} بصوت {voices} جاهزة للاستماع دون إنترنت.", tag: "download");
+        }
+        Report();
+        StoriesChanged?.Invoke();
+    }
+
+    public void CancelStories() => _storiesCts?.Cancel();
+
+    public void DeleteStories()
+    {
+        CancelStories();
+        try { if (Directory.Exists(StoriesDir)) Directory.Delete(StoriesDir, recursive: true); }
+        catch (Exception ex) { log.Warn("Deleting stories failed", ex); }
+        StoriesText = "";
+        StoriesChanged?.Invoke();
     }
 
     public void CancelRecitation() => _quranCts?.Cancel();

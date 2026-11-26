@@ -155,6 +155,7 @@ public sealed class StoryAudio
 
     public string BaseUrl { get; }
     private readonly Dictionary<string, Dictionary<string, int>> _parts = [];
+    private readonly Dictionary<string, int> _sizeMb = [];
 
     private StoryAudio()
     {
@@ -164,7 +165,17 @@ public sealed class StoryAudio
         foreach (var g in new[] { "male", "female" })
             if (doc.RootElement.TryGetProperty(g, out var m))
                 _parts[g] = m.EnumerateObject().ToDictionary(p => p.Name, p => p.Value.GetInt32());
+        if (doc.RootElement.TryGetProperty("sizeMB", out var sz))
+            foreach (var p in sz.EnumerateObject()) _sizeMb[p.Name] = p.Value.GetInt32();
     }
+
+    private static string Key(string gender) => gender.Equals("Female", StringComparison.OrdinalIgnoreCase) ? "female" : "male";
+
+    /// <summary>Approximate size of all stories in one voice, in MB.</summary>
+    public int SizeMb(string gender) => _sizeMb.TryGetValue(Key(gender), out var v) ? v : 100;
+
+    /// <summary>Ids of the stories recorded in that voice.</summary>
+    public IReadOnlyList<string> Ids(string gender) => _parts.TryGetValue(Key(gender), out var m) ? m.Keys.ToList() : [];
 
     /// <summary>File names of the recording parts, or empty when this story has no recording in that voice.</summary>
     public IReadOnlyList<string> Parts(string prophetId, string gender)
