@@ -74,7 +74,7 @@ public sealed partial class MushafViewModel : ObservableObject
         Show();
     }
 
-    public IReadOnlyList<NumberedName> SurahList { get; } = QuranRepository.Default.Surahs.Select(s => new NumberedName(s.Number, $"{s.Number}. {s.Name}")).ToList();
+    public IReadOnlyList<NumberedName> SurahList { get; } = QuranRepository.Default.Surahs.Select(s => new NumberedName(s.Number, $"{QuranRepository.ArabicDigits(s.Number)}. {s.Name}")).ToList();
     public IReadOnlyList<NumberedName> JuzList { get; } = Enumerable.Range(1, 30).Select(j => new NumberedName(j, $"الجزء {QuranRepository.ArabicDigits(j)}")).ToList();
     public IReadOnlyList<ToneOption> Tones { get; } =
         [new("auto", "تلقائي (حسب وضع البرنامج)", Brush(Colors.Gray), Brush(Colors.White)),

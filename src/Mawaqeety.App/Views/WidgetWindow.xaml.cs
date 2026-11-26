@@ -56,11 +56,11 @@ public partial class WidgetWindow : Window
             var s = app.Settings.Current;
             var now = DateTimeOffset.Now;
             var local = TimeZoneInfo.ConvertTime(now, s.ResolveZone());
-            Clock.Text = local.ToString(s.Use24HourClock ? "HH:mm:ss" : "h:mm:ss tt", System.Globalization.CultureInfo.InvariantCulture);
-            Date.Text = local.ToString("dddd d MMMM", Loc.I.Culture);
+            Clock.Text = local.ToString(s.Use24HourClock ? "HH:mm:ss" : "h:mm:ss", System.Globalization.CultureInfo.InvariantCulture) + (s.Use24HourClock ? "" : (local.Hour < 12 ? (Loc.I.IsArabic ? " ص" : " AM") : (Loc.I.IsArabic ? " م" : " PM")));
+            Date.Text = local.ToString("dddd d MMMM", Loc.I.Culture) + "  •  " + app.HijriToday();
             var st = app.ComputeStatus(now);
-            NextName.Text = $"{Loc.I.Prayer(st.Next)} بعد";
-            NextTime.Text = Loc.I.FormatTime(st.NextTime, s.Use24HourClock);
+            NextName.Text = Loc.I.IsArabic ? $"المتبقي على {Loc.I.Prayer(st.Next)}" : $"Time to {Loc.I.Prayer(st.Next)}";
+            NextTime.Text = (Loc.I.IsArabic ? "الأذان " : "at ") + Loc.I.FormatTime(st.NextTime, s.Use24HourClock);
             var r = st.Remaining < TimeSpan.Zero ? TimeSpan.Zero : st.Remaining;
             Countdown.Text = $"{(int)r.TotalHours:00}:{r.Minutes:00}:{r.Seconds:00}";
         }

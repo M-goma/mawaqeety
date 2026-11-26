@@ -41,7 +41,7 @@
                         <TextBlock Text="{Binding Title}" Foreground="White" FontSize="28" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Subtitle}" Foreground="#E9C75A" FontSize="15"/>
                         <TextBlock Text="{Binding Summary}" Foreground="#E6F3EE" FontSize="14.5" TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="26"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                        <WrapPanel Margin="0,14,0,0">
                             <Button Command="{Binding NarrateCommand}" Padding="16,6" Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="{Binding NarrateGlyph}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
@@ -62,14 +62,13 @@
                             </Button>
                             <ComboBox Width="170" Margin="10,0,0,0" ItemsSource="{Binding VoiceOptions}" DisplayMemberPath="Value"
                                       SelectedValuePath="Key" SelectedValue="{Binding NarrationVoice}" ToolTip="صوت القارئ للقصة"/>
-                            <ToggleButton IsChecked="{Binding Autoplay}" Margin="10,0,0,0" Padding="12,6" Background="#26FFFFFF" Foreground="White"
-                                          BorderBrush="#66FFFFFF" ToolTip="عند انتهاء القصة تبدأ القصة التالية بعد ٥ ثوانٍ">
+                            <ToggleButton IsChecked="{Binding Autoplay}" Margin="10,0,0,0" Padding="12,6" ToolTip="عند انتهاء القصة تبدأ القصة التالية بعد ٥ ثوانٍ">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="&#xE8EE;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
                                     <TextBlock Text="تلقائي"/>
                                 </StackPanel>
                             </ToggleButton>
-                        </StackPanel>
+                        </WrapPanel>
                         <Border Margin="0,12,0,0" Padding="12,8" CornerRadius="10" Background="#33000000"
                                 Visibility="{Binding NextPending, Converter={StaticResource BoolVis}}">
                             <DockPanel>

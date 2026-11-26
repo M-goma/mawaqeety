@@ -266,6 +266,14 @@ public partial class App : Application
         MainVm?.OnWindowShown();
     }
 
+    /// <summary>Today's Hijri date in the current language.</summary>
+    public string HijriToday()
+    {
+        var s = Settings.Current;
+        var date = DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.Now, s.ResolveZone()).DateTime);
+        return Core.HijriDate.From(date, s.HijriAdjustmentDays).ToDisplay(Loc.I.IsArabic);
+    }
+
     /// <summary>Download progress on the taskbar icon.</summary>
     private void SetTaskbarProgress(double? value)
     {

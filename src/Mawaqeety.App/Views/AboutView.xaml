@@ -22,7 +22,7 @@
                     </TextBlock>
                     <TextBlock Text="{l:Tr AboutText}" Style="{StaticResource Muted}" Margin="0,10,0,0" FontSize="14"/>
                     <TextBlock Text="{l:Tr Notice}" Style="{StaticResource Muted}" Margin="0,10,0,0"/>
-                    <TextBlock Text="{l:Tr Credits}" Style="{StaticResource Muted}" Margin="0,10,0,0" FontSize="12"/>
+                    <TextBlock Text="{l:Tr Credits}" Style="{StaticResource Muted}" Margin="0,10,0,0" FontSize="12" TextWrapping="Wrap"/>
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                         <Button Content="{l:Tr CheckUpdates}" Style="{StaticResource PrimaryButton}" Command="{Binding CheckUpdatesCommand}"
                                 IsEnabled="{Binding IsChecking, Converter={StaticResource Not}}"/>

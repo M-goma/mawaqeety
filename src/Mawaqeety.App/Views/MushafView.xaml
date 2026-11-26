@@ -76,15 +76,21 @@
                           SelectedValue="{Binding SelectedSurah}" MaxDropDownHeight="420" ToolTip="السورة"/>
                 <ComboBox Width="112" Margin="6,0,0,0" ItemsSource="{Binding JuzList}" DisplayMemberPath="Name" SelectedValuePath="Number"
                           SelectedValue="{Binding SelectedJuz}" MaxDropDownHeight="420" ToolTip="الجزء"/>
-                <TextBox Width="58" Margin="6,0,0,0" Text="{Binding PageInput, UpdateSourceTrigger=PropertyChanged}" ToolTip="اكتب رقم الصفحة ثم Enter"
-                         TextAlignment="Center">
-                    <TextBox.InputBindings>
-                        <KeyBinding Key="Enter" Command="{Binding GoToInputCommand}"/>
-                    </TextBox.InputBindings>
-                </TextBox>
+                <Grid Width="70" Margin="6,0,0,0">
+                    <TextBox x:Name="PageBox" Text="{Binding PageInput, UpdateSourceTrigger=PropertyChanged}" ToolTip="اكتب رقم الصفحة ثم Enter" TextAlignment="Center">
+                        <TextBox.InputBindings>
+                            <KeyBinding Key="Enter" Command="{Binding GoToInputCommand}"/>
+                        </TextBox.InputBindings>
+                    </TextBox>
+                    <TextBlock Text="صفحة…" Foreground="{DynamicResource TextMutedBrush}" IsHitTestVisible="False" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               Visibility="{Binding Text, ElementName=PageBox, Converter={x:Static c:EmptyVisibility.Instance}}"/>
+                </Grid>
                 <Border Width="1" Height="24" Background="{DynamicResource LineBrush}" Margin="10,0"/>
-                <Button Style="{StaticResource GhostButton}" Command="{Binding ToggleReadHereCommand}" ToolTip="حفظ موضع القراءة هنا / إزالته">
-                    <TextBlock x:Name="ReadGlyph" Text="&#xE8A4;" Style="{StaticResource Glyph}"/>
+                <Button Style="{StaticResource GhostButton}" Command="{Binding ToggleReadHereCommand}" ToolTip="حفظ موضع القراءة عند هذه الصفحة / إزالته">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="&#xE718;" Style="{StaticResource Glyph}" Margin="0,2,6,0"/>
+                        <TextBlock Text="موضع القراءة"/>
+                    </StackPanel>
                 </Button>
                 <ComboBox Width="190" Margin="4,0,0,0" ItemsSource="{Binding Quran.ReciterList}" DisplayMemberPath="Name" SelectedValuePath="Id"
                           SelectedValue="{Binding Quran.ReciterId}" MaxDropDownHeight="380" ToolTip="القارئ"/>
