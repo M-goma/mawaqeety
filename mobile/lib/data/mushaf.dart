@@ -2,12 +2,46 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 
+/// Where one ayah sits on a printed page, in image pixels.
+class AyahBox {
+  final int surah, ayah;
+  final List<Rect> rects;
+  const AyahBox(this.surah, this.ayah, this.rects);
+  bool contains(Offset p) => rects.any((r) => r.inflate(4).contains(p));
+}
+
 /// Page layout of the Madinah Mushaf (604 pages): where each page, juz and hizb quarter starts.
 class MushafIndex {
   static const pageCount = 604;
   late final String base;
   late final List<int> _pages; // key (surah*1000+ayah) of each page's first ayah
   late final List<int> _juz, _quarters;
+
+  /// Size of the page images the ayah boxes refer to.
+  double imageW = 1440, imageH = 2330;
+  List<List<AyahBox>>? _ayahs;
+  Future<void>? _ayahsLoading;
+  bool get ayahsReady => _ayahs != null;
+
+  /// Ayah positions on every page (detected from the ayah-end markers of the page images).
+  Future<void> loadAyahs() => _ayahsLoading ??= () async {
+        final j = jsonDecode(await rootBundle.loadString('assets/data/mushaf_ayahs.json')) as Map<String, dynamic>;
+        imageW = (j['w'] as num).toDouble();
+        imageH = (j['h'] as num).toDouble();
+        _ayahs = [
+          for (final page in j['pages'] as List)
+            [
+              for (final a in page as List)
+                AyahBox(a[0], a[1], [
+                  for (var i = 0; i + 3 < (a[2] as List).length; i += 4)
+                    Rect.fromLTRB((a[2][i] as num).toDouble(), (a[2][i + 1] as num).toDouble(),
+                        (a[2][i + 2] as num).toDouble(), (a[2][i + 3] as num).toDouble()),
+                ]),
+            ],
+        ];
+      }();
+
+  List<AyahBox> ayahsOn(int page) => _ayahs == null ? const [] : _ayahs![page - 1];
 
   Future<void> load() async {
     final j = jsonDecode(await rootBundle.loadString('assets/data/mushaf.json')) as Map<String, dynamic>;

@@ -15,6 +15,7 @@ import '../data/repository.dart';
 import 'adhan_player.dart';
 import 'app_updater.dart';
 import 'narration.dart';
+import 'download_notifier.dart';
 import 'mushaf_store.dart';
 import 'notification_service.dart';
 import 'quran_downloads.dart';
@@ -40,6 +41,7 @@ class AppState extends ChangeNotifier {
   final downloads = QuranDownloads();
   final mushaf = MushafIndex();
   final mushafStore = MushafStore();
+  late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo);
   final narration = Narration();
   final updater = AppUpdater();
   final widgets = WidgetService();
@@ -65,7 +67,12 @@ class AppState extends ChangeNotifier {
     await narration.loadRecordings();
     narration.storyOrder = [for (final p in repo.prophets) p.id];
     recitation.downloads = downloads;
-    await notifications.init(onTap: (_) => playAdhanForCurrent());
+    await notifications.init(onTap: (r) {
+      if (r.actionId?.startsWith('dl_') ?? false) return downloadNotifier.handleAction(r.actionId);
+      if (r.payload == DownloadNotifier.payload) return; // just opens the app
+      playAdhanForCurrent();
+    });
+    downloadNotifier.init();
     ready = true;
     notifyListeners();
     unawaited(reschedule());

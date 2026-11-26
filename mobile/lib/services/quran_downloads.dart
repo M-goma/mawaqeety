@@ -16,6 +16,7 @@ class DownloadJob {
   int doneFiles = 0, totalFiles = 0;
   int currentSurah = 0;
   bool cancelled = false;
+  bool all = false; // the whole Qur'an was requested
   String? error;
   DownloadJob(this.reciter, this.surahs);
   double get progress => totalFiles == 0 ? 0 : doneFiles / totalFiles;
@@ -91,7 +92,9 @@ class QuranDownloads extends ChangeNotifier {
     final dir = Directory('${_root!.path}/$reciter');
     await dir.create(recursive: true);
     final list = (surahs ?? [for (var i = 1; i <= 114; i++) i]).where((s) => !isReady(reciter, s)).toList();
-    final job = DownloadJob(reciter, list);
+    final job = DownloadJob(reciter, list)..all = surahs == null;
+    _cancelled.remove(reciter);
+    lastError.remove(reciter);
     // The basmala (1:1) is played before most surahs, so it is always saved.
     final files = <(int, int)>[(1, 1)];
     for (final s in list) {
@@ -169,7 +172,11 @@ class QuranDownloads extends ChangeNotifier {
 
   final lastError = <String, String>{};
 
+  final _cancelled = <String>{};
+  bool wasCancelled(String reciter) => _cancelled.contains(reciter);
+
   void cancel(String reciter) {
+    if (jobs[reciter] != null) _cancelled.add(reciter);
     jobs[reciter]?.cancelled = true;
     notifyListeners();
   }

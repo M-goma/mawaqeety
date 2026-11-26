@@ -66,12 +66,23 @@ class _MushafPageState extends State<MushafPage> {
   bool _chrome = true;
   bool _zoomed = false;
   int _followed = 0;
+  Bookmark? _selected; // ayah chosen with a long press (highlighted while its menu is open)
 
   @override
   void initState() {
     super.initState();
     app.recitation.addListener(_onRecitation);
     _prefetch(_page);
+    idx.loadAyahs().then((_) {
+      if (mounted) setState(() {});
+    });
+    if (!app.settings.mushafHint) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _snack('اضغط مطوّلًا على أي آية للاستماع منها أو حفظ موضعها أو وضع علامة عليها');
+        app.update((x) => x.mushafHint = true, reschedule: false);
+      });
+    }
     Future.delayed(const Duration(seconds: 3), () {
       if (mounted && _chrome) setState(() => _chrome = false);
     });
@@ -202,6 +213,52 @@ class _MushafPageState extends State<MushafPage> {
     );
   }
 
+  void _ayahMenu(AyahBox box) {
+    final b = Bookmark(box.surah, box.ayah);
+    final marked = app.settings.bookmarks.contains(b);
+    final isRead = app.settings.lastRead == b;
+    setState(() => _selected = b);
+    showModalBottomSheet(
+      context: context,
+      builder: (c) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+            child: Text('سورة ${app.repo.surahs[b.surah - 1].name} • الآية ${Arabic.digits(b.ayah)}',
+                style: TextStyle(color: Theme.of(c).hintColor, fontWeight: FontWeight.w600)),
+          ),
+          ListTile(
+            leading: Icon(Icons.play_circle_outline, color: AppColors.emerald),
+            title: const Text('استماع من هذه الآية'),
+            onTap: () {
+              Navigator.pop(c);
+              startQuranRecitation(b.surah, b.ayah);
+            },
+          ),
+          ListTile(
+            leading: Icon(isRead ? Icons.bookmark_remove_outlined : Icons.bookmark_added_outlined),
+            title: Text(isRead ? 'إزالة موضع القراءة' : 'حفظ موضع القراءة هنا'),
+            onTap: () {
+              Navigator.pop(c);
+              app.update((x) => x.lastRead = isRead ? null : b, reschedule: false);
+              _snack(isRead ? 'تمت إزالة موضع القراءة' : 'تم حفظ موضع القراءة');
+            },
+          ),
+          ListTile(
+            leading: Icon(marked ? Icons.bookmark_remove_outlined : Icons.bookmark_add_outlined),
+            title: Text(marked ? 'إزالة العلامة' : 'إضافة علامة على الآية'),
+            onTap: () {
+              Navigator.pop(c);
+              app.update((x) => marked ? x.bookmarks.remove(b) : x.bookmarks.add(b), reschedule: false);
+            },
+          ),
+        ]),
+      ),
+    ).whenComplete(() {
+      if (mounted) setState(() => _selected = null);
+    });
+  }
+
   void _toText() {
     final (s, a) = idx.startOf(_page);
     app.update((x) => x.quranView = 'text', reschedule: false);
@@ -244,6 +301,8 @@ class _MushafPageState extends State<MushafPage> {
                       itemBuilder: (context, i) => _PageImage(
                         page: i + 1,
                         tone: tone,
+                        highlight: _selected ?? (rec.active && rec.ayah > 0 ? Bookmark(rec.surah, rec.ayah) : null),
+                        onAyah: _ayahMenu,
                         ribbon: () {
                           final l = app.settings.lastRead;
                           return l != null && idx.pageOf(l.surah, l.ayah) == i + 1;
@@ -381,10 +440,12 @@ class _PageImage extends StatefulWidget {
   final int page;
   final MushafTone tone;
   final bool ribbon;
+  final Bookmark? highlight;
+  final ValueChanged<AyahBox> onAyah;
   final VoidCallback onTap, onLongPress;
   final ValueChanged<bool> onZoom;
-  const _PageImage({required this.page, required this.tone, required this.ribbon, required this.onTap,
-      required this.onLongPress, required this.onZoom});
+  const _PageImage({required this.page, required this.tone, required this.ribbon, required this.highlight,
+      required this.onAyah, required this.onTap, required this.onLongPress, required this.onZoom});
   @override
   State<_PageImage> createState() => _PageImageState();
 }
@@ -446,6 +507,33 @@ class _PageImageState extends State<_PageImage> {
               return image(MemoryImage(b));
             },
           );
+    final idx = app.mushaf;
+    final boxes = idx.ayahsOn(widget.page);
+    final hl = widget.highlight;
+    final lit = hl == null ? null : boxes.where((b) => b.surah == hl.surah && b.ayah == hl.ayah).firstOrNull;
+    final framed = AspectRatio(
+      aspectRatio: idx.imageW / idx.imageH,
+      child: LayoutBuilder(builder: (context, c) {
+        final k = c.maxWidth / idx.imageW;
+        return GestureDetector(
+          onLongPressStart: (d) {
+            final p = d.localPosition / k;
+            final hit = boxes.where((b) => b.contains(p)).firstOrNull;
+            hit != null ? widget.onAyah(hit) : widget.onLongPress();
+          },
+          child: Stack(fit: StackFit.expand, children: [
+            content,
+            if (lit != null)
+              IgnorePointer(
+                child: CustomPaint(
+                  painter: _AyahHighlight(lit.rects, k,
+                      tone.dark ? const Color(0xFFE9C75A).withValues(alpha: 0.2) : const Color(0xFF10966A).withValues(alpha: 0.16)),
+                ),
+              ),
+          ]),
+        );
+      }),
+    );
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.onLongPress,
@@ -459,7 +547,7 @@ class _PageImageState extends State<_PageImage> {
         onInteractionEnd: (_) => _reportZoom(),
         child: Stack(children: [
           Positioned.fill(
-            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Center(child: content)),
+            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Center(child: framed)),
           ),
           if (widget.ribbon)
             PositionedDirectional(
@@ -483,6 +571,24 @@ class _PageImageState extends State<_PageImage> {
           if (!kIsWeb) OutlinedButton(onPressed: _retry, child: const Text('إعادة المحاولة')),
         ]),
       );
+}
+
+class _AyahHighlight extends CustomPainter {
+  final List<Rect> rects;
+  final double k;
+  final Color color;
+  _AyahHighlight(this.rects, this.k, this.color);
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    for (final r in rects) {
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTRB(r.left * k, r.top * k, r.right * k, r.bottom * k), Radius.circular(20 * k)), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_AyahHighlight o) => o.rects != rects || o.k != k || o.color != color;
 }
 
 /// Colours and brightness of the Mushaf.

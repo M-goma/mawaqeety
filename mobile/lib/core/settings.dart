@@ -74,6 +74,7 @@ class Settings {
   String mushafNight = 'navy'; // night colours used by 'auto'
   double mushafDim = 0; // 0..0.6 extra dimming inside the Mushaf
   int mushafPage = 1; // last page opened
+  bool mushafHint = false; // the long-press tip was shown
 
   CalculationOptions get options {
     var m = CalculationMethod.get(method);
@@ -90,7 +91,7 @@ class Settings {
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
-        'quranView': quranView, 'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage,
+        'quranView': quranView, 'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -139,6 +140,7 @@ class Settings {
       r.mushafNight = j['mushafNight'] ?? 'navy';
       r.mushafDim = (j['mushafDim'] ?? 0).toDouble();
       r.mushafPage = j['mushafPage'] ?? 1;
+      r.mushafHint = j['mushafHint'] ?? false;
       if (j['lastRead'] != null) r.lastRead = Bookmark.fromJson(j['lastRead']);
       r.bookmarks = ((j['bookmarks'] ?? []) as List).map((e) => Bookmark.fromJson(e)).toList();
     } catch (_) {/* corrupted -> defaults */}

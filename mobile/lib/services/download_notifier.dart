@@ -1,0 +1,262 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:isolate';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+import '../core/arabic.dart';
+import '../data/mushaf.dart';
+import '../data/repository.dart';
+import 'mushaf_store.dart';
+import 'quran_downloads.dart';
+
+/// Buttons in a notification that do not open the app run in a separate isolate;
+/// they forward the button id to the app through this port.
+@pragma('vm:entry-point')
+void downloadActionInBackground(NotificationResponse r) {
+  IsolateNameServer.lookupPortByName(DownloadNotifier.portName)?.send(r.actionId);
+}
+
+/// Keeps Qur'an and Mushaf downloads running after the user leaves the app (Android foreground service),
+/// with a progress notification and a notice when they finish — like the media notification of the stories.
+class DownloadNotifier {
+  static const portName = 'mawaqeety.downloads';
+  static const _id = 7700, _doneId = 7701;
+  static const payload = 'downloads';
+
+  final QuranDownloads quran;
+  final MushafStore mushaf;
+  final Repository repo;
+  DownloadNotifier(this.quran, this.mushaf, this.repo);
+
+  final _plugin = FlutterLocalNotificationsPlugin();
+  final _port = ReceivePort();
+  Timer? _timer;
+  bool _running = false;
+
+  // What is (or was) being downloaded, to report the result and to resume after a pause.
+  final _quranJobs = <String, List<int>>{}; // reciter -> surahs
+  bool _mushafJob = false;
+  bool _paused = false;
+
+  bool get _supported => !kIsWeb && Platform.isAndroid;
+
+  void init() {
+    if (!_supported) return;
+    IsolateNameServer.removePortNameMapping(portName);
+    IsolateNameServer.registerPortWithName(_port.sendPort, portName);
+    _port.listen((id) => handleAction(id as String?));
+    quran.addListener(_changed);
+    mushaf.addListener(_changed);
+  }
+
+  bool get _anyActive => quran.jobs.isNotEmpty || mushaf.downloading;
+
+  void _changed() {
+    for (final j in quran.jobs.values) {
+      _quranJobs.putIfAbsent(j.reciter, () => j.all ? [] : [...j.surahs]);
+    }
+    if (mushaf.downloading) _mushafJob = true;
+    if (_anyActive && !_running) _start();
+    if (!_anyActive && _running) _finish();
+  }
+
+  AndroidNotificationDetails _progressDetails(int done, int total) => AndroidNotificationDetails(
+        'downloads_v1', 'التنزيلات',
+        channelDescription: 'تقدّم تنزيل التلاوات وصفحات المصحف',
+        importance: Importance.low,
+        priority: Priority.low,
+        playSound: false,
+        enableVibration: false,
+        onlyAlertOnce: true,
+        ongoing: true,
+        autoCancel: false,
+        showProgress: true,
+        maxProgress: total,
+        progress: done,
+        indeterminate: total == 0,
+        category: AndroidNotificationCategory.progress,
+        actions: const [
+          AndroidNotificationAction('dl_pause', 'إيقاف مؤقت', cancelNotification: false),
+          AndroidNotificationAction('dl_cancel', 'إلغاء', cancelNotification: false),
+        ],
+      );
+
+  (String, String, int, int) _status() {
+    final titles = <String>[], lines = <String>[];
+    var done = 0, total = 0;
+    for (final j in quran.jobs.values) {
+      final name = repo.reciter(j.reciter).name;
+      final pct = (j.progress * 100).round();
+      titles.add('جارٍ تنزيل التلاوة • $name');
+      final s = j.currentSurah > 0 ? 'سورة ${repo.surahs[j.currentSurah - 1].name} • ' : '';
+      lines.add('$s${Arabic.digits(pct)}٪ (${Arabic.digits(j.doneFiles)} من ${Arabic.digits(j.totalFiles)} آية)');
+      done += j.doneFiles;
+      total += j.totalFiles;
+    }
+    if (mushaf.downloading) {
+      titles.add('جارٍ تنزيل صفحات المصحف');
+      lines.add('${Arabic.digits(mushaf.savedCount)} من ${Arabic.digits(MushafIndex.pageCount)} صفحة');
+      done += mushaf.savedCount;
+      total += MushafIndex.pageCount;
+    }
+    return (titles.isEmpty ? 'جارٍ التنزيل' : titles.first, lines.join('\n'), done, total);
+  }
+
+  Future<void> _start() async {
+    _running = true;
+    _paused = false;
+    final (title, body, done, total) = _status();
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    try {
+      await _plugin.cancel(id: _doneId);
+      await android?.startForegroundService(
+        id: _id,
+        title: title,
+        body: body,
+        payload: payload,
+        notificationDetails: _progressDetails(done, total),
+        startType: AndroidServiceStartType.startNotSticky,
+        foregroundServiceTypes: {AndroidServiceForegroundType.foregroundServiceTypeDataSync},
+      );
+    } catch (e) {
+      debugPrint('download service failed: $e');
+    }
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => _update());
+  }
+
+  Future<void> _update() async {
+    if (!_running || !_anyActive) return;
+    final (title, body, done, total) = _status();
+    try {
+      await _plugin.show(
+        id: _id,
+        title: title,
+        body: body,
+        payload: payload,
+        notificationDetails: NotificationDetails(
+          android: _progressDetails(done, total).copyWithStyle(body),
+        ),
+      );
+    } catch (_) {}
+  }
+
+  Future<void> _finish() async {
+    _running = false;
+    _timer?.cancel();
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    try {
+      await android?.stopForegroundService();
+      await _plugin.cancel(id: _id);
+    } catch (_) {}
+
+    String? title, body;
+    var withResume = false;
+    if (_paused) {
+      title = 'التنزيل متوقف مؤقتًا';
+      body = 'ما نُزِّل محفوظ على الهاتف، ويكمل التنزيل من حيث توقف.';
+      withResume = true;
+    } else {
+      final errors = [
+        for (final r in _quranJobs.keys)
+          if (quran.lastError.containsKey(r)) quran.lastError[r]!,
+        if (_mushafJob && mushaf.error != null) mushaf.error!,
+      ];
+      final cancelled = _quranJobs.keys.any(quran.wasCancelled) || (_mushafJob && mushaf.wasCancelled);
+      if (errors.isNotEmpty) {
+        title = 'توقّف التنزيل';
+        body = errors.first;
+        withResume = true;
+      } else if (!cancelled) {
+        final parts = <String>[];
+        for (final e in _quranJobs.entries) {
+          final what = e.value.isEmpty
+              ? 'القرآن كاملًا'
+              : e.value.length == 1 ? 'سورة ${repo.surahs[e.value.first - 1].name}' : '${Arabic.digits(e.value.length)} سورة';
+          parts.add('$what بصوت ${repo.reciter(e.key).name}');
+        }
+        if (_mushafJob) parts.add('صفحات المصحف (${Arabic.digits(mushaf.savedCount)} صفحة)');
+        if (parts.isNotEmpty) {
+          title = '✓ اكتمل التنزيل';
+          body = '${parts.join('، ')} جاهز دون إنترنت.';
+        }
+      }
+    }
+    if (!withResume) {
+      _quranJobs.clear();
+      _mushafJob = false;
+    }
+    _paused = false;
+    if (title == null) return;
+    try {
+      await _plugin.show(
+        id: _doneId,
+        title: title,
+        body: body,
+        payload: payload,
+        notificationDetails: NotificationDetails(
+          android: AndroidNotificationDetails(
+            'downloads_done_v1', 'اكتمال التنزيلات',
+            channelDescription: 'تنبيه عند انتهاء تنزيل التلاوات أو صفحات المصحف',
+            importance: Importance.defaultImportance,
+            priority: Priority.defaultPriority,
+            styleInformation: BigTextStyleInformation(body ?? ''),
+            actions: withResume
+                ? const [AndroidNotificationAction('dl_resume', 'متابعة التنزيل', showsUserInterface: true)]
+                : null,
+          ),
+        ),
+      );
+    } catch (_) {}
+  }
+
+  /// Notification buttons: pause, cancel, resume.
+  void handleAction(String? id) {
+    switch (id) {
+      case 'dl_pause':
+      case 'dl_cancel':
+        _paused = id == 'dl_pause';
+        if (!_paused) {
+          _quranJobs.clear();
+          _mushafJob = false;
+        }
+        for (final r in quran.jobs.keys.toList()) {
+          quran.cancel(r);
+        }
+        if (mushaf.downloading) mushaf.cancel();
+      case 'dl_resume':
+        _plugin.cancel(id: _doneId);
+        final jobs = Map.of(_quranJobs);
+        final m = _mushafJob;
+        for (final e in jobs.entries) {
+          quran.download(repo, e.key, surahs: e.value.isEmpty ? null : e.value);
+        }
+        if (m) mushaf.downloadAll();
+    }
+  }
+}
+
+extension on AndroidNotificationDetails {
+  /// Same details, with the multi-line body shown in full.
+  AndroidNotificationDetails copyWithStyle(String body) => AndroidNotificationDetails(
+        channelId, channelName,
+        channelDescription: channelDescription,
+        importance: importance,
+        priority: priority,
+        playSound: false,
+        enableVibration: false,
+        onlyAlertOnce: true,
+        ongoing: true,
+        autoCancel: false,
+        showProgress: true,
+        maxProgress: maxProgress,
+        progress: progress,
+        indeterminate: indeterminate,
+        category: category,
+        actions: actions,
+        styleInformation: BigTextStyleInformation(body),
+      );
+}

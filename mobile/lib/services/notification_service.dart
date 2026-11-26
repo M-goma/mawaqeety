@@ -4,6 +4,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../core/prayer_calculator.dart';
 import 'app_state.dart';
+import 'download_notifier.dart';
 
 /// Schedules local notifications for the coming days (Android & iOS). No-op on web.
 class NotificationService {
@@ -13,7 +14,7 @@ class NotificationService {
   /// iOS keeps at most 64 pending notifications; stay under it.
   static const _maxPending = 60;
 
-  Future<void> init({void Function(String?)? onTap}) async {
+  Future<void> init({void Function(NotificationResponse r)? onTap}) async {
     if (kIsWeb) return;
     try {
       const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -21,7 +22,8 @@ class NotificationService {
           requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false);
       await _plugin.initialize(
         settings: const InitializationSettings(android: android, iOS: darwin),
-        onDidReceiveNotificationResponse: (r) => onTap?.call(r.payload),
+        onDidReceiveNotificationResponse: (r) => onTap?.call(r),
+        onDidReceiveBackgroundNotificationResponse: downloadActionInBackground,
       );
       _ok = true;
     } catch (e) {

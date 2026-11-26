@@ -17,6 +17,7 @@ class MushafStore extends ChangeNotifier {
 
   bool downloading = false;
   bool _cancel = false;
+  bool get wasCancelled => _cancel;
   String? error;
 
   bool get supported => !kIsWeb;
