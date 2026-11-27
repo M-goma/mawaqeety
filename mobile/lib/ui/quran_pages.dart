@@ -66,6 +66,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
                 onTap: () => openMushaf(context, page),
               ),
             ),
+            const ReciterTile(),
             if (last != null)
               Card3D(
                 color: AppColors.goldSoft,
@@ -269,4 +270,27 @@ class BookmarksPage extends StatelessWidget {
           );
         },
       );
+}
+
+
+/// "القارئ" row: the current reciter, tap to choose another (Quran tab and Settings).
+class ReciterTile extends StatelessWidget {
+  final EdgeInsetsGeometry? margin;
+  const ReciterTile({super.key, this.margin});
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: app,
+      builder: (context, _) => Card3D(
+        margin: margin ?? const EdgeInsets.fromLTRB(14, 6, 14, 6),
+        child: ListTile(
+          leading: const Tile3D(size: 40, child: Text('🎙️', style: TextStyle(fontSize: 19))),
+          title: const Text('القارئ', style: TextStyle(fontWeight: FontWeight.w700)),
+          subtitle: Text(app.repo.reciter(app.settings.reciterId).name),
+          trailing: const Icon(Icons.chevron_left),
+          onTap: () => showReciterPicker(context),
+        ),
+      ),
+    );
+  }
 }

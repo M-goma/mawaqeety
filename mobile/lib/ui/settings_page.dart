@@ -4,6 +4,7 @@ import '../core/methods.dart';
 import '../core/prayer_calculator.dart';
 import '../core/settings.dart';
 import '../main.dart';
+import 'quran_pages.dart' show ReciterTile;
 import 'theme.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -175,6 +176,8 @@ class SettingsPage extends StatelessWidget {
                 ),
               ]),
             ),
+            const _Header('التلاوة', Icons.record_voice_over_outlined),
+            const ReciterTile(margin: EdgeInsets.symmetric(horizontal: 16, vertical: 6)),
             const _Header('المظهر', Icons.palette_outlined),
             Card3D(
               child: Column(children: [
