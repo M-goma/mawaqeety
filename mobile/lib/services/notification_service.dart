@@ -5,6 +5,7 @@ import 'package:timezone/timezone.dart' as tz;
 
 import '../core/arabic.dart';
 import '../core/prayer_calculator.dart';
+import '../data/occasions.dart';
 import 'app_state.dart';
 import 'download_notifier.dart';
 import 'tracker.dart';
@@ -262,7 +263,61 @@ class NotificationService {
           }
         }
       }
+      // Evening reminders (half an hour after Isha the day before) and the daily Quran wird.
+      final extra = <(DateTime, String, String)>[];
+      DateTime eveOf(DateTime day) => app.day(day.subtract(const Duration(days: 1)))[Prayer.isha].add(const Duration(minutes: 30));
+      final hNow = app.hijriOf(app.today);
+      if (s.occasionsReminder) {
+        for (final o in occasions.where((o) => o.isFast || o.id == 'ramadan' || o.id == 'dhulhijja' || o.id == 'lastten')) {
+          for (var y = hNow.hYear; y <= hNow.hYear + 1; y++) {
+            final d = app.fromHijri(y, o.month, o.day);
+            if (d.difference(app.today).inDays > 120) continue;
+            final title = o.isFast ? 'غدًا ${o.name}' : 'غدًا: ${o.name}';
+            extra.add((eveOf(d), title, o.note.isNotEmpty ? o.note : o.name));
+          }
+        }
+      }
+      if (s.monThuReminder) {
+        for (var i = 1; i <= 14; i++) {
+          final d = app.today.add(Duration(days: i));
+          if (d.weekday != DateTime.monday && d.weekday != DateTime.thursday) continue;
+          if (app.hijriOf(d).hMonth == 9) continue;
+          extra.add((eveOf(d), d.weekday == DateTime.monday ? 'غدًا الاثنين' : 'غدًا الخميس', 'صيام الاثنين والخميس من سنن النبي ﷺ'));
+        }
+      }
+      if (s.khatmaDays > 0 && s.khatmaReminder) {
+        final pages = Arabic.pages(app.khatmaDaily);
+        for (var i = 0; i < 7; i++) {
+          final d = app.today.add(Duration(days: i));
+          extra.add((app.day(d)[Prayer.fajr].add(const Duration(minutes: 30)), '📖 وردك من القرآن اليوم', '$pages • افتح المصحف وأكمل ختمتك'));
+        }
+      }
+      var xid = 8700;
+      for (final (at, title, body) in extra) {
+        if (!at.isAfter(nowUtc)) continue;
+        if (native) {
+          notes.add({'at': at.millisecondsSinceEpoch, 'title': title, 'body': body, 'late': 2 * 3600000, 'ttl': 12 * 3600000});
+        } else {
+          await _plugin.zonedSchedule(
+            id: xid++,
+            scheduledDate: tz.TZDateTime.from(at, tz.UTC),
+            notificationDetails: _details,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            title: title,
+            body: body,
+          );
+        }
+      }
       if (native) {
+        // Native alarms are keyed by minute: give reminders that share a minute their own minute.
+        final used = <int>{};
+        for (final n in notes) {
+          var m = (n['at'] as int) ~/ 60000;
+          while (!used.add(m)) {
+            m++;
+          }
+          n['at'] = m * 60000;
+        }
         try {
           await _adhan.invokeMethod('notes', notes);
         } catch (e) {

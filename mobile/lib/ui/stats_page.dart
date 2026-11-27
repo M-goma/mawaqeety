@@ -104,6 +104,28 @@ class _StatsPageState extends State<StatsPage> {
                 subtitle: Text(_month ? 'هذا الشهر' : 'آخر ٧ أيام'),
               ),
             ),
+            Builder(builder: (context) {
+              var sunan = 0, pages = 0, days = 0;
+              for (var d = from; !d.isAfter(today); d = d.add(const Duration(days: 1))) {
+                sunan += t.day(d).sunanDone;
+                pages += t.day(d).pages;
+                days++;
+              }
+              return Card3D(
+                child: Column(children: [
+                  ListTile(
+                    leading: const Text('✨', style: TextStyle(fontSize: 24)),
+                    title: Text('${Arabic.digits(sunan)} من ${Arabic.digits(days * Sunnah.values.length)} سنة'),
+                    subtitle: const Text('الرواتب والضحى والوتر'),
+                  ),
+                  ListTile(
+                    leading: const Text('📖', style: TextStyle(fontSize: 24)),
+                    title: Text(Arabic.pages(pages)),
+                    subtitle: const Text('قرأتها من المصحف'),
+                  ),
+                ]),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.all(12),
               child: Text(

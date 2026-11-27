@@ -93,6 +93,20 @@ class Settings {
   List<String> tasbeehCustom = [];
   int tasbeehCount = 0; // current round
   int tasbeehStep = 0; // step of the after-prayer sequence
+  // Quran khatma plan
+  int khatmaDays = 0; // 0 = no plan; else finish the Mushaf in this many days
+  String khatmaStart = ''; // yyyy-mm-dd the current khatma began
+  int khatmaPage = 0; // furthest page reached in the current khatma
+  int khatmaDone = 0; // completed khatmas
+  bool khatmaReminder = true; // daily reminder of the wird
+  String quranDay = ''; // yyyy-mm-dd the pages below belong to
+  List<int> quranPages = []; // Mushaf pages read that day
+  // Occasions and voluntary fasts
+  bool occasionsReminder = true; // Arafah, Ashura, Tasu'a, the six of Shawwal…
+  bool monThuReminder = false; // Monday and Thursday fasts
+  // Zakat
+  double goldPrice = 0, silverPrice = 0; // per gram (24k gold, pure silver), entered by the user
+  bool nisabSilver = false; // nisab by silver (595 g) instead of gold (85 g)
 
   CalculationOptions get options {
     var m = CalculationMethod.get(method);
@@ -110,6 +124,9 @@ class Settings {
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
         'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint, 'wirdGoal': wirdGoal, 'prayerCheck': prayerCheck, 'fridayKahf': fridayKahf, 'fridayHour': fridayHour, 'kahfDay': kahfDay, 'kahfPages': kahfPages, 'hadithFull': hadithFull, 'iconSize': iconSize, 'hadithMarks': hadithMarks, 'tasbeehPhrase': tasbeehPhrase, 'tasbeehTarget': tasbeehTarget, 'tasbeehCustom': tasbeehCustom, 'tasbeehCount': tasbeehCount, 'tasbeehStep': tasbeehStep,
+        'khatmaDays': khatmaDays, 'khatmaStart': khatmaStart, 'khatmaPage': khatmaPage, 'khatmaDone': khatmaDone, 'khatmaReminder': khatmaReminder,
+        'quranDay': quranDay, 'quranPages': quranPages, 'occasionsReminder': occasionsReminder, 'monThuReminder': monThuReminder,
+        'goldPrice': goldPrice, 'silverPrice': silverPrice, 'nisabSilver': nisabSilver,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -172,6 +189,18 @@ class Settings {
       r.hadithFull = j['hadithFull'] ?? false;
       r.iconSize = (j['iconSize'] as int?)?.clamp(0, 2) ?? 1;
       r.hadithMarks = [for (final x in (j['hadithMarks'] as List?) ?? const []) x as String];
+      r.khatmaDays = j['khatmaDays'] ?? 0;
+      r.khatmaStart = j['khatmaStart'] ?? '';
+      r.khatmaPage = j['khatmaPage'] ?? 0;
+      r.khatmaDone = j['khatmaDone'] ?? 0;
+      r.khatmaReminder = j['khatmaReminder'] ?? true;
+      r.quranDay = j['quranDay'] ?? '';
+      r.quranPages = [for (final x in (j['quranPages'] as List?) ?? const []) x as int];
+      r.occasionsReminder = j['occasionsReminder'] ?? true;
+      r.monThuReminder = j['monThuReminder'] ?? false;
+      r.goldPrice = (j['goldPrice'] ?? 0).toDouble();
+      r.silverPrice = (j['silverPrice'] ?? 0).toDouble();
+      r.nisabSilver = j['nisabSilver'] ?? false;
       r.tasbeehPhrase = j['tasbeehPhrase'] ?? 0;
       r.tasbeehTarget = j['tasbeehTarget'] ?? 33;
       r.tasbeehCustom = ((j['tasbeehCustom'] ?? []) as List).cast<String>();

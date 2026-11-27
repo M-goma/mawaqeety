@@ -7,6 +7,7 @@ import '../data/sabeel.dart';
 import '../main.dart';
 import 'hadith_page.dart';
 import 'mushaf_page.dart';
+import 'share_card.dart';
 import 'theme.dart';
 
 /// «سبيل»: ask about an ayah's tafsir or a hadith; answers quote the Quran, التفسير الميسر and
@@ -173,6 +174,11 @@ class _AyahCard extends StatelessWidget {
               icon: const Icon(Icons.menu_book_rounded, size: 18),
               label: const Text('في المصحف'),
               onPressed: () => openMushaf(context, app.mushaf.pageOf(a.surah.number, a.ayah), highlight: Bookmark(a.surah.number, a.ayah)),
+            ),
+            IconButton(
+              tooltip: 'مشاركة كصورة',
+              icon: const Icon(Icons.share_outlined, size: 20),
+              onPressed: () => shareAsImage(context, text: '﴿${a.text}﴾', ref: '${a.surah.name} • ${Arabic.digits(a.ayah)}'),
             ),
             IconButton(
               tooltip: 'نسخ',

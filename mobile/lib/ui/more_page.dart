@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'asma_page.dart';
+import 'occasions_page.dart';
 import 'ramadan_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
 import 'theme.dart';
+import 'zakat_page.dart';
 
 /// "More" tab: statistics, prophets' stories, Qibla and settings.
 class MorePage extends StatelessWidget {
@@ -57,6 +60,9 @@ class MorePage extends StatelessWidget {
           item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
           item('🌙', 'رمضان', 'الصيام والتراويح والتهجد', const RamadanPage()),
           item('🤍', 'الأيام البيض', '١٣ و١٤ و١٥ من كل شهر', const WhiteDaysPage()),
+          item('🗓️', 'المناسبات والصيام', 'عرفة وعاشوراء والعيدان والاثنين والخميس', const OccasionsPage()),
+          item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
+          item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
           guide(),
         ],

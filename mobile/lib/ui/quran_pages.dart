@@ -5,6 +5,7 @@ import '../core/settings.dart';
 import '../data/repository.dart';
 import '../main.dart';
 import 'downloads_page.dart';
+import 'khatma_page.dart';
 import 'mushaf_page.dart';
 import 'theme.dart';
 
@@ -66,6 +67,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
                 onTap: () => openMushaf(context, page),
               ),
             ),
+            const KhatmaCard(),
             const ReciterTile(),
             if (last != null)
               Card3D(

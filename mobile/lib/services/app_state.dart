@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show EventChannel;
@@ -134,6 +135,32 @@ class AppState extends ChangeNotifier {
     await _prefs.setString(_key, settings.toJsonString());
     notifyListeners();
     if (reschedule) await this.reschedule();
+  }
+
+  /// Backup file: the settings and the tracker (prayers, adhkar, fasts…), as JSON.
+  String exportBackup() => jsonEncode({
+        'app': 'sabeel',
+        'version': 1,
+        'date': DateTime.now().toIso8601String(),
+        'settings': settings.toJson(),
+        'tracker': jsonDecode(tracker.exportJson()),
+      });
+
+  /// Restores a backup made by [exportBackup]. Returns false if the file is not one.
+  Future<bool> importBackup(String text) async {
+    try {
+      final j = jsonDecode(text) as Map<String, dynamic>;
+      if (j['app'] != 'sabeel' || j['settings'] is! Map) return false;
+      settings = Settings.fromJsonString(jsonEncode(j['settings']));
+      await _prefs.setString(_key, settings.toJsonString());
+      await tracker.importJson((j['tracker'] ?? <String, dynamic>{}) as Map<String, dynamic>);
+      notifyListeners();
+      await reschedule();
+      return true;
+    } catch (e) {
+      debugPrint('backup import failed: $e');
+      return false;
+    }
   }
 
   /// A "did you pray?" notification button (payload "pt|yyyy-mm-dd|prayer", action "pt_<PrayerLog index>").
@@ -302,7 +329,63 @@ class AppState extends ChangeNotifier {
   }
 
   /// Called when a Mushaf page is shown.
+  // ---------------- Quran wird and khatma ----------------
+  static const mushafPages = 604;
+
+  /// Pages per day of the current khatma plan (0 = no plan).
+  int get khatmaDaily => settings.khatmaDays <= 0 ? 0 : (mushafPages / settings.khatmaDays).ceil();
+
+  /// Day of the plan (1 = the day it started).
+  int get khatmaDay {
+    final s = DateTime.tryParse(settings.khatmaStart);
+    return s == null ? 1 : today.difference(DateTime(s.year, s.month, s.day)).inDays + 1;
+  }
+
+  /// Page the reader should reach by the end of today.
+  int get khatmaTarget => (khatmaDaily * khatmaDay).clamp(0, mushafPages);
+
+  /// Pages read today (distinct Mushaf pages opened).
+  int get pagesToday => settings.quranDay == dayKey(today) ? settings.quranPages.length : 0;
+
+  void startKhatma(int days) => update((x) {
+        x.khatmaDays = days;
+        x.khatmaStart = dayKey(today);
+        x.khatmaPage = 0;
+      });
+
+  void stopKhatma() => update((x) {
+        x.khatmaDays = 0;
+        x.khatmaPage = 0;
+      });
+
+  void _noteQuranPage(int page) {
+    final key = dayKey(today);
+    final s = settings;
+    final newDay = s.quranDay != key;
+    if (!newDay && s.quranPages.contains(page) && (s.khatmaDays == 0 || page <= s.khatmaPage)) return;
+    update((x) {
+      if (newDay) {
+        x.quranDay = key;
+        x.quranPages = [];
+      }
+      if (!x.quranPages.contains(page)) x.quranPages = [...x.quranPages, page];
+      if (x.khatmaDays > 0 && page > x.khatmaPage) {
+        // The last page after reading most of the Mushaf in order (not a jump to the end): a khatma is
+        // complete, and the next one starts.
+        final complete = page == mushafPages && x.khatmaPage >= 560;
+        x.khatmaPage = page;
+        if (complete) {
+          x.khatmaDone++;
+          x.khatmaPage = 0;
+          x.khatmaStart = key;
+        }
+      }
+    }, reschedule: false);
+    tracker.setPages(today, settings.quranPages.length);
+  }
+
   void noteMushafPage(int page) {
+    _noteQuranPage(page);
     final f = kahfFriday;
     if (f == null || page < kahfFirst || page > kahfLast) return;
     final key = dayKey(f);

@@ -9,6 +9,13 @@ class Arabic {
     return n >= 3 && n <= 10 ? '${digits(n)} دقائق' : '${digits(n)} دقيقة';
   }
 
+  /// «٥ صفحات»، «٢٠ صفحة».
+  static String pages(int n) {
+    if (n == 1) return 'صفحة واحدة';
+    if (n == 2) return 'صفحتان';
+    return n >= 3 && n <= 10 ? '${digits(n)} صفحات' : '${digits(n)} صفحة';
+  }
+
   static String digits(Object n) => n.toString().split('').map((c) {
         final d = int.tryParse(c);
         return d == null ? c : _digits[d];

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../core/arabic.dart';
 import '../data/hadith.dart';
 import '../main.dart';
+import 'share_card.dart';
 import 'theme.dart';
 
 /// Sahih al-Bukhari and Sahih Muslim only: hadith of the day, the books, search and saved hadiths.
@@ -128,6 +129,11 @@ class HadithCard extends StatelessWidget {
                   onPressed: () => app.update((x) => x.hadithMarks = saved
                       ? (x.hadithMarks.where((k) => k != h.key).toList())
                       : [h.key, ...x.hadithMarks], reschedule: false),
+                ),
+                IconButton(
+                  tooltip: 'مشاركة كصورة',
+                  icon: const Icon(Icons.share_outlined, size: 20),
+                  onPressed: () => shareAsImage(context, text: h.matn, ref: '${h.col.name} • ${Arabic.digits(h.number)}'),
                 ),
                 IconButton(
                   tooltip: 'نسخ',

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 
 import '../core/arabic.dart';
 import '../data/duas.dart';
+import 'share_card.dart';
 import 'theme.dart';
 
 /// Occasion duas: a grid of 3D tiles (sleep, waking up, travel, …).
@@ -101,6 +102,12 @@ class _DuaGroupPageState extends State<DuaGroupPage> {
                 const SizedBox(height: 8),
                 Row(children: [
                   Expanded(child: Text(d.source, style: TextStyle(fontSize: 12, color: hint))),
+                  IconButton(
+                    tooltip: 'مشاركة كصورة',
+                    visualDensity: VisualDensity.compact,
+                    icon: Icon(Icons.share_outlined, size: 19, color: hint),
+                    onPressed: () => shareAsImage(context, text: d.text, ref: d.source, title: g.title),
+                  ),
                   if (d.count > 1 || left == 0)
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),

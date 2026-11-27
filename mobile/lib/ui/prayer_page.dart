@@ -108,6 +108,7 @@ class PrayerPage extends StatelessWidget {
                   log: p.isObligatory && !today[p].isAfter(DateTime.now().toUtc()) ? app.tracker.day(app.today).of(p) : null,
                   onLog: () => showPrayerLogSheet(context, app.today, p),
                 ),
+              const SunanCard(),
               if (app.isWeb)
                 const Padding(
                   padding: EdgeInsets.all(16),
@@ -312,6 +313,7 @@ class TodayHarvest extends StatelessWidget {
                   chip('☀️ الصباح', day.morning, () => t.setAdhkar(app.today, morning: true, done: !day.morning)),
                   chip('🌙 المساء', day.evening, () => t.setAdhkar(app.today, morning: false, done: !day.evening)),
                   if (goal > 0) chip('📿 ${Arabic.digits(day.tasbeeh)}/${Arabic.digits(goal)}', day.tasbeeh >= goal),
+                  if (app.khatmaDaily > 0) chip('📖 ${Arabic.digits(app.pagesToday)}/${Arabic.digits(app.khatmaDaily)}', app.pagesToday >= app.khatmaDaily),
                 ]),
               ]),
             ),
@@ -409,6 +411,50 @@ class NextPrayerHero extends StatelessWidget {
               child: LinearProgressIndicator(value: st.progress, minHeight: 5, backgroundColor: Colors.white24, color: AppColors.goldLight),
             ),
           ]),
+        );
+      },
+    );
+  }
+}
+
+/// The confirmed sunnahs of the day (الرواتب، الضحى، الوتر), tapped when done.
+class SunanCard extends StatelessWidget {
+  const SunanCard({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: app.tracker,
+      builder: (context, _) {
+        final t = app.tracker;
+        final d = t.day(app.today);
+        return Card3D(
+          margin: const EdgeInsets.fromLTRB(16, 10, 16, 6),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+              Row(children: [
+                const Text('✨', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                const Text('السنن والنوافل', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
+                const Spacer(),
+                Text('${Arabic.digits(d.sunanDone)} / ${Arabic.digits(Sunnah.values.length)}',
+                    style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700)),
+              ]),
+              const SizedBox(height: 8),
+              Wrap(spacing: 6, runSpacing: 6, children: [
+                for (final s in Sunnah.values)
+                  FilterChip(
+                    label: Text(s.label),
+                    tooltip: s.detail,
+                    selected: d.did(s),
+                    onSelected: (v) => t.setSunnah(app.today, s, v),
+                  ),
+              ]),
+              const SizedBox(height: 6),
+              Text('«ما من عبدٍ مسلمٍ يصلّي لله كل يومٍ ثنتي عشرة ركعةً تطوعًا غير فريضة إلا بنى الله له بيتًا في الجنة» — صحيح مسلم ٧٢٨',
+                  style: TextStyle(fontSize: 11.5, color: Theme.of(context).hintColor, height: 1.6)),
+            ]),
+          ),
         );
       },
     );

@@ -1,3 +1,7 @@
+import 'dart:convert';
+
+import 'package:file_picker/file_picker.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter/material.dart';
 
 import '../core/methods.dart';
@@ -219,6 +223,23 @@ class SettingsPage extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
+            const _Header('النسخ الاحتياطي', Icons.backup_outlined),
+            Card3D(
+              child: Column(children: [
+                ListTile(
+                  leading: const Icon(Icons.upload_file),
+                  title: const Text('حفظ نسخة احتياطية'),
+                  subtitle: const Text('إحصائياتك وإعداداتك في ملف واحد، احفظه أو أرسله لنفسك', style: TextStyle(fontSize: 12)),
+                  onTap: () => _exportBackup(context),
+                ),
+                ListTile(
+                  leading: const Icon(Icons.restore),
+                  title: const Text('استعادة نسخة احتياطية'),
+                  subtitle: const Text('من ملف حفظته من قبل (يستبدل البيانات الحالية)', style: TextStyle(fontSize: 12)),
+                  onTap: () => _importBackup(context),
+                ),
+              ]),
             ),
             const _Header('التحديثات', Icons.system_update_outlined),
             const _UpdateCard(),
@@ -537,4 +558,41 @@ class _PalettePicker extends StatelessWidget {
       ]),
     );
   }
+}
+
+Future<void> _exportBackup(BuildContext context) async {
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    final now = DateTime.now();
+    final name = 'sabeel-backup-${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}.json';
+    await SharePlus.instance.share(ShareParams(
+      files: [XFile.fromData(utf8.encode(app.exportBackup()), mimeType: 'application/json', name: name)],
+      fileNameOverrides: [name],
+      subject: 'نسخة احتياطية من سبيل',
+    ));
+  } catch (e) {
+    messenger.showSnackBar(const SnackBar(content: Text('تعذّر حفظ النسخة')));
+  }
+}
+
+Future<void> _importBackup(BuildContext context) async {
+  final messenger = ScaffoldMessenger.of(context);
+  final picked = await FilePicker.pickFiles(type: FileType.any);
+  if (picked.isEmpty) return;
+  final bytes = await picked.first.readAsBytes();
+  if (!context.mounted) return;
+  final ok = await showDialog<bool>(
+    context: context,
+    builder: (c) => AlertDialog(
+      title: const Text('استعادة النسخة؟'),
+      content: const Text('ستُستبدل إحصائياتك وإعداداتك الحالية ببيانات الملف.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('إلغاء')),
+        FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('استعادة')),
+      ],
+    ),
+  );
+  if (ok != true) return;
+  final done = await app.importBackup(utf8.decode(bytes, allowMalformed: true));
+  messenger.showSnackBar(SnackBar(content: Text(done ? 'تمت الاستعادة' : 'هذا الملف ليس نسخة احتياطية من سبيل')));
 }

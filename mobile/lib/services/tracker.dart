@@ -14,6 +14,14 @@ extension PrayerLogX on PrayerLog {
   String get emoji => const ['', '🕌', '👥', '🧍', '⏳'][index];
 }
 
+/// The confirmed sunnahs (رواتب، الضحى، الوتر).
+enum Sunnah { fajr, dhuhr, maghrib, isha, duha, witr }
+
+extension SunnahX on Sunnah {
+  String get label => const ['سنة الفجر', 'سنة الظهر', 'سنة المغرب', 'سنة العشاء', 'الضحى', 'الوتر'][index];
+  String get detail => const ['ركعتان قبل الفجر', '٤ قبل الظهر و٢ بعده', 'ركعتان بعد المغرب', 'ركعتان بعد العشاء', 'ركعتان أو أكثر', 'ركعة أو أكثر'][index];
+}
+
 const trackedPrayers = [Prayer.fajr, Prayer.dhuhr, Prayer.asr, Prayer.maghrib, Prayer.isha];
 
 /// One day of worship: the five prayers, morning/evening adhkar and the tasbeeh count.
@@ -24,11 +32,15 @@ class DayLog {
   /// Voluntary worship: a fast (Ramadan or the white days), the taraweeh (rak'ahs, 0 = none) and tahajjud.
   bool fast = false, tahajjud = false;
   int taraweeh = 0;
+  /// Sunnah prayers done (bit per [Sunnah]) and Mushaf pages read.
+  int sunan = 0, pages = 0;
+  bool did(Sunnah s) => sunan & (1 << s.index) != 0;
+  int get sunanDone => Sunnah.values.where(did).length;
 
   PrayerLog of(Prayer p) => prayers[p] ?? PrayerLog.none;
   int get prayersDone => trackedPrayers.where((p) => of(p) != PrayerLog.none).length;
   bool get allFiveOnTime => trackedPrayers.every((p) => of(p) != PrayerLog.none && of(p) != PrayerLog.qada);
-  bool get isEmpty => prayers.isEmpty && !morning && !evening && tasbeeh == 0 && !fast && !tahajjud && taraweeh == 0;
+  bool get isEmpty => prayers.isEmpty && !morning && !evening && tasbeeh == 0 && !fast && !tahajjud && taraweeh == 0 && sunan == 0 && pages == 0;
 
   Map<String, dynamic> toJson() => {
         if (prayers.isNotEmpty) 'p': {for (final e in prayers.entries) e.key.name: e.value.index},
@@ -38,6 +50,8 @@ class DayLog {
         if (fast) 'f': 1,
         if (taraweeh > 0) 'tr': taraweeh,
         if (tahajjud) 'q': 1,
+        if (sunan != 0) 'sn': sunan,
+        if (pages > 0) 'qp': pages,
       };
 
   static DayLog fromJson(Map<String, dynamic> j) {
@@ -53,6 +67,8 @@ class DayLog {
     d.fast = j['f'] == 1;
     d.taraweeh = (j['tr'] ?? 0) as int;
     d.tahajjud = j['q'] == 1;
+    d.sunan = (j['sn'] ?? 0) as int;
+    d.pages = (j['qp'] ?? 0) as int;
     return d;
   }
 }
@@ -129,6 +145,28 @@ class Tracker extends ChangeNotifier {
 
   Future<void> setTahajjud(DateTime date, bool v) async {
     _edit(date).tahajjud = v;
+    await _save();
+  }
+
+  Future<void> setSunnah(DateTime date, Sunnah s, bool v) async {
+    final d = _edit(date);
+    d.sunan = v ? d.sunan | (1 << s.index) : d.sunan & ~(1 << s.index);
+    await _save();
+  }
+
+  Future<void> setPages(DateTime date, int n) async {
+    _edit(date).pages = n;
+    await _save();
+  }
+
+  /// Raw data for the backup file.
+  String exportJson() => jsonEncode({for (final e in _days.entries) e.key: e.value.toJson()});
+
+  /// Replaces all days with a backup's data.
+  Future<void> importJson(Map<String, dynamic> j) async {
+    _days
+      ..clear()
+      ..addAll({for (final e in j.entries) e.key: DayLog.fromJson(e.value as Map<String, dynamic>)});
     await _save();
   }
 

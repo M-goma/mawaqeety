@@ -5,6 +5,7 @@ import '../core/arabic.dart';
 import '../core/prayer_calculator.dart';
 import '../data/adhkar.dart';
 import '../main.dart';
+import 'share_card.dart';
 import 'theme.dart';
 
 class AdhkarPage extends StatefulWidget {
@@ -166,6 +167,14 @@ class _DhikrCard extends StatelessWidget {
               const SizedBox(height: 10),
               Row(children: [
                 Expanded(child: Text(dhikr.source, style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor))),
+                IconButton(
+                  tooltip: 'مشاركة كصورة',
+                  visualDensity: VisualDensity.compact,
+                  icon: Icon(Icons.share_outlined, size: 19, color: Theme.of(context).hintColor),
+                  onPressed: () => shareAsImage(context,
+                      text: body.map((s) => (s as TextSpan).text ?? '').join().trim(), ref: dhikr.source,
+                      title: morning ? 'أذكار الصباح' : 'أذكار المساء'),
+                ),
                 Text(dhikr.count > 1 ? 'التكرار: ${Arabic.digits(dhikr.count)}' : 'مرة واحدة',
                     style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor)),
                 const SizedBox(width: 10),
