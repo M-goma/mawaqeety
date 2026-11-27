@@ -20,7 +20,7 @@
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <DockPanel>
-                            <Border DockPanel.Dock="Left" Width="36" Height="36" CornerRadius="10" Background="{DynamicResource HeroBrush}" Margin="0,0,10,0">
+                            <Border DockPanel.Dock="Left" Width="36" Height="36" CornerRadius="10" Background="{DynamicResource HeroBrush}" Effect="{StaticResource RaisedShadow}" BorderBrush="{StaticResource RimBrush}" BorderThickness="0,1,0,0" Margin="0,0,10,0">
                                 <TextBlock Text="{Binding OrderText}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
                             <TextBlock DockPanel.Dock="Right" Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="14"
@@ -39,7 +39,7 @@
         <!-- Story -->
         <ScrollViewer x:Name="StoryScroll" Grid.Column="2" VerticalScrollBarVisibility="Auto">
             <StackPanel MaxWidth="860" Margin="0,0,8,24">
-                <Border Background="{DynamicResource HeroBrush}" CornerRadius="18" Padding="24,20" Margin="0,0,0,16">
+                <Border Background="{DynamicResource HeroBrush}" Effect="{StaticResource HeroShadow}" BorderBrush="{StaticResource RimBrush}" BorderThickness="0,1,0,0" CornerRadius="18" Padding="24,20" Margin="0,0,0,16">
                     <StackPanel>
                         <TextBlock Text="{Binding Title}" Foreground="White" FontSize="28" FontWeight="Bold"/>
                         <TextBlock Text="{Binding Subtitle}" Foreground="#E9C75A" FontSize="15"/>

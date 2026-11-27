@@ -12,7 +12,7 @@
             <c:CompassDial Bearing="{Binding Bearing}" MaxWidth="520" MaxHeight="520"/>
         </Border>
         <StackPanel Grid.Column="2">
-            <Border Background="{DynamicResource HeroBrush}" CornerRadius="18" Padding="22,18">
+            <Border Background="{DynamicResource HeroBrush}" Effect="{StaticResource HeroShadow}" BorderBrush="{StaticResource RimBrush}" BorderThickness="0,1,0,0" CornerRadius="18" Padding="22,18">
                 <StackPanel>
                     <TextBlock Text="اتجاه القبلة" Foreground="{DynamicResource HeroMutedBrush}" FontSize="14"/>
                     <TextBlock Text="{Binding BearingText}" Foreground="White" FontSize="52" FontWeight="Bold"/>

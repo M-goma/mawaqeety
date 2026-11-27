@@ -6,7 +6,7 @@
         <c:BoolToVisibilityConverter x:Key="BoolVis"/>
     </UserControl.Resources>
     <DockPanel Margin="24,24,24,16">
-        <Border DockPanel.Dock="Top" Background="{DynamicResource HeroBrush}" CornerRadius="18" Padding="22,16" Margin="0,0,0,14">
+        <Border DockPanel.Dock="Top" Background="{DynamicResource HeroBrush}" Effect="{StaticResource HeroShadow}" BorderBrush="{StaticResource RimBrush}" BorderThickness="0,1,0,0" CornerRadius="18" Padding="22,16" Margin="0,0,0,14">
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <RadioButton Style="{StaticResource Segment}" Tag="&#xE706;" Content="الصباح" GroupName="adh" Foreground="White"

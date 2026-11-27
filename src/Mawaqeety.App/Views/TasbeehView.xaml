@@ -67,8 +67,25 @@
                     <Grid Width="270" Height="270">
                         <Ellipse Stroke="{DynamicResource LineBrush}" StrokeThickness="12"/>
                         <c:Arc Progress="{Binding Ring}" Stroke="{DynamicResource GoldBrush}" StrokeThickness="12"/>
-                        <Ellipse Margin="22" Fill="{DynamicResource HeroBrush}">
-                            <Ellipse.Effect><DropShadowEffect BlurRadius="20" ShadowDepth="6" Opacity="0.45"/></Ellipse.Effect>
+                        <!-- Glossy 3D bead: base colour, light from the top-left, depth at the bottom, and a shine -->
+                        <Ellipse Margin="22" Fill="{DynamicResource AccentBrush}" Effect="{StaticResource HeroShadow}"/>
+                        <Ellipse Margin="22" IsHitTestVisible="False">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush GradientOrigin="0.32,0.25" Center="0.4,0.35" RadiusX="0.75" RadiusY="0.75">
+                                    <GradientStop Color="#70FFFFFF" Offset="0"/>
+                                    <GradientStop Color="#10FFFFFF" Offset="0.4"/>
+                                    <GradientStop Color="#30000000" Offset="0.8"/>
+                                    <GradientStop Color="#70000000" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Ellipse Width="130" Height="52" VerticalAlignment="Top" Margin="0,38,0,0" IsHitTestVisible="False">
+                            <Ellipse.Fill>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#66FFFFFF" Offset="0"/>
+                                    <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Ellipse.Fill>
                         </Ellipse>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="{Binding CountText}" Foreground="White" FontSize="72" FontWeight="Bold" HorizontalAlignment="Center"/>
@@ -85,7 +102,7 @@
 
         <!-- Totals and the daily wird -->
         <StackPanel Grid.Column="2">
-            <Border Background="{DynamicResource HeroBrush}" CornerRadius="18" Padding="18,14">
+            <Border Background="{DynamicResource HeroBrush}" Effect="{StaticResource HeroShadow}" BorderBrush="{StaticResource RimBrush}" BorderThickness="0,1,0,0" CornerRadius="18" Padding="18,14">
                 <UniformGrid Columns="3">
                     <StackPanel><TextBlock Text="{Binding TodayText}" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
                         <TextBlock Text="اليوم" Foreground="{DynamicResource HeroMutedBrush}" HorizontalAlignment="Center"/></StackPanel>

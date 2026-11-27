@@ -30,10 +30,26 @@
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
+    <!-- ===== 3D depth: soft drop shadows and a light rim along the top edge ===== -->
+    <DropShadowEffect x:Key="CardShadow" Color="#000000" BlurRadius="20" ShadowDepth="7" Direction="270" Opacity="0.45" RenderingBias="Performance"/>
+    <DropShadowEffect x:Key="HeroShadow" Color="#000000" BlurRadius="28" ShadowDepth="10" Direction="270" Opacity="0.55" RenderingBias="Performance"/>
+    <DropShadowEffect x:Key="RaisedShadow" Color="#000000" BlurRadius="8" ShadowDepth="3" Direction="270" Opacity="0.5" RenderingBias="Performance"/>
+    <LinearGradientBrush x:Key="RimBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#30FFFFFF" Offset="0"/>
+        <GradientStop Color="#08FFFFFF" Offset="0.25"/>
+        <GradientStop Color="#00FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="ShineBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#26FFFFFF" Offset="0"/>
+        <GradientStop Color="#00FFFFFF" Offset="0.55"/>
+        <GradientStop Color="#1A000000" Offset="1"/>
+    </LinearGradientBrush>
+
     <!-- ===== Card ===== -->
     <Style x:Key="Card" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource LineBrush}"/>
+        <Setter Property="Effect" Value="{StaticResource CardShadow}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource RimBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="{StaticResource Radius}"/>
         <Setter Property="Padding" Value="20"/>
@@ -54,12 +70,21 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource RadiusSmall}"
-                            Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
-                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
+                    <Grid x:Name="Root">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{StaticResource RadiusSmall}"
+                                Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True" Effect="{StaticResource RaisedShadow}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <Border x:Name="Shine" CornerRadius="{StaticResource RadiusSmall}" Background="{StaticResource ShineBrush}" IsHitTestVisible="False"/>
+                    </Grid>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Root" Property="RenderTransform">
+                                <Setter.Value><TranslateTransform Y="2"/></Setter.Value>
+                            </Setter>
+                            <Setter TargetName="Bd" Property="Effect" Value="{x:Null}"/>
+                        </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBrush}"/>
                         </Trigger>
@@ -88,7 +113,30 @@
         </Style.Triggers>
     </Style>
 
-    <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource BaseButton}">
+    <Style x:Key="GhostButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+        <Setter Property="FontSize" Value="13.5"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" Background="{TemplateBinding Background}" CornerRadius="{StaticResource RadiusSmall}"
+                            Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource HoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.45"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderBrush" Value="Transparent"/>
         <Setter Property="Padding" Value="10,6"/>
@@ -159,7 +207,10 @@
                             <Setter TargetName="Bd" Property="Background" Value="#14FFFFFF"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="Bd" Property="Background" Value="#1FFFFFFF"/>
+                            <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="Bd" Property="Effect" Value="{StaticResource RaisedShadow}"/>
+                            <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource RimBrush}"/>
+                            <Setter TargetName="Bd" Property="BorderThickness" Value="1"/>
                             <Setter TargetName="Marker" Property="Visibility" Value="Visible"/>
                             <Setter Property="Foreground" Value="#FFFFFF"/>
                         </Trigger>
@@ -195,6 +246,7 @@
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="Bd" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="Bd" Property="Effect" Value="{StaticResource RaisedShadow}"/>
                             <Setter Property="Foreground" Value="{DynamicResource OnAccentBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
