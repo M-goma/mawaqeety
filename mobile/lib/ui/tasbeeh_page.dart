@@ -173,14 +173,38 @@ class TasbeehPage extends StatelessWidget {
                       child: Container(
                         width: 222,
                         height: 222,
+                        // A glossy 3D bead: lit from the top-left, with a shine and a soft shadow underneath.
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: RadialGradient(center: const Alignment(-0.3, -0.4), colors: [Color.lerp(AppColors.emerald, Colors.white, 0.15)!, AppColors.emerald, heroGradient.colors.last]),
-                          boxShadow: const [BoxShadow(color: Colors.black45, blurRadius: 18, offset: Offset(0, 8))],
+                          gradient: RadialGradient(center: const Alignment(-0.35, -0.5), radius: 0.95, stops: const [0, 0.35, 0.75, 1], colors: [
+                            Color.lerp(AppColors.emerald, Colors.white, 0.45)!,
+                            AppColors.emerald,
+                            Color.lerp(AppColors.emerald, Colors.black, 0.35)!,
+                            Color.lerp(AppColors.emerald, Colors.black, 0.6)!,
+                          ]),
+                          boxShadow: const [
+                            BoxShadow(color: Color(0x99000000), blurRadius: 26, offset: Offset(0, 14)),
+                            BoxShadow(color: Color(0x40000000), blurRadius: 4, offset: Offset(0, 3)),
+                          ],
                         ),
-                        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                          Text(Arabic.digits(count), style: const TextStyle(color: Colors.white, fontSize: 68, fontWeight: FontWeight.w700, height: 1.1)),
-                          Text(target > 0 ? 'من ${Arabic.digits(target)}' : 'عدّ حر', style: TextStyle(color: AppColors.heroText)),
+                        child: Stack(alignment: Alignment.center, children: [
+                          Positioned(
+                            top: 16,
+                            child: Container(
+                              width: 120,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(60),
+                                gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter,
+                                    colors: [Colors.white.withValues(alpha: 0.38), Colors.white.withValues(alpha: 0)]),
+                              ),
+                            ),
+                          ),
+                          Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                            Text(Arabic.digits(count), style: const TextStyle(color: Colors.white, fontSize: 68, fontWeight: FontWeight.w700, height: 1.1,
+                                shadows: [Shadow(color: Color(0x80000000), blurRadius: 8, offset: Offset(0, 4))])),
+                            Text(target > 0 ? 'من ${Arabic.digits(target)}' : 'عدّ حر', style: TextStyle(color: AppColors.heroText)),
+                          ]),
                         ]),
                       ),
                     ),
@@ -199,7 +223,7 @@ class TasbeehPage extends StatelessWidget {
                 _Stat('مجموعك كله', app.tracker.tasbeehBetween(DateTime(2020), app.today)),
               ]),
               const SizedBox(height: 10),
-              Card(
+              Card3D(
                 child: InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () => _editWird(context),
@@ -244,7 +268,7 @@ class _Stat extends StatelessWidget {
   const _Stat(this.label, this.value);
   @override
   Widget build(BuildContext context) => Expanded(
-        child: Card(
+        child: Card3D(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Column(children: [

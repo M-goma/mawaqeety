@@ -19,7 +19,7 @@ class SettingsPage extends StatelessWidget {
           appBar: AppBar(title: const Text('الإعدادات')),
           body: ListView(padding: const EdgeInsets.only(bottom: 32), children: [
             const _Header('الموقع', Icons.place_outlined),
-            Card(
+            Card3D(
               child: ListTile(
                 title: Text(s.place.display, style: const TextStyle(fontWeight: FontWeight.w700)),
                 subtitle: Text('${s.place.lat.toStringAsFixed(3)}°, ${s.place.lng.toStringAsFixed(3)}° • ${s.place.tz}',
@@ -29,7 +29,7 @@ class SettingsPage extends StatelessWidget {
               ),
             ),
             const _Header('طريقة الحساب', Icons.calculate_outlined),
-            Card(
+            Card3D(
               child: Column(children: [
                 _Dropdown<MethodId>(
                   label: 'الطريقة',
@@ -61,7 +61,7 @@ class SettingsPage extends StatelessWidget {
               ]),
             ),
             const _Header('تعديل المواقيت يدويًا (دقائق)', Icons.tune),
-            Card(
+            Card3D(
               child: Column(children: [
                 for (final p in Prayer.values)
                   ListTile(
@@ -72,7 +72,7 @@ class SettingsPage extends StatelessWidget {
               ]),
             ),
             const _Header('التنبيهات', Icons.notifications_outlined),
-            Card(
+            Card3D(
               child: Column(children: [
                 for (final p in Prayer.values)
                   SwitchListTile(
@@ -118,7 +118,7 @@ class SettingsPage extends StatelessWidget {
               ]),
             ),
             const _Header('الأذان', Icons.volume_up_outlined),
-            Card(
+            Card3D(
               child: Column(children: [
                 SwitchListTile(
                   title: const Text('تشغيل الأذان عند دخول الوقت والتطبيق مفتوح'),
@@ -139,7 +139,7 @@ class SettingsPage extends StatelessWidget {
               ]),
             ),
             const _Header('المظهر', Icons.palette_outlined),
-            Card(
+            Card3D(
               child: Column(children: [
                 _Dropdown<ThemeChoice>(
                   label: 'الوضع',
@@ -158,7 +158,7 @@ class SettingsPage extends StatelessWidget {
             const _Header('التحديثات', Icons.system_update_outlined),
             const _UpdateCard(),
             const _Header('حول التطبيق', Icons.info_outline),
-            const Card(
+            const Card3D(
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(
@@ -393,7 +393,7 @@ class _UpdateCardState extends State<_UpdateCard> {
   }
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => Card3D(
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [

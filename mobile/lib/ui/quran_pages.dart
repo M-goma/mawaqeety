@@ -55,7 +55,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
           body: ListView(children: [
             Container(
               margin: const EdgeInsets.fromLTRB(14, 10, 14, 6),
-              decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(16)),
+              decoration: hero3D(radius: 20),
               child: ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                 leading: const Icon(Icons.menu_book, color: Colors.white, size: 32),
@@ -67,7 +67,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
               ),
             ),
             if (last != null)
-              Card(
+              Card3D(
                 color: AppColors.goldSoft,
                 child: ListTile(
                   leading: Icon(Icons.bookmark, color: AppColors.gold),
@@ -188,10 +188,9 @@ class _NumberBadge extends StatelessWidget {
   final int n;
   const _NumberBadge(this.n);
   @override
-  Widget build(BuildContext context) => Container(
-        width: 40, height: 40, alignment: Alignment.center,
-        decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: AppColors.gold, width: 1.5)),
-        child: Text(Arabic.digits(n), style: const TextStyle(fontWeight: FontWeight.w700)),
+  Widget build(BuildContext context) => Tile3D(
+        size: 40,
+        child: Text(Arabic.digits(n), style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.gold)),
       );
 }
 

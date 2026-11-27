@@ -151,7 +151,7 @@ class _DhikrCard extends StatelessWidget {
     return AnimatedOpacity(
       duration: const Duration(milliseconds: 250),
       opacity: completed ? 0.55 : 1,
-      child: Card(
+      child: Card3D(
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,

@@ -65,8 +65,7 @@ class PrayerPage extends StatelessWidget {
               Container(
                 margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                 padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(22),
-                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 16, offset: Offset(0, 6))]),
+                decoration: hero3D(radius: 24),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('الصلاة القادمة', style: TextStyle(color: AppColors.heroText, fontSize: 14)),
                   Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
@@ -174,12 +173,11 @@ class _PrayerRow extends StatelessWidget {
     final highlight = isNext ? AppColors.gold : (isCurrent ? AppColors.emerald : null);
     return Opacity(
       opacity: passed && !isCurrent && log == null ? 0.6 : 1,
-      child: Card(
+      child: Card3D(
         color: isNext ? AppColors.goldSoft : (isCurrent ? AppColors.emerald.withValues(alpha: 0.12) : null),
         shape: highlight == null ? null : RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: BorderSide(color: highlight)),
         child: ListTile(
-          leading: CircleAvatar(backgroundColor: AppColors.emerald.withValues(alpha: 0.15),
-              child: Icon(icon, color: isNext ? AppColors.gold : AppColors.emerald, size: 20)),
+          leading: Tile3D(size: 40, gold: isNext, child: Icon(icon, color: isNext ? AppColors.navy : AppColors.goldLight, size: 21)),
           title: Row(children: [
             Text(name, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
             if (isNext || isCurrent)
@@ -312,7 +310,7 @@ class _TodayHarvest extends StatelessWidget {
             child: Text(done ? '$text ✓' : text, style: const TextStyle(color: Colors.white, fontSize: 11.5)),
           ),
         );
-    return Card(
+    return Card3D(
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 6),
       clipBehavior: Clip.antiAlias,
       child: InkWell(

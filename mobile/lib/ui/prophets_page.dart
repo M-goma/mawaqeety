@@ -40,13 +40,12 @@ class ProphetsPage extends StatelessWidget {
                     if (i == 0) return st.downloading ? const _StoryProgress() : const SizedBox.shrink();
                     final p = list[i - 1];
                     final saved = st.isSaved(p.id, voice);
-                    return Card(
+                    return Card3D(
                       child: ListTile(
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                        leading: Container(
-                          width: 44, height: 44, alignment: Alignment.center,
-                          decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(12)),
-                          child: Text(Arabic.digits(p.order), style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+                        leading: Tile3D(
+                          size: 44,
+                          child: Text(Arabic.digits(p.order), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 16)),
                         ),
                         title: Text('${p.nameAr} عليه السلام'.replaceAll('محمد ﷺ عليه السلام', 'محمد ﷺ'),
                             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
@@ -84,7 +83,7 @@ class _StoryProgress extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(12, 8, 12, 4),
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(16)),
+      decoration: hero3D(radius: 18),
       child: Row(children: [
         const Icon(Icons.mic, color: Colors.white),
         const SizedBox(width: 10),
@@ -263,7 +262,7 @@ class ProphetPage extends StatelessWidget {
         body: ListView(padding: const EdgeInsets.fromLTRB(18, 8, 18, 32), children: [
           Container(
             padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(18)),
+            decoration: hero3D(radius: 20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(p.nameAr, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
               Text(p.title, style: TextStyle(color: AppColors.goldLight, fontSize: 15)),
@@ -394,7 +393,7 @@ class _AyatCard extends StatelessWidget {
     final from = a.from.clamp(1, s.verses.length);
     final to = a.to.clamp(from, s.verses.length);
     final style = quranStyle(context, 21);
-    return Card(
+    return Card3D(
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),

@@ -48,7 +48,7 @@ class _StatsPageState extends State<StatsPage> {
               _Streak('☀️', t.morningStreak(today), 'أذكار الصباح'),
             ]),
             // Daily completion
-            Card(
+            Card3D(
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -70,7 +70,7 @@ class _StatsPageState extends State<StatsPage> {
               ),
             ),
             // How the prayers were prayed
-            Card(
+            Card3D(
               child: Padding(
                 padding: const EdgeInsets.all(14),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -97,7 +97,7 @@ class _StatsPageState extends State<StatsPage> {
               ),
             ),
             // Tasbeeh
-            Card(
+            Card3D(
               child: ListTile(
                 leading: const Text('📿', style: TextStyle(fontSize: 24)),
                 title: Text('${Arabic.digits(t.tasbeehBetween(from, today))} تسبيحة'),
@@ -142,7 +142,7 @@ class _Streak extends StatelessWidget {
   const _Streak(this.icon, this.days, this.label);
   @override
   Widget build(BuildContext context) => Expanded(
-        child: Card(
+        child: Card3D(
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
             child: Column(children: [

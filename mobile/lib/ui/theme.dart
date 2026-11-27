@@ -106,7 +106,40 @@ ThemeData buildTheme(Brightness b, Palette p) {
     navigationBarTheme: NavigationBarThemeData(
       backgroundColor: dark ? p.navBar : Colors.white,
       indicatorColor: p.accentSoft,
+      elevation: 12,
+      shadowColor: Colors.black,
       labelTextStyle: WidgetStateProperty.all(const TextStyle(fontFamily: 'Cairo', fontSize: 12, fontWeight: FontWeight.w600)),
+    ),
+    // 3D: buttons and chips are raised with a shadow, the navigation bar casts one upward.
+    filledButtonTheme: FilledButtonThemeData(
+      style: FilledButton.styleFrom(
+        elevation: 6,
+        shadowColor: Colors.black,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      elevation: 3,
+      pressElevation: 0,
+      shadowColor: Colors.black,
+      selectedShadowColor: Colors.black,
+      selectedColor: p.primary,
+      backgroundColor: dark ? Color.lerp(p.surface2, Colors.white, 0.05) : Colors.white,
+      side: BorderSide(color: dark ? Colors.white.withValues(alpha: 0.10) : p.lightBorder),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      labelStyle: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: fg),
+      secondaryLabelStyle: const TextStyle(fontFamily: 'Cairo', fontSize: 13, color: Colors.white, fontWeight: FontWeight.w700),
+      checkmarkColor: Colors.white,
+    ),
+    segmentedButtonTheme: SegmentedButtonThemeData(
+      style: ButtonStyle(
+        elevation: const WidgetStatePropertyAll(3),
+        shadowColor: const WidgetStatePropertyAll(Colors.black),
+        backgroundColor: WidgetStateProperty.resolveWith((st) =>
+            st.contains(WidgetState.selected) ? p.primary : (dark ? p.surface : Colors.white)),
+        foregroundColor: WidgetStateProperty.resolveWith((st) => st.contains(WidgetState.selected) ? Colors.white : fg),
+      ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -115,4 +148,96 @@ ThemeData buildTheme(Brightness b, Palette p) {
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     ),
   );
+}
+
+bool _isDark(BuildContext c) => Theme.of(c).brightness == Brightness.dark;
+
+/// Raised "3D" surface: a soft top-to-bottom gradient, a light rim on top, and a deep drop shadow.
+/// Drop-in for Material [Card] (same common parameters).
+class Card3D extends StatelessWidget {
+  final Widget? child;
+  final EdgeInsetsGeometry? margin;
+  final Color? color;
+  final ShapeBorder? shape;
+  final Clip clipBehavior;
+  final double radius;
+  const Card3D({super.key, this.child, this.margin, this.color, this.shape, this.clipBehavior = Clip.antiAlias, this.radius = 18});
+
+  @override
+  Widget build(BuildContext context) {
+    final p = AppColors.current;
+    final dark = _isDark(context);
+    final base = dark ? p.surface : Colors.white;
+    final top = dark ? Color.lerp(base, Colors.white, 0.07)! : Colors.white;
+    final bottom = dark ? Color.lerp(base, Colors.black, 0.22)! : Color.lerp(Colors.white, p.primary, 0.04)!;
+    final side = shape is RoundedRectangleBorder ? (shape as RoundedRectangleBorder).side : BorderSide.none;
+    final r = BorderRadius.circular(radius);
+    return Padding(
+      padding: margin ?? const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          borderRadius: r,
+          gradient: LinearGradient(begin: Alignment.topCenter, end: Alignment.bottomCenter, colors: [top, bottom]),
+          boxShadow: dark
+              ? const [
+                  BoxShadow(color: Color(0x8C000000), blurRadius: 16, offset: Offset(0, 9)),
+                  BoxShadow(color: Color(0x59000000), blurRadius: 0, offset: Offset(0, 2.5)),
+                ]
+              : [BoxShadow(color: p.primary.withValues(alpha: 0.16), blurRadius: 14, offset: const Offset(0, 7))],
+        ),
+        child: Container(
+          clipBehavior: clipBehavior,
+          decoration: BoxDecoration(
+            borderRadius: r,
+            color: color,
+            border: side != BorderSide.none
+                ? Border.fromBorderSide(side)
+                : Border(top: BorderSide(color: dark ? Colors.white.withValues(alpha: 0.13) : p.lightBorder, width: 1)),
+          ),
+          child: Material(type: MaterialType.transparency, child: child),
+        ),
+      ),
+    );
+  }
+}
+
+/// Decoration for the big gradient "hero" cards: raised, with a shine on top and depth at the bottom.
+BoxDecoration hero3D({double radius = 24}) => BoxDecoration(
+      gradient: heroGradient,
+      borderRadius: BorderRadius.circular(radius),
+      border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.28))),
+      boxShadow: const [
+        BoxShadow(color: Color(0x99000000), blurRadius: 24, offset: Offset(0, 12)),
+        BoxShadow(color: Color(0x4D000000), blurRadius: 0, offset: Offset(0, 3)),
+      ],
+    );
+
+/// A small raised icon tile (used in lists and grids).
+class Tile3D extends StatelessWidget {
+  final Widget child;
+  final double size;
+  final bool gold;
+  const Tile3D({super.key, required this.child, this.size = 42, this.gold = false});
+  @override
+  Widget build(BuildContext context) {
+    final p = AppColors.current;
+    final dark = _isDark(context);
+    final c1 = gold ? p.accentLight : (dark ? Color.lerp(p.surface2, Colors.white, 0.16)! : Color.lerp(Colors.white, p.primary, 0.10)!);
+    final c2 = gold ? Color.lerp(p.accent, Colors.black, 0.3)! : (dark ? Color.lerp(p.surface, Colors.black, 0.25)! : Color.lerp(Colors.white, p.primary, 0.24)!);
+    return Container(
+      width: size,
+      height: size,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(size * 0.3),
+        gradient: LinearGradient(begin: Alignment.topRight, end: Alignment.bottomLeft, colors: [c1, c2]),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.3))),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: dark ? 0.55 : 0.18), blurRadius: 8, offset: const Offset(0, 5)),
+          BoxShadow(color: Colors.black.withValues(alpha: dark ? 0.45 : 0.10), blurRadius: 0, offset: const Offset(0, 3)),
+        ],
+      ),
+      child: child,
+    );
+  }
 }

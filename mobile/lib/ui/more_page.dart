@@ -12,28 +12,37 @@ class MorePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget item(IconData icon, String title, String subtitle, Widget page) => Card(
-          child: ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            leading: Container(
-              width: 44, height: 44,
-              decoration: BoxDecoration(gradient: heroGradient, borderRadius: BorderRadius.circular(12)),
-              child: Icon(icon, color: Colors.white),
-            ),
-            title: Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16.5)),
-            subtitle: Text(subtitle),
-            trailing: const Icon(Icons.chevron_left),
+    Widget item(String icon, String title, String subtitle, Widget page) => Card3D(
+          margin: EdgeInsets.zero,
+          child: InkWell(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 16, 8, 12),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                Text(icon, style: const TextStyle(fontSize: 38, shadows: [Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 4))])),
+                const SizedBox(height: 8),
+                Text(title, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
+                const SizedBox(height: 2),
+                Text(subtitle, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(fontSize: 11.5, color: Theme.of(context).hintColor)),
+              ]),
+            ),
           ),
         );
     return Scaffold(
       appBar: AppBar(title: const Text('المزيد')),
-      body: ListView(padding: const EdgeInsets.only(top: 6, bottom: 16), children: [
-        item(Icons.insights, 'إحصائياتي', 'صلواتك وأذكارك ووردك، والسلاسل المتتالية', const StatsPage()),
-        item(Icons.auto_stories, 'قصص الأنبياء', '٢٥ قصة مسجّلة بصوتَي نبيل وعرين', const ProphetsPage()),
-        item(Icons.explore, 'اتجاه القبلة', 'بوصلة ثلاثية الأبعاد', const QiblaPage()),
-        item(Icons.settings, 'الإعدادات', 'المدينة، طريقة الحساب، الأذان، الألوان', const SettingsPage()),
-      ]),
+      body: GridView.count(
+        crossAxisCount: 2,
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 1.05,
+        children: [
+          item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
+          item('🐪', 'قصص الأنبياء', '٢٥ قصة بصوتَي نبيل وعرين', const ProphetsPage()),
+          item('🧭', 'اتجاه القبلة', 'بوصلة ثلاثية الأبعاد', const QiblaPage()),
+          item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
+        ],
+      ),
     );
   }
 }

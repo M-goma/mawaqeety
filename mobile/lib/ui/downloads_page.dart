@@ -107,7 +107,7 @@ class _ReciterCard extends StatelessWidget {
     final job = d.job(id);
     final ready = d.readyCount(id);
     final err = d.lastError[id];
-    return Card(
+    return Card3D(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
@@ -175,7 +175,7 @@ class _MushafPagesCard extends StatelessWidget {
         listenable: app.mushafStore,
         builder: (context, _) {
           final m = app.mushafStore;
-          return Card(
+          return Card3D(
             child: Padding(
               padding: const EdgeInsets.all(14),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
