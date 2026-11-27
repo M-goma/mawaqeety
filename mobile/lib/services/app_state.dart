@@ -218,6 +218,18 @@ class AppState extends ChangeNotifier {
     return PrayerStatus(prev.$1 == Prayer.sunrise ? null : prev.$1, next.$1, next.$2, next.$2.difference(nowUtc), progress);
   }
 
+  /// Hijri date of a (local) day, with the user's adjustment.
+  HijriCalendar hijriOf(DateTime date) => HijriCalendar.fromDate(date.add(Duration(days: settings.hijriAdjust)));
+
+  /// The local day of a Hijri date (inverse of [hijriOf]).
+  DateTime fromHijri(int y, int m, int d) {
+    final g = HijriCalendar().hijriToGregorian(y, m, d);
+    return DateTime(g.year, g.month, g.day).subtract(Duration(days: settings.hijriAdjust));
+  }
+
+  /// Days in a Hijri month (29 or 30).
+  int hijriMonthLength(int y, int m) => fromHijri(m == 12 ? y + 1 : y, m == 12 ? 1 : m + 1, 1).difference(fromHijri(y, m, 1)).inDays;
+
   String hijri(DateTime date) {
     try {
       final h = HijriCalendar.fromDate(date.add(Duration(days: settings.hijriAdjust)));

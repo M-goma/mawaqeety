@@ -237,6 +237,31 @@ class NotificationService {
           }
         }
       }
+      // White days (13–15 of each Hijri month): a reminder half an hour after Isha the evening before.
+      if (s.whiteDaysReminder) {
+        final h = app.hijriOf(app.today);
+        for (var k = 0; k < 3; k++) {
+          var m = h.hMonth + k, y = h.hYear;
+          if (m > 12) { m -= 12; y++; }
+          final first = app.fromHijri(y, m, 13);
+          final at = app.day(first.subtract(const Duration(days: 1)))[Prayer.isha].add(const Duration(minutes: 30));
+          if (!at.isAfter(nowUtc)) continue;
+          const title = 'غدًا أول الأيام البيض';
+          final body = 'صيام ١٣ و١٤ و١٥ ${AppState.hijriMonths[m - 1]} سنّةٌ أوصى بها النبي ﷺ';
+          if (native) {
+            notes.add({'at': at.millisecondsSinceEpoch, 'title': title, 'body': body, 'late': 2 * 3600000, 'ttl': 12 * 3600000});
+          } else {
+            await _plugin.zonedSchedule(
+              id: 8600 + k,
+              scheduledDate: tz.TZDateTime.from(at, tz.UTC),
+              notificationDetails: _details,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              title: title,
+              body: body,
+            );
+          }
+        }
+      }
       if (native) {
         try {
           await _adhan.invokeMethod('notes', notes);

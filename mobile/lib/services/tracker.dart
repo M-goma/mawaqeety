@@ -21,17 +21,23 @@ class DayLog {
   final Map<Prayer, PrayerLog> prayers = {};
   bool morning = false, evening = false;
   int tasbeeh = 0;
+  /// Voluntary worship: a fast (Ramadan or the white days), the taraweeh (rak'ahs, 0 = none) and tahajjud.
+  bool fast = false, tahajjud = false;
+  int taraweeh = 0;
 
   PrayerLog of(Prayer p) => prayers[p] ?? PrayerLog.none;
   int get prayersDone => trackedPrayers.where((p) => of(p) != PrayerLog.none).length;
   bool get allFiveOnTime => trackedPrayers.every((p) => of(p) != PrayerLog.none && of(p) != PrayerLog.qada);
-  bool get isEmpty => prayers.isEmpty && !morning && !evening && tasbeeh == 0;
+  bool get isEmpty => prayers.isEmpty && !morning && !evening && tasbeeh == 0 && !fast && !tahajjud && taraweeh == 0;
 
   Map<String, dynamic> toJson() => {
         if (prayers.isNotEmpty) 'p': {for (final e in prayers.entries) e.key.name: e.value.index},
         if (morning) 'm': 1,
         if (evening) 'e': 1,
         if (tasbeeh > 0) 't': tasbeeh,
+        if (fast) 'f': 1,
+        if (taraweeh > 0) 'tr': taraweeh,
+        if (tahajjud) 'q': 1,
       };
 
   static DayLog fromJson(Map<String, dynamic> j) {
@@ -44,6 +50,9 @@ class DayLog {
     d.morning = j['m'] == 1;
     d.evening = j['e'] == 1;
     d.tasbeeh = (j['t'] ?? 0) as int;
+    d.fast = j['f'] == 1;
+    d.taraweeh = (j['tr'] ?? 0) as int;
+    d.tahajjud = j['q'] == 1;
     return d;
   }
 }
@@ -105,6 +114,21 @@ class Tracker extends ChangeNotifier {
 
   Future<void> addTasbeeh(DateTime date, [int n = 1]) async {
     _edit(date).tasbeeh += n;
+    await _save();
+  }
+
+  Future<void> setFast(DateTime date, bool v) async {
+    _edit(date).fast = v;
+    await _save();
+  }
+
+  Future<void> setTaraweeh(DateTime date, int rakahs) async {
+    _edit(date).taraweeh = rakahs;
+    await _save();
+  }
+
+  Future<void> setTahajjud(DateTime date, bool v) async {
+    _edit(date).tahajjud = v;
     await _save();
   }
 

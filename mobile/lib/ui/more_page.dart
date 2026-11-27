@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'ramadan_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
 import 'theme.dart';
@@ -54,6 +55,8 @@ class MorePage extends StatelessWidget {
         childAspectRatio: 1.45,
         children: [
           item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
+          item('🌙', 'رمضان', 'الصيام والتراويح والتهجد', const RamadanPage()),
+          item('🤍', 'الأيام البيض', '١٣ و١٤ و١٥ من كل شهر', const WhiteDaysPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
           guide(),
         ],
