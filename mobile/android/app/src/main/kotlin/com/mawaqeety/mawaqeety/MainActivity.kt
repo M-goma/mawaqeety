@@ -8,13 +8,27 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
+import android.content.Intent
+import android.os.SystemClock
 import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodChannel
 
 class MainActivity : AudioServiceActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         EventChannel(flutterEngine.dartExecutor.binaryMessenger, "mawaqeety/compass")
             .setStreamHandler(CompassStream(applicationContext))
+        // Full adhan at prayer times (see Adhan.kt).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "mawaqeety/adhan").setMethodCallHandler { call, result ->
+            when (call.method) {
+                "schedule" -> { AdhanAlarms.schedule(applicationContext, (call.arguments as? List<*>)?.filterIsInstance<Map<*, *>>() ?: emptyList()); result.success(null) }
+                "cancel" -> { AdhanAlarms.cancelAll(applicationContext); result.success(null) }
+                "stop" -> { startService(Intent(applicationContext, AdhanService::class.java).setAction(AdhanService.STOP)); result.success(null) }
+                else -> result.notImplemented()
+            }
+        }
+        EventChannel(flutterEngine.dartExecutor.binaryMessenger, "mawaqeety/flip")
+            .setStreamHandler(FlipStream(applicationContext))
     }
 }
 
@@ -85,5 +99,32 @@ private class CompassStream(context: Context) : EventChannel.StreamHandler, Sens
         val g = grav ?: return false
         val m = mag ?: return false
         return SensorManager.getRotationMatrix(rot, null, g, m)
+    }
+}
+
+/** Emits once each time the phone is turned face down (held for half a second). */
+private class FlipStream(context: Context) : EventChannel.StreamHandler, SensorEventListener {
+    private val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private var sink: EventChannel.EventSink? = null
+    private var since = 0L
+    private var fired = false
+
+    override fun onListen(arguments: Any?, events: EventChannel.EventSink) {
+        sink = events
+        sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.let { sm.registerListener(this, it, SensorManager.SENSOR_DELAY_NORMAL) }
+    }
+
+    override fun onCancel(arguments: Any?) {
+        sm.unregisterListener(this)
+        sink = null
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+
+    override fun onSensorChanged(e: SensorEvent) {
+        if (e.values[2] < -8.0f) {
+            if (since == 0L) since = SystemClock.elapsedRealtime()
+            else if (!fired && SystemClock.elapsedRealtime() - since > 500) { fired = true; sink?.success(1) }
+        } else { since = 0L; fired = false }
     }
 }

@@ -133,10 +133,35 @@ class SettingsPage extends StatelessWidget {
             Card3D(
               child: Column(children: [
                 SwitchListTile(
-                  title: const Text('تشغيل الأذان عند دخول الوقت والتطبيق مفتوح'),
+                  title: Text(Theme.of(context).platform == TargetPlatform.android ? 'تشغيل الأذان كاملًا في وقت كل صلاة' : 'تشغيل الأذان عند دخول الوقت والتطبيق مفتوح'),
+                  subtitle: Theme.of(context).platform == TargetPlatform.android
+                      ? const Text('حتى لو كان التطبيق مغلقًا. لا يعمل إذا كان الهاتف صامتًا أو كنت تستمع إلى شيء', style: TextStyle(fontSize: 12))
+                      : null,
                   value: s.adhanEnabled,
-                  onChanged: (v) => app.update((x) => x.adhanEnabled = v, reschedule: false),
+                  // Android: re-plan the native adhans.
+                  onChanged: (v) => app.update((x) => x.adhanEnabled = v),
                 ),
+                if (Theme.of(context).platform == TargetPlatform.android) ...[
+                  SwitchListTile(
+                    secondary: const Text('📱', style: TextStyle(fontSize: 22)),
+                    title: const Text('إسكات الأذان بقلب الهاتف على وجهه'),
+                    value: s.adhanFlip,
+                    onChanged: s.adhanEnabled ? (v) => app.update((x) => x.adhanFlip = v) : null,
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.power_settings_new),
+                    title: const Text('إسكات الأذان بزر التشغيل (Power)'),
+                    value: s.adhanPower,
+                    onChanged: s.adhanEnabled ? (v) => app.update((x) => x.adhanPower = v) : null,
+                  ),
+                  SwitchListTile(
+                    secondary: const Icon(Icons.menu_book_outlined),
+                    title: const Text('قلب الهاتف يوقف التلاوة والقصص والإذاعة'),
+                    subtitle: const Text('زر التشغيل لا يوقفها، لتستمع والشاشة مطفأة', style: TextStyle(fontSize: 12)),
+                    value: s.flipStopsAudio,
+                    onChanged: (v) => app.update((x) => x.flipStopsAudio = v, reschedule: false),
+                  ),
+                ],
                 _VoiceTile(label: 'صوت الأذان', id: s.adhanId, fajr: false,
                     onChanged: (v) => app.update((x) => x.adhanId = v, reschedule: false)),
                 _VoiceTile(label: 'أذان الفجر', id: s.fajrAdhanId, fajr: true,

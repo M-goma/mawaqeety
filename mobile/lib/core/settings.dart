@@ -47,6 +47,9 @@ class Settings {
   Map<Prayer, bool> notify = {for (final p in Prayer.values) p: p != Prayer.sunrise};
   int preAlertMinutes = 10; // 0 = off
   bool adhanEnabled = true;
+  bool adhanFlip = true; // turning the phone face down silences the adhan
+  bool adhanPower = true; // the power button silences the adhan
+  bool flipStopsAudio = false; // turning the phone face down also pauses a recitation, story or the radio
   String adhanId = 'alafasy';
   String fajrAdhanId = 'alafasy-fajr';
   int hijriAdjust = 0;
@@ -99,7 +102,7 @@ class Settings {
         'highLat': highLat.name, 'customFajr': customFajr, 'customIsha': customIsha,
         'adjust': {for (final e in adjust.entries) e.key.name: e.value},
         'notify': {for (final e in notify.entries) e.key.name: e.value},
-        'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
+        'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanFlip': adhanFlip, 'adhanPower': adhanPower, 'flipStopsAudio': flipStopsAudio, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
@@ -128,6 +131,9 @@ class Settings {
       }
       r.preAlertMinutes = j['preAlert'] ?? 10;
       r.adhanEnabled = j['adhanEnabled'] ?? true;
+      r.adhanFlip = j['adhanFlip'] ?? true;
+      r.adhanPower = j['adhanPower'] ?? true;
+      r.flipStopsAudio = j['flipStopsAudio'] ?? false;
       r.adhanId = j['adhanId'] ?? r.adhanId;
       r.fajrAdhanId = j['fajrAdhanId'] ?? r.fajrAdhanId;
       r.hijriAdjust = j['hijriAdjust'] ?? 0;

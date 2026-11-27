@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show EventChannel;
 import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
@@ -87,9 +88,12 @@ class AppState extends ChangeNotifier {
     };
     recitation.addListener(() {
       if (recitation.playing && radio.on) unawaited(radio.stop());
+      _watchFlip();
     });
+    radio.addListener(_watchFlip);
     narration.addListener(() {
       if (narration.speaking && !narration.paused && radio.on) unawaited(radio.stop());
+      _watchFlip();
     });
     await notifications.init(onTap: (r) {
       if (r.actionId?.startsWith('dl_') ?? false) return downloadNotifier.handleAction(r.actionId);
@@ -227,6 +231,8 @@ class AppState extends ChangeNotifier {
     if (!ready) return;
     notifyListeners();
     if (!settings.adhanEnabled) return;
+    // Android: the native adhan service plays it (also when the app is closed).
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) return;
     final nowUtc = DateTime.now().toUtc();
     final d = day(today);
     for (final p in Prayer.values.where((p) => p.isObligatory && (settings.notify[p] ?? true))) {
@@ -239,6 +245,25 @@ class AppState extends ChangeNotifier {
         if (recitation.playing || (narration.speaking && !narration.paused) || radio.playing) continue;
         unawaited(adhan.playFor(p, repo, settings));
       }
+    }
+  }
+
+  // ---------------- Turn the phone face down to pause what is playing (optional) ----------------
+  static const _flipEvents = EventChannel('mawaqeety/flip');
+  StreamSubscription<dynamic>? _flip;
+
+  void _watchFlip() {
+    final playing = recitation.playing || (narration.speaking && !narration.paused) || radio.on;
+    final want = !kIsWeb && defaultTargetPlatform == TargetPlatform.android && settings.flipStopsAudio && playing;
+    if (want && _flip == null) {
+      _flip = _flipEvents.receiveBroadcastStream().listen((_) {
+        if (recitation.playing) unawaited(recitation.pause());
+        if (narration.speaking && !narration.paused) unawaited(narration.pause());
+        if (radio.on) unawaited(radio.stop());
+      }, onError: (_) {});
+    } else if (!want && _flip != null) {
+      unawaited(_flip!.cancel());
+      _flip = null;
     }
   }
 

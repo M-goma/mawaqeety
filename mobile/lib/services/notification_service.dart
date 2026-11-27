@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
@@ -127,10 +128,53 @@ class NotificationService {
     }
   }
 
+  static const _adhan = MethodChannel('mawaqeety/adhan');
+
+  /// Android: the full adhan plays at prayer time from a native service, even when the app is closed.
+  bool _fullAdhan(AppState app) => defaultTargetPlatform == TargetPlatform.android && app.settings.adhanEnabled;
+
+  Future<void> _scheduleFullAdhan(AppState app) async {
+    if (defaultTargetPlatform != TargetPlatform.android) return;
+    try {
+      if (!_fullAdhan(app)) {
+        await _adhan.invokeMethod('cancel');
+        return;
+      }
+      final s = app.settings;
+      final nowUtc = DateTime.now().toUtc();
+      final items = <Map<String, Object>>[];
+      var id = 0;
+      for (var d = 0; d < 7; d++) {
+        final date = app.today.add(Duration(days: d));
+        final times = app.day(date);
+        for (final p in Prayer.values.where((p) => p.isObligatory && (s.notify[p] ?? false))) {
+          final at = times[p];
+          if (!at.isAfter(nowUtc)) continue;
+          final v = app.repo.voice(p == Prayer.fajr ? s.fajrAdhanId : s.adhanId) ?? app.repo.voices.first;
+          final name = p == Prayer.dhuhr && date.weekday == DateTime.friday ? 'الجمعة' : p.nameAr;
+          items.add({
+            'id': id++,
+            'at': at.millisecondsSinceEpoch,
+            'title': 'حان الآن موعد صلاة $name',
+            'body': '$name • ${_fmt(app.local(at), s.use24h)} • ${s.place.nameAr}',
+            'path': await app.adhan.localPath(v) ?? '',
+            'flip': s.adhanFlip,
+            'power': s.adhanPower,
+          });
+        }
+      }
+      await _adhan.invokeMethod('schedule', items);
+    } catch (e) {
+      debugPrint('full adhan scheduling failed: $e');
+    }
+  }
+
   Future<void> schedule(AppState app) async {
     if (!_ok) return;
     try {
       await _plugin.cancelAll();
+      await _scheduleFullAdhan(app);
+      final full = _fullAdhan(app);
       final s = app.settings;
       final nowUtc = DateTime.now().toUtc();
       var id = 1;
@@ -156,6 +200,8 @@ class NotificationService {
               count++;
             }
           }
+          // The native adhan shows its own notification at prayer time.
+          if (full && p.isObligatory) continue;
           if (at.isAfter(nowUtc) && count < _maxPending) {
             await _plugin.zonedSchedule(
               id: id++,

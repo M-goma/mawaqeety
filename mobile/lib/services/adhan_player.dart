@@ -26,6 +26,9 @@ class AdhanPlayer extends ChangeNotifier {
 
   bool get isPlaying => playingId != null;
 
+  /// Where the recording of [v] is kept on the phone (null on web).
+  Future<String?> localPath(AdhanVoice v) => _localPath(v);
+
   Future<String?> _localPath(AdhanVoice v) async {
     if (kIsWeb) return null;
     final dir = await getApplicationSupportDirectory();
