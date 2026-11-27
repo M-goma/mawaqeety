@@ -1,0 +1,25 @@
+name: play-track
+# Manual: sends a build Google Play already has (e.g. from internal testing) to closed testing.
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "Build number (empty = newest on internal testing)"
+        required: false
+      track:
+        description: "Track name (alpha = closed testing)"
+        required: false
+        default: alpha
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Send the build to the track
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VERSION_CODE: ${{ inputs.version_code }}
+          TRACK: ${{ inputs.track }}
+        run: |
+          pip install --quiet google-api-python-client google-auth
+          python tools/play_track.py
