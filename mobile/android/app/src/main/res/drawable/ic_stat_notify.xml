@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Status-bar icon (Android draws it in one colour): mihrab arch with a crescent and a star. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <!-- arch outline -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M5,21V10.5C5,6.36 8.13,3 12,3s7,3.36 7,7.5V21h-2V10.5C17,7.46 14.76,5 12,5S7,7.46 7,10.5V21z"/>
+    <!-- base line -->
+    <path android:fillColor="#FFFFFFFF" android:pathData="M4,20h16v2H4z"/>
+    <!-- crescent -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M12.6,8.2a3.6,3.6 0 1,0 3.1,5.9a3,3 0 1,1 -3.1,-5.9z"/>
+    <!-- star -->
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M15.2,7.2l0.45,0.95l1.05,0.15l-0.76,0.73l0.18,1.04l-0.92,-0.49l-0.92,0.49l0.18,-1.04l-0.76,-0.73l1.05,-0.15z"/>
+</vector>

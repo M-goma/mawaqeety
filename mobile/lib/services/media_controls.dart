@@ -37,7 +37,7 @@ class MediaControls extends BaseAudioHandler with SeekHandler {
           androidNotificationChannelId: 'com.mawaqeety.playback',
           androidNotificationChannelName: 'التلاوة وقصص الأنبياء',
           androidNotificationChannelDescription: 'التحكم في التلاوة والقصص من الإشعارات وشاشة القفل',
-          androidNotificationIcon: 'mipmap/ic_launcher',
+          androidNotificationIcon: 'drawable/ic_stat_notify',
           // Stay a foreground service while paused by a call, so playback can resume by itself from the background.
           androidStopForegroundOnPause: false,
           fastForwardInterval: Duration(seconds: 15),

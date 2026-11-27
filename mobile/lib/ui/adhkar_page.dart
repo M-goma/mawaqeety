@@ -5,7 +5,6 @@ import '../core/arabic.dart';
 import '../core/prayer_calculator.dart';
 import '../data/adhkar.dart';
 import '../main.dart';
-import 'duas_page.dart';
 import 'theme.dart';
 
 class AdhkarPage extends StatefulWidget {
@@ -70,27 +69,6 @@ class _AdhkarPageState extends State<AdhkarPage> {
         ],
       ),
       body: Column(children: [
-        Card3D(
-          margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),
-          child: InkWell(
-            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DuasPage())),
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
-              child: Row(children: [
-                const Tile3D(child: Text('🤲', style: TextStyle(fontSize: 21))),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const Text('أدعية المناسبات', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
-                    Text('النوم • الاستيقاظ • السفر • بعد الصلاة • الطعام • الكرب…',
-                        maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12, color: Theme.of(context).hintColor)),
-                  ]),
-                ),
-                const Icon(Icons.chevron_left),
-              ]),
-            ),
-          ),
-        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
           child: SegmentedButton<bool>(

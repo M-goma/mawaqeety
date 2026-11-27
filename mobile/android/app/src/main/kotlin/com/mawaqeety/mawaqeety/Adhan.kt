@@ -45,6 +45,12 @@ object AdhanAlarms {
         arm(ctx)
     }
 
+    /**
+     * Each adhan's alarm is keyed by its own time (minutes since 1970), never by its position in the list:
+     * re-planning can then never hand one prayer's alarm to another prayer.
+     */
+    private fun key(at: Long): Int = (at / 60_000L).toInt()
+
     /** Sets an alarm for every stored adhan still in the future. */
     fun arm(ctx: Context) {
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -54,7 +60,7 @@ object AdhanAlarms {
             val o = arr.getJSONObject(i)
             val at = o.getLong("at")
             if (at <= now) continue
-            val pi = pending(ctx, o.getInt("id"), o.toString())
+            val pi = pending(ctx, key(at), o.toString())
             if (Build.VERSION.SDK_INT >= 31 && !am.canScheduleExactAlarms()) am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
             else am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, at, pi)
         }
@@ -63,15 +69,30 @@ object AdhanAlarms {
     fun cancelAll(ctx: Context) {
         val am = ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val arr = JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, "[]"))
-        for (i in 0 until arr.length()) am.cancel(pending(ctx, arr.getJSONObject(i).getInt("id"), null))
+        for (i in 0 until arr.length()) {
+            val o = arr.getJSONObject(i)
+            am.cancel(pending(ctx, key(o.getLong("at")), null))
+            // Alarms set by version 1.18 (keyed by position) are cleared too.
+            if (o.has("id")) am.cancel(legacy(ctx, o.getInt("id")))
+        }
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY).apply()
     }
 
-    private fun pending(ctx: Context, id: Int, json: String?): PendingIntent {
-        val i = Intent(ctx, AdhanReceiver::class.java).setAction("com.mawaqeety.ADHAN.$id")
-        if (json != null) i.putExtra(EXTRA, json)
-        return PendingIntent.getBroadcast(ctx, 7300 + id, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    /** True when [at] is still one of the planned adhans (it was not re-planned or turned off). */
+    fun isPlanned(ctx: Context, at: Long): Boolean {
+        val arr = JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, "[]"))
+        return (0 until arr.length()).any { arr.getJSONObject(it).getLong("at") == at }
     }
+
+    private fun pending(ctx: Context, key: Int, json: String?): PendingIntent {
+        val i = Intent(ctx, AdhanReceiver::class.java).setAction("com.mawaqeety.ADHAN.T$key")
+        if (json != null) i.putExtra(EXTRA, json)
+        return PendingIntent.getBroadcast(ctx, key, i, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+    }
+
+    private fun legacy(ctx: Context, id: Int): PendingIntent =
+        PendingIntent.getBroadcast(ctx, 7300 + id, Intent(ctx, AdhanReceiver::class.java).setAction("com.mawaqeety.ADHAN.$id"),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 }
 
 class AdhanReceiver : BroadcastReceiver() {
@@ -80,8 +101,11 @@ class AdhanReceiver : BroadcastReceiver() {
             Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED, "android.intent.action.QUICKBOOT_POWERON" -> AdhanAlarms.arm(ctx)
             else -> {
                 val json = intent.getStringExtra(AdhanAlarms.EXTRA) ?: return
-                // Late by more than 10 minutes (phone was off): don't play an old adhan.
-                if (System.currentTimeMillis() - JSONObject(json).getLong("at") > 10 * 60_000) return
+                val at = JSONObject(json).getLong("at")
+                val now = System.currentTimeMillis()
+                // Only at its own time: never early, not more than 10 minutes late (phone was off),
+                // and only if it is still planned (not re-planned or turned off meanwhile).
+                if (now < at - 60_000 || now - at > 10 * 60_000 || !AdhanAlarms.isPlanned(ctx, at)) return
                 val s = Intent(ctx, AdhanService::class.java).putExtra(AdhanAlarms.EXTRA, json)
                 if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(s) else ctx.startService(s)
             }
@@ -211,7 +235,7 @@ class AdhanService : Service(), SensorEventListener {
         val stop = PendingIntent.getService(this, 1, Intent(this, AdhanService::class.java).setAction(STOP),
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(this, CHANNEL) else @Suppress("DEPRECATION") Notification.Builder(this)
-        b.setSmallIcon(R.mipmap.ic_launcher)
+        b.setSmallIcon(R.drawable.ic_stat_notify)
             .setContentTitle(title)
             .setContentText(body)
             .setCategory(Notification.CATEGORY_ALARM)

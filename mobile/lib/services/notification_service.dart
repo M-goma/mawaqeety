@@ -19,7 +19,7 @@ class NotificationService {
   Future<void> init({void Function(NotificationResponse r)? onTap}) async {
     if (kIsWeb) return;
     try {
-      const android = AndroidInitializationSettings('@mipmap/ic_launcher');
+      const android = AndroidInitializationSettings('@drawable/ic_stat_notify');
       const darwin = DarwinInitializationSettings(
           requestAlertPermission: false, requestBadgePermission: false, requestSoundPermission: false);
       await _plugin.initialize(

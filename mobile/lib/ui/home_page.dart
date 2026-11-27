@@ -6,6 +6,7 @@ import '../main.dart';
 import 'format.dart';
 import 'hadith_page.dart';
 import 'companions_page.dart';
+import 'duas_page.dart';
 import 'prayer_page.dart';
 import 'prophets_page.dart';
 import 'qibla_page.dart';
@@ -112,10 +113,11 @@ class _Sections extends StatelessWidget {
       tile('🐪', 'قصص الأنبياء', const ProphetsPage()),
       tile('🌟', 'العشرة المبشرون', const CompanionsPage()),
       tile('📜', 'الأحاديث', const HadithPage()),
+      tile('🤲', 'أدعية المناسبات', const DuasPage()),
       tile('📿', 'السبحة', const TasbeehPage()),
       tile('🧭', 'القبلة', const QiblaPage()),
     ];
-    // Three on the first row, two wider ones on the second.
+    // Two rows of three.
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(children: [
@@ -129,9 +131,7 @@ class _Sections extends StatelessWidget {
         SizedBox(
           height: 82,
           child: Row(children: [
-            Expanded(child: items[3]),
-            const SizedBox(width: 10),
-            Expanded(child: items[4]),
+            for (var i = 3; i < 6; i++) ...[if (i > 3) const SizedBox(width: 10), Expanded(child: items[i])],
           ]),
         ),
       ]),
