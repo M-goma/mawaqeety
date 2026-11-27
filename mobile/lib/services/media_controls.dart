@@ -28,8 +28,9 @@ class MediaControls extends BaseAudioHandler with SeekHandler {
     if (kIsWeb) return;
     try {
       // Spoken audio: pauses for calls and when headphones are unplugged (handled by just_audio).
+      // A notification sound only lowers the volume for a moment: the recitation never stops for it.
       final session = await AudioSession.instance;
-      await session.configure(const AudioSessionConfiguration.speech());
+      await session.configure(const AudioSessionConfiguration.speech().copyWith(androidWillPauseWhenDucked: false));
       instance = await AudioService.init(
         builder: () => MediaControls(),
         config: const AudioServiceConfig(
@@ -37,7 +38,8 @@ class MediaControls extends BaseAudioHandler with SeekHandler {
           androidNotificationChannelName: 'التلاوة وقصص الأنبياء',
           androidNotificationChannelDescription: 'التحكم في التلاوة والقصص من الإشعارات وشاشة القفل',
           androidNotificationIcon: 'mipmap/ic_launcher',
-          androidStopForegroundOnPause: true,
+          // Stay a foreground service while paused by a call, so playback can resume by itself from the background.
+          androidStopForegroundOnPause: false,
           fastForwardInterval: Duration(seconds: 15),
           rewindInterval: Duration(seconds: 15),
         ),
