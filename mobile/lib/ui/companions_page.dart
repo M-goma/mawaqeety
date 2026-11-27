@@ -58,9 +58,7 @@ class CompanionsPage extends StatelessWidget {
               Card3D(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                  leading: Tile3D(size: 44, child: Text(c.name.characters.first == 'ا' ? c.name.characters.elementAt(2) : c.name.characters.first,
-                      style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 18))),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                   title: Text(c.name, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16.5)),
                   subtitle: Text('${c.title} • ${c.situations.length == 2 ? 'موقفان' : '${Arabic.digits(c.situations.length)} مواقف'}'),
                   trailing: const Icon(Icons.chevron_left),
