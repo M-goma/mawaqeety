@@ -15,6 +15,8 @@ public sealed class ToastService
     public event Action? StopSoundRequested;
     /// <summary>A "did you pray?" button: date, prayer, how it was prayed.</summary>
     public event Action<DateOnly, Prayer, Core.Tracking.PrayerLog>? PrayerLogged;
+    /// <summary>"Read now" on the Surat al-Kahf reminder.</summary>
+    public event Action? KahfRequested;
 
     public ToastService(IAppLog log)
     {
@@ -33,6 +35,7 @@ public sealed class ToastService
                         args.TryGetValue("v", out var v) && int.TryParse(v, out var n))
                         PrayerLogged?.Invoke(date, prayer, (Core.Tracking.PrayerLog)n);
                 }
+                else if (action == "kahf") KahfRequested?.Invoke();
                 else if (action != "dismiss") OpenRequested?.Invoke();
             };
         }
@@ -104,6 +107,26 @@ public sealed class ToastService
             b.Show(t => { t.Tag = $"check-{prayer}"; t.Group = "check"; t.ExpirationTime = DateTimeOffset.Now.AddHours(3); });
         }
         catch (Exception ex) { _log.Error("Showing prayer check failed", ex); }
+    }
+
+    public const string KahfVirtue = "«من قرأ سورة الكهف يوم الجمعة أضاء له من النور ما بين الجمعتين» — رواه الحاكم والبيهقي، وصححه الألباني";
+
+    /// <summary>Friday reminder for Surat al-Kahf, with "read now".</summary>
+    public void ShowKahf(bool eve)
+    {
+        try
+        {
+            var b = new ToastContentBuilder()
+                .AddArgument("action", "kahf")
+                .AddText("📖 لا تنسَ سورة الكهف")
+                .AddText((eve ? "ليلة الجمعة بدأت. " : "") + KahfVirtue)
+                .AddAttributionText(Loc.T("AppName"))
+                .AddButton(new ToastButton().SetContent("اقرأ الآن").AddArgument("action", "kahf"))
+                .AddButton(new ToastButton().SetContent(Loc.T("ToastDismiss")).AddArgument("action", "dismiss").SetBackgroundActivation());
+            if (File.Exists(AppPaths.LogoPng)) b.AddAppLogoOverride(new Uri(AppPaths.LogoPng), ToastGenericAppLogoCrop.Default);
+            b.Show(t => { t.Tag = "kahf"; t.Group = "friday"; t.ExpirationTime = DateTimeOffset.Now.AddHours(12); });
+        }
+        catch (Exception ex) { _log.Error("Showing Kahf reminder failed", ex); }
     }
 
     public static void UninstallRegistration()

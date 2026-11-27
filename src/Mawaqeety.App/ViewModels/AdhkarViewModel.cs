@@ -11,6 +11,9 @@ public sealed partial class DhikrItem : ObservableObject
 {
     public required string Text { get; init; }
     public bool IsQuran { get; init; }
+    /// <summary>Section heading shown above the item (occasion duas).</summary>
+    public string Heading { get; init; } = "";
+    public bool HasHeading => Heading.Length > 0;
     public required string Source { get; init; }
     public string Virtue { get; init; } = "";
     public bool HasVirtue => Virtue.Length > 0;
@@ -36,10 +39,25 @@ public sealed partial class AdhkarViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(Title), nameof(Hint))]
     private bool _isMorning;
 
-    public string Title => IsMorning ? "أذكار الصباح" : "أذكار المساء";
-    public string Hint => IsMorning
-        ? "وقتها من الفجر إلى العصر. اضغط على الذكر بعد قوله ليُعدّ."
-        : "وقتها من العصر إلى الليل. اضغط على الذكر بعد قوله ليُعدّ.";
+    /// <summary>Showing the occasion duas instead of the morning/evening adhkar.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Title), nameof(Hint), nameof(IsMorningShown), nameof(IsEveningShown))]
+    private bool _isDuas;
+
+    public bool IsMorningShown => !IsDuas && IsMorning;
+    public bool IsEveningShown => !IsDuas && !IsMorning;
+
+    public IReadOnlyList<DuaGroup> DuaGroups => DuaBook.Default.Groups;
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(Title))]
+    private DuaGroup? _group;
+
+    public string Title => IsDuas ? $"{Group?.Emoji} {Group?.Title}" : IsMorning ? "أذكار الصباح" : "أذكار المساء";
+    public string Hint => IsDuas
+        ? "من كتاب «حصن المسلم». اختر المناسبة، واضغط على الدعاء ليُعدّ."
+        : IsMorning
+            ? "وقتها من الفجر إلى العصر. اضغط على الذكر بعد قوله ليُعدّ."
+            : "وقتها من العصر إلى الليل. اضغط على الذكر بعد قوله ليُعدّ.";
 
     [ObservableProperty] private string _progressText = "";
 
@@ -61,13 +79,43 @@ public sealed partial class AdhkarViewModel : ObservableObject
     }
 
     partial void OnIsMorningChanged(bool value) => Load();
+    partial void OnIsDuasChanged(bool value) => Load();
+    partial void OnGroupChanged(DuaGroup? value) { if (IsDuas) Load(); }
 
-    [RelayCommand] private void ShowMorning() => IsMorning = true;
-    [RelayCommand] private void ShowEvening() => IsMorning = false;
+    [RelayCommand] private void ShowMorning() { IsDuas = false; IsMorning = true; Load(); }
+    [RelayCommand] private void ShowEvening() { IsDuas = false; IsMorning = false; Load(); }
+    [RelayCommand] private void ShowDuas() { Group ??= DuaGroups[0]; IsDuas = true; }
+    [RelayCommand] private void PickGroup(DuaGroup? g) { if (g is not null) Group = g; }
+
+    private void LoadDuas()
+    {
+        var g = Group ?? DuaGroups[0];
+        foreach (var s in g.Sections)
+        {
+            var first = true;
+            var many = s.Sources is { Count: > 0 } ? string.Join(" • ", s.Sources) : "";
+            foreach (var d in s.Items)
+            {
+                var item = new DhikrItem
+                {
+                    Text = d.Text,
+                    Source = d.Source ?? many,
+                    Virtue = d.Virtue ?? "",
+                    Count = Math.Max(1, d.Count),
+                    Heading = first && g.Sections.Count > 1 ? s.Title : "",
+                };
+                first = false;
+                item.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(DhikrItem.Done)) UpdateProgress(); };
+                Items.Add(item);
+            }
+        }
+        UpdateProgress();
+    }
 
     private void Load()
     {
         Items.Clear();
+        if (IsDuas) { LoadDuas(); return; }
         foreach (var d in Dhikr.All.Where(d => d.AvailableAt(IsMorning)))
         {
             string text;
@@ -96,7 +144,7 @@ public sealed partial class AdhkarViewModel : ObservableObject
     private void UpdateProgress()
     {
         var done = Items.Count(i => i.Done);
-        if (done == Items.Count && Items.Count > 0 && Items.Any(i => i.Tapped > 0))
+        if (!IsDuas && done == Items.Count && Items.Count > 0 && Items.Any(i => i.Tapped > 0))
             App.Instance.Tracker.SetAdhkar(App.Instance.Today, morning: IsMorning); // counts toward today's statistics
         ProgressText = done == Items.Count && Items.Count > 0
             ? "أتممت الأذكار، تقبّل الله منك 🤍"

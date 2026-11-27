@@ -97,6 +97,15 @@ public static class SmokeTest
             vm.Quran.IndexOpen = false;
         });
         await Page(ViewModels.Page.Adhkar, "07-adhkar");
+        await Step("duas", async () =>
+        {
+            vm.Adhkar.ShowDuasCommand.Execute(null);
+            vm.Adhkar.PickGroupCommand.Execute(vm.Adhkar.DuaGroups.First(g => g.Id == "travel"));
+            await Task.Delay(1200);
+            Shot(w, "07b-duas-travel");
+            if (vm.Adhkar.Items.Count < 5) errors.Add("travel duas missing");
+            vm.Adhkar.ShowMorningCommand.Execute(null);
+        });
         await Page(ViewModels.Page.Qibla, "08-qibla");
         await Step("tracker", async () =>
         {

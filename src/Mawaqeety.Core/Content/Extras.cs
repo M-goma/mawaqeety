@@ -36,6 +36,20 @@ public sealed record Dhikr(string? Morning, string? Evening, int Count, string S
     public bool AvailableAt(bool morning) => Quran.Count > 0 || TextFor(morning) is not null;
 }
 
+/// <summary>Occasion duas from Hisn al-Muslim (duas.json, built by tools/build_duas.py; same file as the mobile app).</summary>
+public sealed record DuaItem(string Text, int Count = 1, string? Virtue = null, string? Source = null);
+public sealed record DuaSection(string Title, IReadOnlyList<DuaItem> Items, IReadOnlyList<string>? Sources = null);
+public sealed record DuaGroup(string Id, string Title, string Emoji, IReadOnlyList<DuaSection> Sections)
+{
+    public int Count => Sections.Sum(s => s.Items.Count);
+}
+
+public sealed record DuaBook(string Source, IReadOnlyList<DuaGroup> Groups)
+{
+    private static readonly Lazy<DuaBook> _default = new(() => Res.Load<DuaBook>("duas.json"));
+    public static DuaBook Default => _default.Value;
+}
+
 /// <summary>Great-circle direction and distance to the Kaaba.</summary>
 public static class Qibla
 {

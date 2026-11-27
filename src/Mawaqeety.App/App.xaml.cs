@@ -221,6 +221,7 @@ public partial class App : Application
             if (playing) Radio.Stop(); // only reached when nothing was playing, see AlertSink
         };
         Toast.OpenRequested += () => Dispatcher.BeginInvoke(ShowMainWindow);
+        Toast.KahfRequested += () => Dispatcher.BeginInvoke(OpenKahf);
         Tray.WidgetToggleRequested += () => Dispatcher.BeginInvoke(() =>
         {
             Settings.Update(s => s.WidgetEnabled = !s.WidgetEnabled);
@@ -285,8 +286,46 @@ public partial class App : Application
     public DateOnly Today => DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(DateTimeOffset.Now, Settings.Current.ResolveZone()).DateTime);
 
     /// <summary>About 30 minutes after each prayer: "did you pray?" (once, and only if it is not logged yet).</summary>
+    /// <summary>Friday: al-Kahf on Thursday after Maghrib and on Friday morning, and the hour of answered prayer.</summary>
+    private void CheckFriday()
+    {
+        try
+        {
+            var s = Settings.Current;
+            var today = Today;
+            var now = DateTimeOffset.Now;
+            void Once(string key, DateTimeOffset at, Action show)
+            {
+                if (now < at || now > at.AddHours(2) || _asked.Contains(key)) return;
+                _asked.Add(key);
+                show();
+            }
+            if (today.DayOfWeek == DayOfWeek.Thursday && s.FridayKahf)
+                Once($"kahf-eve-{today}", Times.GetDay(today, s)[Prayer.Maghrib].AddMinutes(40), () => Toast.ShowKahf(eve: true));
+            if (today.DayOfWeek == DayOfWeek.Friday)
+            {
+                var t = Times.GetDay(today, s);
+                if (s.FridayKahf) Once($"kahf-{today}", t[Prayer.Sunrise].AddMinutes(90), () => Toast.ShowKahf(eve: false));
+                if (s.FridayHour)
+                    Once($"hour-{today}", t[Prayer.Maghrib].AddHours(-1),
+                        () => Toast.Show("🤲 ساعة الاستجابة", "آخر ساعة من يوم الجمعة: أكثِر من الدعاء والصلاة على النبي ﷺ.", tag: "friday-hour"));
+            }
+        }
+        catch (Exception ex) { Log.Warn("Friday reminder failed", ex); }
+    }
+
+    /// <summary>Opens the Mushaf at the start of Surat al-Kahf.</summary>
+    public void OpenKahf()
+    {
+        ShowMainWindow();
+        if (MainVm is null) return;
+        MainVm.Page = ViewModels.Page.Quran;
+        MainVm.Quran.Mushaf.GoTo(Core.Content.MushafIndex.Default.PageOf(18, 1));
+    }
+
     private void CheckPrayerPrompts()
     {
+        CheckFriday();
         try
         {
             var s = Settings.Current;

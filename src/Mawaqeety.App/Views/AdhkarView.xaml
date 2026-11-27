@@ -10,9 +10,11 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
                     <RadioButton Style="{StaticResource Segment}" Tag="&#xE706;" Content="الصباح" GroupName="adh" Foreground="White"
-                                 IsChecked="{Binding IsMorning, Mode=OneWay}" Command="{Binding ShowMorningCommand}" MinWidth="120"/>
+                                 IsChecked="{Binding IsMorningShown, Mode=OneWay}" Command="{Binding ShowMorningCommand}" MinWidth="110"/>
                     <RadioButton Style="{StaticResource Segment}" Tag="&#xE708;" Content="المساء" GroupName="adh" Foreground="White" Margin="8,0,0,0"
-                                 IsChecked="{Binding IsMorning, Mode=OneWay, Converter={x:Static c:Not.Instance}}" Command="{Binding ShowEveningCommand}" MinWidth="120"/>
+                                 IsChecked="{Binding IsEveningShown, Mode=OneWay}" Command="{Binding ShowEveningCommand}" MinWidth="110"/>
+                    <RadioButton Style="{StaticResource Segment}" Tag="&#xE734;" Content="أدعية المناسبات" GroupName="adh" Foreground="White" Margin="8,0,0,0"
+                                 IsChecked="{Binding IsDuas, Mode=OneWay}" Command="{Binding ShowDuasCommand}" MinWidth="150"/>
                 </StackPanel>
                 <StackPanel>
                     <TextBlock Text="{Binding Title}" Foreground="White" FontSize="26" FontWeight="Bold"/>
@@ -25,6 +27,24 @@
                 </StackPanel>
             </DockPanel>
         </Border>
+        <!-- Occasions: 3D tiles -->
+        <ItemsControl DockPanel.Dock="Top" ItemsSource="{Binding DuaGroups}" Margin="0,0,0,12"
+                      Visibility="{Binding IsDuas, Converter={StaticResource BoolVis}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><WrapPanel HorizontalAlignment="Center"/></ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Command="{Binding DataContext.PickGroupCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}" Width="118" Height="84" Margin="5" Padding="4" ToolTip="{Binding Title}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Emoji}" FontSize="24" HorizontalAlignment="Center" FontFamily="Segoe UI Emoji"/>
+                            <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold" HorizontalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <ItemsControl ItemsSource="{Binding Items}" MaxWidth="900" Margin="0,0,8,0">
                 <ItemsControl.ItemTemplate>
@@ -34,7 +54,7 @@
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="Card" Background="{DynamicResource SurfaceBrush}" CornerRadius="14" Padding="18,14"
-                                            BorderBrush="{DynamicResource LineBrush}" BorderThickness="1">
+                                            BorderBrush="{StaticResource RimBrush}" BorderThickness="1" Effect="{StaticResource CardShadow}">
                                         <ContentPresenter/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -45,6 +65,8 @@
                                 </ControlTemplate>
                             </Button.Template>
                             <DockPanel x:Name="Root">
+                                <TextBlock DockPanel.Dock="Top" Text="{Binding Heading}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15"
+                                           Margin="0,0,0,8" Visibility="{Binding HasHeading, Converter={StaticResource BoolVis}}"/>
                                 <Grid DockPanel.Dock="Left" Width="64" Height="64" Margin="0,0,16,0" VerticalAlignment="Center">
                                     <Ellipse Stroke="{DynamicResource LineBrush}" StrokeThickness="5"/>
                                     <c:Arc Progress="{Binding Progress}" Stroke="{DynamicResource AccentBrush}" StrokeThickness="5"/>

@@ -559,6 +559,18 @@ public sealed partial class SettingsViewModel : ObservableObject
         set { _store.Update(s => s.PrayerCheck = value); OnPropertyChanged(); }
     }
 
+    public bool FridayKahf
+    {
+        get => S.FridayKahf;
+        set { _store.Update(s => s.FridayKahf = value); OnPropertyChanged(); }
+    }
+
+    public bool FridayHour
+    {
+        get => S.FridayHour;
+        set { _store.Update(s => s.FridayHour = value); OnPropertyChanged(); }
+    }
+
     public bool WidgetTopmost
     {
         get => S.WidgetTopmost;

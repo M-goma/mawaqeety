@@ -71,4 +71,19 @@ public class TrackerTests
         Assert.Equal(11, reloaded.Distribution(today.AddDays(-2), today).Values.Sum());
         File.Delete(file);
     }
+
+    [Fact]
+    public void OccasionDuasLoadWithSources()
+    {
+        var book = Mawaqeety.Core.Content.DuaBook.Default;
+        Assert.Equal(15, book.Groups.Count);
+        Assert.Equal(108, book.Groups.Sum(g => g.Count));
+        var travel = book.Groups.Single(g => g.Id == "travel");
+        static string Plain(string t) => new(t.Where(c => c < '\u064B' || c > '\u0652').ToArray());
+        Assert.Contains(travel.Sections, s => s.Title == "دعاء السفر" && Plain(s.Items[0].Text).Contains("سبحان الذي سخر لنا هذا"));
+        // Every dua has a source: its own, or the section's list from the book.
+        foreach (var g in book.Groups)
+            foreach (var s in g.Sections)
+                Assert.True(s.Items.All(d => !string.IsNullOrWhiteSpace(d.Source)) || s.Sources is { Count: > 0 }, s.Title);
+    }
 }
