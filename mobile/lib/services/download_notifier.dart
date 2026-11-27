@@ -145,8 +145,9 @@ class DownloadNotifier {
     }
     if (mushaf.downloading) {
       titles.add('جارٍ تنزيل صفحات المصحف');
-      lines.add('${Arabic.digits(mushaf.savedCount)} من ${Arabic.digits(MushafIndex.pageCount)} صفحة');
-      done += mushaf.savedCount;
+      final pages = (mushaf.savedProgress * MushafIndex.pageCount).round();
+      lines.add('${Arabic.digits(pages)} من ${Arabic.digits(MushafIndex.pageCount)} صفحة');
+      done += pages;
       total += MushafIndex.pageCount;
     }
     if (stories.downloading) {

@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'dart:typed_data';
+import 'package:archive/archive.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
 
@@ -23,7 +25,7 @@ class MushafStore extends ChangeNotifier {
   bool get supported => !kIsWeb;
   int get savedCount => _have.length;
   bool get complete => _have.length >= MushafIndex.pageCount;
-  double get progress => _have.length / MushafIndex.pageCount;
+  double get progress => savedProgress;
 
   Future<void> init(MushafIndex idx) async {
     index = idx;
@@ -90,32 +92,92 @@ class MushafStore extends ChangeNotifier {
     return null;
   }
 
-  Future<Uint8List?> _loadBulk(int page) {
-    final f = localFile(page);
-    if (f != null) return Future.value(Uint8List(1));
-    return _pending.putIfAbsent(page, () => _fetch(page, bulk: true).whenComplete(() => _pending.remove(page)));
-  }
 
-  /// Saves every page that is not on the device yet (about 66 MB in total).
+
+  /// The pages in 13 zip bundles of 50 (GitHub release): 13 large downloads instead of 604 small ones,
+  /// which the page host rate-limits (especially on mobile networks where many users share one address).
+  static const _bundles = 'https://github.com/M-goma/mawaqeety/releases/download/mushaf-pages-v1/mushaf-';
+  static const _perBundle = 50;
+
+  /// Bytes of the bundle being downloaded, for a smooth progress bar.
+  int bundleDone = 0, bundleTotal = 0;
+
+  /// Saves every page that is not on the device yet (about 63 MB in total).
   Future<void> downloadAll() async {
-    if (downloading || !supported) return;
+    if (downloading || !supported || _dir == null) return;
     downloading = true;
     _cancel = false;
     error = null;
     notifyListeners();
-    final missing = [for (var p = 1; p <= MushafIndex.pageCount; p++) if (!_have.contains(p)) p];
+    final client = http.Client();
     var failed = 0;
-    var i = 0;
-    Future<void> worker() async {
-      while (!_cancel && i < missing.length) {
-        final p = missing[i++];
-        if (await _loadBulk(p) == null && !_cancel) failed++;
+    try {
+      final count = (MushafIndex.pageCount + _perBundle - 1) ~/ _perBundle;
+      for (var k = 1; k <= count && !_cancel; k++) {
+        final first = (k - 1) * _perBundle + 1, last = (k * _perBundle).clamp(1, MushafIndex.pageCount);
+        if ([for (var p = first; p <= last; p++) p].every(_have.contains)) continue;
+        Uint8List? zip;
+        for (var attempt = 0; attempt < 4 && zip == null && !_cancel; attempt++) {
+          zip = await _fetchBundle(client, k);
+          if (zip == null && !_cancel) await Future.delayed(Duration(seconds: 3 + attempt * 5));
+        }
+        if (zip == null) {
+          if (!_cancel) failed++;
+          continue;
+        }
+        for (final f in ZipDecoder().decodeBytes(zip)) {
+          final n = int.tryParse(f.name.replaceAll('.png', ''));
+          if (n == null || !f.isFile || _have.contains(n)) continue;
+          final bytes = f.content as List<int>;
+          if (bytes.length < 1000) continue;
+          await _file(n).writeAsBytes(bytes, flush: true);
+          _have.add(n);
+        }
+        bundleDone = bundleTotal = 0;
+        notifyListeners();
       }
+    } catch (e) {
+      debugPrint('mushaf bundles failed: $e');
+      failed++;
+    } finally {
+      client.close();
     }
-    await Future.wait([for (var w = 0; w < 4; w++) worker()]);
     downloading = false;
-    if (failed > 0 && !_cancel) error = 'تعذّر تنزيل $failed صفحة. تأكد من الاتصال ثم أعد المحاولة.';
+    bundleDone = bundleTotal = 0;
+    if (failed > 0 && !_cancel) error = 'تعذّر تنزيل بعض صفحات المصحف. تأكد من الاتصال ثم أعد المحاولة؛ ما نُزِّل محفوظ.';
     notifyListeners();
+  }
+
+  Future<Uint8List?> _fetchBundle(http.Client client, int k) async {
+    try {
+      final req = http.Request('GET', Uri.parse('$_bundles${k.toString().padLeft(2, '0')}.zip'));
+      final res = await client.send(req).timeout(const Duration(seconds: 30));
+      if (res.statusCode != 200) return null;
+      bundleTotal = res.contentLength ?? 0;
+      bundleDone = 0;
+      final out = BytesBuilder(copy: false);
+      var last = DateTime.now();
+      await for (final chunk in res.stream.timeout(const Duration(seconds: 40))) {
+        if (_cancel) return null;
+        out.add(chunk);
+        bundleDone += chunk.length;
+        if (DateTime.now().difference(last).inMilliseconds > 400) {
+          last = DateTime.now();
+          notifyListeners();
+        }
+      }
+      final bytes = out.takeBytes();
+      return bytes.length > 1000 ? bytes : null;
+    } catch (e) {
+      debugPrint('mushaf bundle $k failed: $e');
+      return null;
+    }
+  }
+
+  /// Pages saved, counting the bundle in progress proportionally.
+  double get savedProgress {
+    final part = bundleTotal > 0 ? bundleDone / bundleTotal * _perBundle : 0;
+    return ((_have.length + part) / MushafIndex.pageCount).clamp(0, 1);
   }
 
   void cancel() {
