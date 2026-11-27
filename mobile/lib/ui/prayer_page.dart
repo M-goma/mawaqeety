@@ -460,3 +460,14 @@ class SunanCard extends StatelessWidget {
     );
   }
 }
+
+
+/// السنن والنوافل as its own page (from «المزيد»).
+class SunanPage extends StatelessWidget {
+  const SunanPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('السنن والنوافل')),
+        body: ListView(padding: const EdgeInsets.only(top: 4, bottom: 20), children: const [SunanCard()]),
+      );
+}

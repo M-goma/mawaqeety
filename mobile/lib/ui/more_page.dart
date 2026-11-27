@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'asma_page.dart';
+import 'khatma_page.dart';
 import 'occasions_page.dart';
+import 'prayer_page.dart' show SunanPage;
 import 'ramadan_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
@@ -60,9 +62,12 @@ class MorePage extends StatelessWidget {
           item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
           item('🌙', 'رمضان', 'الصيام والتراويح والتهجد', const RamadanPage()),
           item('🤍', 'الأيام البيض', '١٣ و١٤ و١٥ من كل شهر', const WhiteDaysPage()),
+          item('📖', 'ورد القرآن والختمة', 'خطة ختمة وورد يومي', const KhatmaPage()),
+          item('🕌', 'السنن والنوافل', 'الرواتب والضحى والوتر', const SunanPage()),
           item('🗓️', 'المناسبات والصيام', 'عرفة وعاشوراء والعيدان والاثنين والخميس', const OccasionsPage()),
           item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
           item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
+          item('💾', 'النسخ الاحتياطي', 'احفظ بياناتك واستعدها', const BackupPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
           guide(),
         ],

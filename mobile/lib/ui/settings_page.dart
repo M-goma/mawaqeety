@@ -231,13 +231,13 @@ class SettingsPage extends StatelessWidget {
                   leading: const Icon(Icons.upload_file),
                   title: const Text('حفظ نسخة احتياطية'),
                   subtitle: const Text('إحصائياتك وإعداداتك في ملف واحد، احفظه أو أرسله لنفسك', style: TextStyle(fontSize: 12)),
-                  onTap: () => _exportBackup(context),
+                  onTap: () => exportBackup(context),
                 ),
                 ListTile(
                   leading: const Icon(Icons.restore),
                   title: const Text('استعادة نسخة احتياطية'),
                   subtitle: const Text('من ملف حفظته من قبل (يستبدل البيانات الحالية)', style: TextStyle(fontSize: 12)),
-                  onTap: () => _importBackup(context),
+                  onTap: () => importBackup(context),
                 ),
               ]),
             ),
@@ -560,7 +560,7 @@ class _PalettePicker extends StatelessWidget {
   }
 }
 
-Future<void> _exportBackup(BuildContext context) async {
+Future<void> exportBackup(BuildContext context) async {
   final messenger = ScaffoldMessenger.of(context);
   try {
     final now = DateTime.now();
@@ -575,7 +575,7 @@ Future<void> _exportBackup(BuildContext context) async {
   }
 }
 
-Future<void> _importBackup(BuildContext context) async {
+Future<void> importBackup(BuildContext context) async {
   final messenger = ScaffoldMessenger.of(context);
   final picked = await FilePicker.pickFiles(type: FileType.any);
   if (picked.isEmpty) return;
@@ -595,4 +595,37 @@ Future<void> _importBackup(BuildContext context) async {
   if (ok != true) return;
   final done = await app.importBackup(utf8.decode(bytes, allowMalformed: true));
   messenger.showSnackBar(SnackBar(content: Text(done ? 'تمت الاستعادة' : 'هذا الملف ليس نسخة احتياطية من سبيل')));
+}
+
+
+/// النسخ الاحتياطي as its own page (from «المزيد»).
+class BackupPage extends StatelessWidget {
+  const BackupPage({super.key});
+  @override
+  Widget build(BuildContext context) => Scaffold(
+        appBar: AppBar(title: const Text('النسخ الاحتياطي')),
+        body: ListView(padding: const EdgeInsets.only(top: 8), children: [
+          Card3D(
+            child: Column(children: [
+              ListTile(
+                leading: const Icon(Icons.upload_file),
+                title: const Text('حفظ نسخة احتياطية'),
+                subtitle: const Text('إحصائياتك وإعداداتك في ملف واحد، احفظه أو أرسله لنفسك', style: TextStyle(fontSize: 12)),
+                onTap: () => exportBackup(context),
+              ),
+              ListTile(
+                leading: const Icon(Icons.restore),
+                title: const Text('استعادة نسخة احتياطية'),
+                subtitle: const Text('من ملف حفظته من قبل (يستبدل البيانات الحالية)', style: TextStyle(fontSize: 12)),
+                onTap: () => importBackup(context),
+              ),
+            ]),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text('احفظ نسخة قبل تغيير هاتفك أو حذف التطبيق، ثم استعدها على الهاتف الجديد.',
+                style: TextStyle(fontSize: 12.5, color: Theme.of(context).hintColor, height: 1.6)),
+          ),
+        ]),
+      );
 }
