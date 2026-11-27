@@ -42,6 +42,9 @@ public partial class App : Application
     public AdhanLibrary Adhan { get; private set; } = null!;
     public QuranAudioService Recitation { get; private set; } = null!;
     public NarrationService Narration { get; private set; } = null!;
+    public RadioService Radio { get; private set; } = null!;
+    /// <summary>A recitation, a story or the radio is playing (not paused).</summary>
+    public bool IsListening => (Recitation.IsPlaying && !Recitation.IsPaused) || (Narration.IsSpeaking && !Narration.IsPaused) || Radio.IsOn;
     public MushafPages Pages { get; private set; } = null!;
     public DownloadManager Downloads { get; private set; } = null!;
     public Core.Tracking.Tracker Tracker { get; private set; } = null!;
@@ -90,6 +93,11 @@ public partial class App : Application
         Adhan = new AdhanLibrary(Log);
         Recitation = new QuranAudioService(Dispatcher, Log, () => Settings.Current.ReciterId);
         Narration = new NarrationService(Dispatcher, Log) { PreferredGender = () => Settings.Current.NarrationVoice };
+        Radio = new RadioService(Dispatcher, Log);
+        // Only one thing plays at a time.
+        Radio.Starting += () => { Recitation.Stop(); Narration.Stop(); };
+        Recitation.StateChanged += () => { if (Recitation.IsPlaying && !Recitation.IsPaused && Radio.IsOn) Radio.Stop(); };
+        Narration.StateChanged += () => { if (Narration.IsSpeaking && !Narration.IsPaused && Radio.IsOn) Radio.Stop(); };
 
         Toast = new ToastService(Log);
         Tracker = new Core.Tracking.Tracker(Path.Combine(AppPaths.DataDir, "tracker.json")) { WirdGoal = () => Settings.Current.WirdGoal };
@@ -210,7 +218,7 @@ public partial class App : Application
         Sound.PlayingChanged += playing =>
         {
             Dispatcher.BeginInvoke(() => Tray.SetSoundPlaying(playing));
-            if (playing) { Recitation.Pause(); Narration.Stop(); } // the adhan takes priority
+            if (playing) Radio.Stop(); // only reached when nothing was playing, see AlertSink
         };
         Toast.OpenRequested += () => Dispatcher.BeginInvoke(ShowMainWindow);
         Tray.WidgetToggleRequested += () => Dispatcher.BeginInvoke(() =>
@@ -348,6 +356,7 @@ public partial class App : Application
         Sound.Stop();
         Recitation.Stop();
         Narration.Stop();
+        Radio.Stop();
         Tray.Dispose();
         _widget?.Close();
         _window?.Close();

@@ -121,8 +121,28 @@ public sealed partial class DashboardViewModel : ObservableObject
         Loc.I.LanguageChanged += (_, _) => Reload();
         App.Instance.Settings.Changed += _ => App.Instance.Dispatcher.BeginInvoke(Reload);
         App.Instance.Tracker.Changed += () => App.Instance.Dispatcher.BeginInvoke(() => UpdateHarvest(App.Instance.Today));
+        App.Instance.Radio.Changed += UpdateRadio;
+        UpdateRadio();
         Reload();
     }
+
+    // ---------------- Quran radio ----------------
+    [ObservableProperty] private bool _radioOn;
+    [ObservableProperty] private string _radioStatus = "";
+    [ObservableProperty] private int _radioSleep;
+
+    private void UpdateRadio()
+    {
+        var r = App.Instance.Radio;
+        RadioOn = r.IsOn;
+        RadioSleep = r.SleepMinutes;
+        RadioStatus = r.Error ?? (r.IsOn
+            ? (r.SleepAt is { } t ? $"بث مباشر • يتوقف {t:h:mm}" : "بث مباشر")
+            : "اضغط للاستماع");
+    }
+
+    [RelayCommand] private void ToggleRadio() => App.Instance.Radio.Toggle();
+    [RelayCommand] private void RadioSleepFor(string minutes) => App.Instance.Radio.SetSleep(int.Parse(minutes));
 
     public void Start()
     {

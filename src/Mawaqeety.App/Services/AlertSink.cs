@@ -12,6 +12,8 @@ public sealed class AlertSink(Dispatcher dispatcher, ToastService toast, SoundSe
         dispatcher.BeginInvoke(() =>
         {
             var s = settings.Current;
+            // Never cut off a recitation, story or the radio the user is listening to: the notification alone tells them.
+            if (playSound && App.Instance.IsListening) playSound = false;
             if (showNotification) toast.ShowAlert(alert, withStopButton: playSound, s.Use24HourClock);
             if (playSound) sound.Play(adhan.PathToPlay(AlertSoundResolver.Resolve(alert, s)), s.Volume);
         });
