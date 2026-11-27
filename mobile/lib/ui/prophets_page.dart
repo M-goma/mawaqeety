@@ -244,7 +244,7 @@ class ProphetPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                      Text('القصة التالية: ${next.displayName}',
+                      Text('القصة التالية: ${next.nameAr}',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       Text('تبدأ بعد ${Arabic.digits(app.narration.secondsLeft)} ثوانٍ',
                           style: TextStyle(color: AppColors.heroText, fontSize: 12)),
@@ -264,7 +264,7 @@ class ProphetPage extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             decoration: hero3D(radius: 20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(p.displayName, style: TextStyle(color: Colors.white, fontSize: p.id == 'muhammad' ? 23 : 28, fontWeight: FontWeight.w700)),
+              Text(p.nameAr, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
               Text(p.title, style: TextStyle(color: AppColors.goldLight, fontSize: 15)),
               const SizedBox(height: 8),
               Text(p.summary, style: TextStyle(color: AppColors.heroText, height: 1.7)),
