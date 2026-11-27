@@ -1,0 +1,22 @@
+name: play-listing
+# Manual: updates the Google Play store listing (title, short description, icon).
+on:
+  workflow_dispatch:
+    inputs:
+      title: { description: "App title (max 30 characters)", required: true }
+      short: { description: "Short description (max 80 characters)", required: false }
+      icon: { description: "Icon file in the repository (512×512 PNG), empty = keep", required: false, default: "mobile/distribution/play-icon-512.png" }
+jobs:
+  listing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update the listing
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          TITLE: ${{ inputs.title }}
+          SHORT: ${{ inputs.short }}
+          ICON: ${{ inputs.icon }}
+        run: |
+          pip install --quiet google-api-python-client google-auth
+          python tools/play_listing.py
