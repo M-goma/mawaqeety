@@ -23,6 +23,14 @@ public sealed class SettingsStore(AppDatabase db, IAppLog log)
         ScheduleSave();
     }
 
+    /// <summary>Replaces all settings (restoring a backup) and saves them.</summary>
+    public void Replace(AppSettings settings)
+    {
+        lock (_gate) Current = settings;
+        Changed?.Invoke(true);
+        SaveNow();
+    }
+
     private void ScheduleSave()
     {
         _debounce?.Dispose();

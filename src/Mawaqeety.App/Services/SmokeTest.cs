@@ -21,6 +21,17 @@ public static class SmokeTest
         public override void WriteLine(string? message) { if (message is not null) lock (Lines) Lines.Add(message); }
     }
 
+    private static T? FindChild<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var c = VisualTreeHelper.GetChild(root, i);
+            if (c is T t) return t;
+            if (FindChild<T>(c) is { } x) return x;
+        }
+        return null;
+    }
+
     public static async Task RunAsync(App app, string outDir)
     {
         Directory.CreateDirectory(outDir);
@@ -156,6 +167,171 @@ public static class SmokeTest
             Shot(w, "09f-companions");
         });
         await Page(ViewModels.Page.Settings, "10-settings");
+        await Step("settings-backup", async () =>
+        {
+            if (FindChild<System.Windows.Controls.ScrollViewer>(w.PageHost) is { } sv) sv.ScrollToEnd();
+            await Task.Delay(600);
+            Shot(w, "10b-settings-backup");
+            // Round trip through a backup file: the tracker comes back the same.
+            var today = app.Today;
+            app.Tracker.SetFast(today, true);
+            var text = Core.Data.Backup.Export(app.Settings.Current, app.Tracker);
+            await File.WriteAllTextAsync(Path.Combine(outDir, "backup-sample.json"), text);
+            var r = Core.Data.Backup.Parse(text, app.Settings.Current);
+            if (r is null) errors.Add("backup did not parse");
+            else
+            {
+                vm.Settings.Restore(r);
+                if (!app.Tracker.Day(today).Fast) errors.Add("backup restore lost today's fast");
+                if (app.Tracker.ExportJson() != r.Tracker.ToJsonString()) errors.Add("backup tracker differs after restore");
+            }
+        });
+
+        // ---------------- the new pages ----------------
+        await Step("sabeel", async () =>
+        {
+            vm.Page = ViewModels.Page.Sabeel;
+            await Task.Delay(1200);
+            Shot(w, "14-sabeel");
+            await vm.Sabeel.AskCommand.ExecuteAsync("تفسير آية الكرسي");
+            await Task.Delay(1200);
+            Shot(w, "14b-sabeel-kursi");
+            if (vm.Sabeel.Ayat.Count != 1 || vm.Sabeel.Ayat[0].A.Ayah != 255) errors.Add("sabeel did not find ayat al-kursi");
+            await vm.Sabeel.AskCommand.ExecuteAsync("الصبر");
+            await Task.Delay(1200);
+            Shot(w, "14c-sabeel-topic");
+            if (vm.Sabeel.Ayat.Count == 0 || vm.Sabeel.Hadith.Count == 0) errors.Add("sabeel found nothing about patience");
+            await vm.Sabeel.AskCommand.ExecuteAsync("ما حكم الربا");
+            await Task.Delay(1000);
+            Shot(w, "14d-sabeel-ruling");
+            if (!vm.Sabeel.Ruling) errors.Add("sabeel did not mark a ruling question");
+            await vm.Sabeel.AskCommand.ExecuteAsync("2:255");
+            vm.Sabeel.OpenInMushafCommand.Execute(vm.Sabeel.Ayat[0]);
+            await Task.Delay(4000);
+            Shot(w, "14e-sabeel-open-mushaf");
+            var mp = Core.Content.MushafIndex.Default.PageOf(2, 255);
+            if (vm.Page != ViewModels.Page.Quran || (vm.Quran.Mushaf.RightPage != mp && vm.Quran.Mushaf.LeftPage != mp)) errors.Add("sabeel did not open the mushaf at 2:255");
+        });
+        await Step("ramadan", async () =>
+        {
+            // Seed last Ramadan and this month's white days.
+            var adj = app.Settings.Current.HijriAdjustmentDays;
+            var h = Core.HijriDate.From(app.Today, adj);
+            var year = h.Month >= 9 ? h.Year : h.Year - 1;
+            var start = Core.HijriDate.ToGregorian(year, 9, 1, adj);
+            for (var i = 0; i < 27; i++)
+            {
+                var d = start.AddDays(i);
+                if (d > app.Today) break;
+                app.Tracker.SetFast(d, i != 6);
+                if (i % 3 != 2) app.Tracker.SetTaraweeh(d, i < 20 ? 8 : 20);
+                if (i >= 20 || i % 5 == 0) app.Tracker.SetTahajjud(d, true);
+            }
+            app.Tracker.SetTahajjud(app.Today, true);
+            vm.Page = ViewModels.Page.Ramadan;
+            await Task.Delay(1500);
+            Shot(w, "15-ramadan");
+            if (vm.Ramadan.Days.Count < 29) errors.Add("ramadan grid has too few days");
+            var m = h.Day > 15 ? h.Month : h.Month - 1;
+            if (m >= 1)
+            {
+                app.Tracker.SetFast(Core.HijriDate.ToGregorian(h.Year, m, 13, adj), true);
+                app.Tracker.SetFast(Core.HijriDate.ToGregorian(h.Year, m, 14, adj), true);
+            }
+            vm.Page = ViewModels.Page.WhiteDays;
+            await Task.Delay(1500);
+            Shot(w, "16-white-days");
+            if (vm.WhiteDays.Next.Count != 3) errors.Add("white days missing");
+        });
+        await Step("occasions", async () =>
+        {
+            vm.Page = ViewModels.Page.Occasions;
+            await Task.Delay(1500);
+            if (FindChild<System.Windows.Controls.Expander>(w.PageHost) is { } ex) ex.IsExpanded = true;
+            await Task.Delay(600);
+            Shot(w, "17-occasions");
+            if (vm.Occasions.Items.Count != Core.Content.Occasions.All.Count) errors.Add("occasions missing");
+        });
+        await Step("asma", async () =>
+        {
+            vm.Page = ViewModels.Page.Asma;
+            await Task.Delay(1500);
+            Shot(w, "18-asma");
+            vm.Asma.Query = "الرحم";
+            vm.Asma.SelectCommand.Execute(vm.Asma.Items.FirstOrDefault());
+            await Task.Delay(800);
+            Shot(w, "18b-asma-search");
+            if (vm.Asma.Items.Count == 0) errors.Add("asma search found nothing");
+            vm.Asma.Query = "";
+            vm.Asma.SelectCommand.Execute(vm.Asma.Items.First(x => x.Disputed));
+            await Task.Delay(600);
+            Shot(w, "18c-asma-disputed");
+        });
+        await Step("zakat", async () =>
+        {
+            vm.Page = ViewModels.Page.Zakat;
+            await Task.Delay(1000);
+            vm.Zakat.GoldPrice = "4000";
+            vm.Zakat.SilverPrice = "50";
+            vm.Zakat.Cash = "250000";
+            vm.Zakat.Gold21 = "40";
+            vm.Zakat.Debts = "15000";
+            await Task.Delay(800);
+            Shot(w, "19-zakat");
+            if (vm.Zakat.HeroAmount == "—") errors.Add("zakat was not computed");
+        });
+        await Step("khatma", async () =>
+        {
+            vm.Khatma.Start(30);
+            vm.Page = ViewModels.Page.Quran;
+            vm.Quran.Mushaf.GoTo(1);
+            await Task.Delay(1500);
+            vm.Quran.Mushaf.GoTo(3);
+            await Task.Delay(4000);
+            Shot(w, "20-quran-wird");
+            if (Core.Content.Khatma.PagesToday(app.Settings.Current, app.Today) < 2) errors.Add("mushaf pages were not counted for the wird");
+            if (app.Tracker.Day(app.Today).Pages < 2) errors.Add("mushaf pages were not saved in the tracker");
+            vm.Khatma.OpenCommand.Execute(null);
+            await Task.Delay(1500);
+            Shot(w, "20b-khatma");
+            if (vm.Page != ViewModels.Page.Khatma) errors.Add("khatma page did not open");
+        });
+        await Step("sunan", async () =>
+        {
+            app.Tracker.SetSunnah(app.Today, Core.Tracking.Sunnah.Fajr, true);
+            app.Tracker.SetSunnah(app.Today, Core.Tracking.Sunnah.Witr, true);
+            app.Tracker.SetSunnah(app.Today.AddDays(-1), Core.Tracking.Sunnah.Duha, true);
+            vm.Page = ViewModels.Page.Times;
+            await Task.Delay(1200);
+            if (FindChild<System.Windows.Controls.ScrollViewer>(w.PageHost) is { } sv) sv.ScrollToEnd();
+            await Task.Delay(500);
+            Shot(w, "21-times-sunan");
+            if (vm.Times.Sunan.Items.Count(i => i.Done) != 2) errors.Add("sunan card does not show today's sunan");
+            vm.Page = ViewModels.Page.Stats;
+            await Task.Delay(1200);
+            Shot(w, "21b-stats-sunan-pages");
+        });
+        await Step("new-palettes", async () =>
+        {
+            vm.Settings.PaletteId = "mocha";
+            vm.Settings.Theme = Core.Models.AppTheme.Light;
+            vm.Page = ViewModels.Page.Dashboard;
+            await Task.Delay(1500);
+            Shot(w, "22-palette-mocha-light");
+            vm.Page = ViewModels.Page.Ramadan;
+            await Task.Delay(1200);
+            Shot(w, "22b-mocha-light-ramadan");
+            vm.Settings.Theme = Core.Models.AppTheme.Dark;
+            vm.Settings.PaletteId = "lavender";
+            vm.Page = ViewModels.Page.Occasions;
+            await Task.Delay(1200);
+            Shot(w, "22c-palette-lavender");
+            vm.Settings.PaletteId = "navy";
+            vm.Page = ViewModels.Page.Settings;
+            await Task.Delay(1200);
+            Shot(w, "22d-palette-navy-settings");
+            vm.Settings.PaletteId = "emerald";
+        });
         await Step("palette", async () =>
         {
             vm.Settings.PaletteId = "royal";

@@ -613,6 +613,67 @@ public sealed partial class SettingsViewModel : ObservableObject
         set { _store.Update(s => s.MinimizeToTrayOnClose = value); OnPropertyChanged(); }
     }
 
+    // ---------------- backup ----------------
+    [ObservableProperty] private string _backupStatus = "";
+
+    [RelayCommand]
+    private void ExportBackup()
+    {
+        var dlg = new SaveFileDialog
+        {
+            Filter = "نسخة احتياطية (*.json)|*.json",
+            FileName = $"sabeel-backup-{DateTime.Now:yyyy-MM-dd}.json",
+        };
+        if (dlg.ShowDialog() != true) return;
+        try
+        {
+            _store.SaveNow();
+            File.WriteAllText(dlg.FileName, Core.Data.Backup.Export(S, App.Instance.Tracker));
+            BackupStatus = "حُفظت النسخة الاحتياطية: " + Path.GetFileName(dlg.FileName);
+        }
+        catch (Exception ex)
+        {
+            App.Instance.Log.Warn("Backup export failed", ex);
+            BackupStatus = "تعذّر حفظ الملف.";
+        }
+    }
+
+    [RelayCommand]
+    private void ImportBackup()
+    {
+        var dlg = new OpenFileDialog { Filter = "نسخة احتياطية (*.json)|*.json|كل الملفات (*.*)|*.*" };
+        if (dlg.ShowDialog() != true) return;
+        Core.Data.Backup.Restored? r;
+        try { r = Core.Data.Backup.Parse(File.ReadAllText(dlg.FileName), S); }
+        catch (Exception ex) { App.Instance.Log.Warn("Backup read failed", ex); r = null; }
+        if (r is null)
+        {
+            BackupStatus = "هذا الملف ليس نسخة احتياطية من سبيل.";
+            return;
+        }
+        if (System.Windows.MessageBox.Show("ستُستبدل الإعدادات وسجل العبادات الحالي بما في النسخة الاحتياطية. هل تريد المتابعة؟", "استعادة نسخة احتياطية",
+                System.Windows.MessageBoxButton.OKCancel, System.Windows.MessageBoxImage.Question) != System.Windows.MessageBoxResult.OK) return;
+        Restore(r);
+        BackupStatus = "تمت استعادة النسخة الاحتياطية.";
+    }
+
+    /// <summary>Applies a restored backup: settings, colours, language and the tracker.</summary>
+    public void Restore(Core.Data.Backup.Restored r)
+    {
+        if (r.Settings is { } s)
+        {
+            s.FirstRunCompleted = true;
+            _store.Replace(s);
+            Loc.I.SetLanguage(s.Language);
+            ThemeService.Apply(s.Theme, s.Palette);
+            try { AutoStartService.Apply(s.StartWithWindows); } catch (Exception ex) { App.Instance.Log.Warn("Auto-start change failed", ex); }
+            App.Instance.UpdateWidget();
+        }
+        App.Instance.Tracker.ImportJson(r.Tracker);
+        App.Instance.MainVm?.Refresh();
+        foreach (var p in GetType().GetProperties().Where(p => p.GetIndexParameters().Length == 0)) OnPropertyChanged(p.Name);
+    }
+
     [RelayCommand]
     private void OpenLogs() => Process.Start(new ProcessStartInfo(AppPaths.LogDir) { UseShellExecute = true });
 }

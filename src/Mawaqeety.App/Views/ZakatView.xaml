@@ -1,0 +1,126 @@
+<UserControl x:Class="Mawaqeety.App.Views.ZakatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls">
+    <UserControl.Resources>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextMutedBrush}"/>
+            <Setter Property="Margin" Value="2,0,0,4"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+        <Style x:Key="Num" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="Padding" Value="10,7"/>
+            <Setter Property="FlowDirection" Value="LeftToRight"/>
+            <Setter Property="TextAlignment" Value="Right"/>
+        </Style>
+        <Style x:Key="Field" TargetType="StackPanel">
+            <Setter Property="Margin" Value="0,0,12,12"/>
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,28,32,24" MaxWidth="980">
+            <Border Style="{StaticResource HeroCard}">
+                <DockPanel>
+                    <TextBlock Text="&#xE8EF;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="40" Foreground="#E9C75A" VerticalAlignment="Center" Margin="0,0,22,0"/>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="{Binding HeroLabel}" Foreground="{DynamicResource HeroMutedBrush}" FontSize="15"/>
+                        <TextBlock Text="{Binding HeroAmount}" Foreground="White" FontSize="38" FontWeight="Bold"/>
+                        <TextBlock Text="{Binding HeroSub}" Foreground="#E9C75A" FontSize="13.5" Visibility="{Binding HeroSub, Converter={StaticResource NotEmpty}}"/>
+                    </StackPanel>
+                </DockPanel>
+            </Border>
+
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="16"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                <StackPanel>
+                    <!-- Prices -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="الأسعار اليوم (لكل جرام)" Style="{StaticResource H2}"/>
+                            <UniformGrid Columns="2" Margin="0,0,-12,0">
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Text="الذهب عيار ٢٤" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Style="{StaticResource Num}" Text="{Binding GoldPrice, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Text="الفضة الخالصة" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Style="{StaticResource Num}" Text="{Binding SilverPrice, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                            </UniformGrid>
+                            <Border CornerRadius="10" Background="{DynamicResource Surface2Brush}" Padding="3" HorizontalAlignment="Left" Margin="0,2,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton Style="{StaticResource Segment}" Content="النصاب بالذهب (٨٥ جرامًا)" GroupName="nisab"
+                                                 IsChecked="{Binding BySilver, Converter={x:Static c:Not.Instance}}"/>
+                                    <RadioButton Style="{StaticResource Segment}" Content="بالفضة (٥٩٥ جرامًا)" GroupName="nisab" IsChecked="{Binding BySilver}"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                    <!-- Gold and silver -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="الذهب والفضة (بالجرام)" Style="{StaticResource H2}"/>
+                            <UniformGrid Columns="3" Margin="0,0,-12,0">
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Text="عيار ٢٤" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Style="{StaticResource Num}" Text="{Binding Gold24, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Text="عيار ٢١" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Style="{StaticResource Num}" Text="{Binding Gold21, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                                <StackPanel Style="{StaticResource Field}">
+                                    <TextBlock Text="عيار ١٨" Style="{StaticResource FieldLabel}"/>
+                                    <TextBox Style="{StaticResource Num}" Text="{Binding Gold18, UpdateSourceTrigger=PropertyChanged}"/>
+                                </StackPanel>
+                            </UniformGrid>
+                            <StackPanel Style="{StaticResource Field}" Margin="0">
+                                <TextBlock Text="الفضة" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource Num}" Text="{Binding Silver, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2">
+                    <!-- Money -->
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="أموالك التي حال عليها الحول" Style="{StaticResource H2}"/>
+                            <StackPanel Style="{StaticResource Field}" Margin="0,0,0,12">
+                                <TextBlock Text="النقود (في اليد والبنك والمدخرات)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource Num}" Text="{Binding Cash, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Margin="0,0,0,12">
+                                <TextBlock Text="ديون لك يُرجى سدادها" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource Num}" Text="{Binding Owed, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <StackPanel Style="{StaticResource Field}" Margin="0,0,0,12">
+                                <TextBlock Text="قيمة عروض التجارة (البضاعة المعدّة للبيع)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource Num}" Text="{Binding Trade, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                            <TextBlock Text="يُخصم" Style="{StaticResource H2}" Margin="0,6,0,8"/>
+                            <StackPanel Style="{StaticResource Field}" Margin="0">
+                                <TextBlock Text="ديون عليك حالّة (مستحقة الآن)" Style="{StaticResource FieldLabel}"/>
+                                <TextBox Style="{StaticResource Num}" Text="{Binding Debts, UpdateSourceTrigger=PropertyChanged}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="كيف تُحسب؟" FontWeight="Bold" FontSize="15" Margin="0,0,0,6"/>
+                    <TextBlock TextWrapping="Wrap" FontSize="13.5" LineHeight="27"
+                               Text="• تجب الزكاة إذا بلغ المال النصاب وحال عليه حول هجري كامل.&#x0a;• مقدارها ربع العشر (٢٫٥٪) من مجموع المال الزكوي.&#x0a;• يُحوَّل الذهب إلى ما يعادله من عيار ٢٤ ثم يُقوَّم بسعر اليوم.&#x0a;• «ليس فيما دون خمس أواقٍ صدقة» — صحيح البخاري ١٤٠٥، صحيح مسلم ٩٧٩."/>
+                    <TextBlock Style="{StaticResource Muted}" FontSize="12" LineHeight="22" Margin="0,8,0,0"
+                               Text="حساب تقريبي للإعانة. وفي ذهب الزينة المستعمل خلاف بين العلماء، وفي الحالات الخاصة اسأل أهل العلم أو دار الإفتاء."/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

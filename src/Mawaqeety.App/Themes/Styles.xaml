@@ -56,6 +56,47 @@
         <Setter Property="Margin" Value="0,0,0,16"/>
     </Style>
 
+    <!-- ===== Page building blocks (hero header, section titles, stat tiles) ===== -->
+    <Style x:Key="HeroCard" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource HeroBrush}"/>
+        <Setter Property="Effect" Value="{StaticResource HeroShadow}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource RimBrush}"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="28,22"/>
+        <Setter Property="Margin" Value="0,0,0,18"/>
+    </Style>
+    <Style x:Key="HeroEmoji" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="44"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Margin" Value="0,0,20,0"/>
+        <Setter Property="FontFamily" Value="Segoe UI Emoji"/>
+    </Style>
+    <Style x:Key="Section" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="Margin" Value="4,4,4,10"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="StatTile" TargetType="Border" BasedOn="{StaticResource Card}">
+        <Setter Property="Padding" Value="12,14"/>
+        <Setter Property="Margin" Value="0,0,12,16"/>
+    </Style>
+    <Style x:Key="StatValue" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Foreground" Value="{DynamicResource GoldBrush}"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    <Style x:Key="QuoteText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource QuranFont}"/>
+        <Setter Property="FontSize" Value="19"/>
+        <Setter Property="LineHeight" Value="38"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+    </Style>
+
     <!-- ===== Buttons ===== -->
     <Style x:Key="BaseButton" TargetType="Button">
         <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
@@ -182,12 +223,12 @@
         <Setter Property="Foreground" Value="#C9D6E8"/>
         <Setter Property="FontSize" Value="14.5"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Margin" Value="10,3"/>
+        <Setter Property="Margin" Value="10,2"/>
         <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="RadioButton">
-                    <Border x:Name="Bd" CornerRadius="10" Padding="14,10" Background="Transparent">
+                    <Border x:Name="Bd" CornerRadius="10" Padding="14,7" Background="Transparent">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="4"/>

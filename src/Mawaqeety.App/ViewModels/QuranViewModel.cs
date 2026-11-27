@@ -52,6 +52,9 @@ public sealed partial class QuranViewModel : ObservableObject
     [ObservableProperty] private bool _indexOpen;
 
     public MushafViewModel Mushaf => _mushaf ??= new MushafViewModel(this);
+
+    /// <summary>Today's wird and the khatma plan (the card above the Mushaf).</summary>
+    public KhatmaViewModel? Khatma => App.Instance.MainVm?.Khatma;
     private MushafViewModel? _mushaf;
 
     public void StartRecitationAt(int surah, int ayah) => StartRecitation(surah, ayah);

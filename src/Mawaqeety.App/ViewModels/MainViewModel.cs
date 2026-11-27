@@ -3,7 +3,8 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Mawaqeety.App.ViewModels;
 
-public enum Page { Dashboard, Times, Monthly, Quran, Adhkar, Tasbeeh, Stats, Qibla, Prophets, Hadith, Companions, Settings, About }
+public enum Page { Dashboard, Times, Monthly, Quran, Adhkar, Tasbeeh, Stats, Qibla, Prophets, Hadith, Companions, Settings, About,
+    Sabeel, Ramadan, WhiteDays, Occasions, Asma, Zakat, Khatma }
 
 public sealed partial class MainViewModel : ObservableObject
 {
@@ -29,9 +30,24 @@ public sealed partial class MainViewModel : ObservableObject
     private HadithViewModel? _hadith;
     private CompanionsViewModel? _companions;
     public AboutViewModel About { get; } = new();
+    public SabeelViewModel Sabeel => _sabeel ??= new SabeelViewModel();
+    public RamadanViewModel Ramadan => _ramadan ??= new RamadanViewModel();
+    public WhiteDaysViewModel WhiteDays => _whiteDays ??= new WhiteDaysViewModel();
+    public OccasionsViewModel Occasions => _occasions ??= new OccasionsViewModel();
+    public AsmaViewModel Asma => _asma ??= new AsmaViewModel();
+    public ZakatViewModel Zakat => _zakat ??= new ZakatViewModel();
+    public KhatmaViewModel Khatma => _khatma ??= new KhatmaViewModel();
+    private SabeelViewModel? _sabeel;
+    private RamadanViewModel? _ramadan;
+    private WhiteDaysViewModel? _whiteDays;
+    private OccasionsViewModel? _occasions;
+    private AsmaViewModel? _asma;
+    private ZakatViewModel? _zakat;
+    private KhatmaViewModel? _khatma;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentView), nameof(IsDashboard), nameof(IsTimes), nameof(IsMonthly), nameof(IsQuran), nameof(IsAdhkar), nameof(IsTasbeeh), nameof(IsStats), nameof(IsQibla), nameof(IsProphets), nameof(IsHadith), nameof(IsCompanions), nameof(IsSettings), nameof(IsAbout))]
+    [NotifyPropertyChangedFor(nameof(CurrentView), nameof(IsDashboard), nameof(IsTimes), nameof(IsMonthly), nameof(IsQuran), nameof(IsAdhkar), nameof(IsTasbeeh), nameof(IsStats), nameof(IsQibla), nameof(IsProphets), nameof(IsHadith), nameof(IsCompanions), nameof(IsSettings), nameof(IsAbout),
+        nameof(IsSabeel), nameof(IsRamadan), nameof(IsWhiteDays), nameof(IsOccasions), nameof(IsAsma), nameof(IsZakat), nameof(IsKhatma))]
     private Page _page = Page.Dashboard;
 
     public object CurrentView => Page switch
@@ -48,6 +64,13 @@ public sealed partial class MainViewModel : ObservableObject
         Page.Companions => Companions,
         Page.Settings => Settings,
         Page.About => About,
+        Page.Sabeel => Sabeel,
+        Page.Ramadan => Ramadan,
+        Page.WhiteDays => WhiteDays,
+        Page.Occasions => Occasions,
+        Page.Asma => Asma,
+        Page.Zakat => Zakat,
+        Page.Khatma => Khatma,
         _ => Dashboard,
     };
 
@@ -64,6 +87,14 @@ public sealed partial class MainViewModel : ObservableObject
     public bool IsCompanions { get => Page == Page.Companions; set { if (value) Page = Page.Companions; } }
     public bool IsSettings { get => Page == Page.Settings; set { if (value) Page = Page.Settings; } }
     public bool IsAbout { get => Page == Page.About; set { if (value) Page = Page.About; } }
+    public bool IsSabeel { get => Page == Page.Sabeel; set { if (value) Page = Page.Sabeel; } }
+    public bool IsRamadan { get => Page == Page.Ramadan; set { if (value) Page = Page.Ramadan; } }
+    public bool IsWhiteDays { get => Page == Page.WhiteDays; set { if (value) Page = Page.WhiteDays; } }
+    public bool IsOccasions { get => Page == Page.Occasions; set { if (value) Page = Page.Occasions; } }
+    public bool IsAsma { get => Page == Page.Asma; set { if (value) Page = Page.Asma; } }
+    public bool IsZakat { get => Page == Page.Zakat; set { if (value) Page = Page.Zakat; } }
+    /// <summary>The khatma page is opened from the Quran page (its sidebar entry stays the Quran's).</summary>
+    public bool IsKhatma { get => Page == Page.Khatma; set { if (value) Page = Page.Khatma; } }
 
     [RelayCommand]
     private void Navigate(Page page)
@@ -79,6 +110,11 @@ public sealed partial class MainViewModel : ObservableObject
     {
         Dashboard.Reload();
         Monthly.Reload();
+        _ramadan?.Reload();
+        _whiteDays?.Reload();
+        _occasions?.Reload();
+        _khatma?.Reload();
+        _times?.Sunan.Reload();
     }
 }
 
@@ -86,4 +122,5 @@ public sealed partial class MainViewModel : ObservableObject
 public sealed class TimesViewModel(DashboardViewModel dash)
 {
     public DashboardViewModel Dash { get; } = dash;
+    public SunanViewModel Sunan { get; } = new();
 }

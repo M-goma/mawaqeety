@@ -72,8 +72,20 @@ public static class ThemeService
             Set("SidebarBrush", Mix(bg, surface, 0.45));
             Set("AccentBrush", Mix(primary, Colors.Black, 0.15));
             Set("AccentHoverBrush", Mix(primary, Colors.Black, 0.25));
-            Set("GoldBrush", Mix(accent, Colors.Black, 0.22));
+            Set("GoldBrush", p.LightAccent is { } la ? Parse(la) : Mix(accent, Colors.Black, 0.22));
             Set("HoverBrush", Mix(Colors.White, primary, 0.08));
+            if (p.LightBase is { } lb)
+            {
+                // A tinted light mode (e.g. beige for the coffee palettes), as in the mobile app.
+                Color lbg = Parse(lb), card = p.LightCard is { } lc ? Parse(lc) : Colors.White;
+                d["BgColor"] = lbg;
+                Set("BgBrush", lbg);
+                Set("SurfaceBrush", card);
+                Set("Surface2Brush", Mix(lbg, card, 0.45));
+                Set("InputBrush", card);
+                Set("LineBrush", Mix(card, primary, 0.16));
+                Set("HoverBrush", Mix(card, primary, 0.10));
+            }
         }
         Set("AccentSoftBrush", Alpha(primary, 0x1A));
         Set("GoldSoftBrush", Alpha(accent, dark ? (byte)0x26 : (byte)0x33));
@@ -106,7 +118,8 @@ public static class ThemeService
         var dark = IsDark ? 1 : 0;
         if (DwmSetWindowAttribute(hwnd, 20, ref dark, sizeof(int)) != 0)
             DwmSetWindowAttribute(hwnd, 19, ref dark, sizeof(int)); // older Windows 10 builds
-        var bgc = IsDark ? Parse(Palette.Find(_palette).Bg) : Color.FromRgb(0xF3, 0xF6, 0xF4);
+        var pal = Palette.Find(_palette);
+        var bgc = IsDark ? Parse(pal.Bg) : pal.LightBase is { } lb ? Parse(lb) : Color.FromRgb(0xF3, 0xF6, 0xF4);
         var caption = bgc.R | (bgc.G << 8) | (bgc.B << 16); // COLORREF (BGR) of the window background, Windows 11 only
         DwmSetWindowAttribute(hwnd, 35, ref caption, sizeof(int));
     }

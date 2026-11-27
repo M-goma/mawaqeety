@@ -35,6 +35,8 @@ public sealed partial class StatsViewModel : ObservableObject
     [ObservableProperty] private string _morningStreak = "";
     [ObservableProperty] private string _tasbeehText = "";
     [ObservableProperty] private string _quote = "";
+    [ObservableProperty] private string _sunanText = "";
+    [ObservableProperty] private string _pagesText = "";
 
     public StatsViewModel()
     {
@@ -81,5 +83,15 @@ public sealed partial class StatsViewModel : ObservableObject
         MorningStreak = $"☀️ {D(t.MorningStreak(today))}";
         TasbeehText = $"📿 {D(t.TasbeehBetween(from, today))} تسبيحة {(IsMonth ? "هذا الشهر" : "في آخر ٧ أيام")}";
         Quote = Quotes[today.Day % Quotes.Length];
+
+        int sunan = 0, pages = 0, days = 0;
+        for (var d = from; d <= today; d = d.AddDays(1))
+        {
+            sunan += t.Day(d).SunanDone;
+            pages += t.Day(d).Pages;
+            days++;
+        }
+        SunanText = $"✨ {D(sunan)} من {D(days * Enum.GetValues<Sunnah>().Length)} سنة • الرواتب والضحى والوتر";
+        PagesText = $"📖 {Occasions.Pages(pages)} قرأتها من المصحف";
     }
 }

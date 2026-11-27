@@ -323,6 +323,30 @@ public partial class App : Application
         MainVm.Quran.Mushaf.GoTo(Core.Content.MushafIndex.Default.PageOf(18, 1));
     }
 
+    /// <summary>A Mushaf page was shown: today's wird (pages read) and the khatma plan move on.</summary>
+    public void NoteQuranPage(int page)
+    {
+        try
+        {
+            var today = Today;
+            if (!Core.Content.Khatma.WouldChange(Settings.Current, today, page)) return;
+            var n = 0;
+            Settings.Update(s => n = Core.Content.Khatma.NotePage(s, today, page));
+            if (Tracker.Day(today).Pages != n) Tracker.SetPages(today, n);
+        }
+        catch (Exception ex) { Log.Warn("Noting the Quran page failed", ex); }
+    }
+
+    /// <summary>Opens the Mushaf at a page, or at an ayah (highlighted for a moment).</summary>
+    public void OpenMushaf(int page, (int Surah, int Ayah)? ayah = null)
+    {
+        if (MainVm is null) return;
+        MainVm.Page = ViewModels.Page.Quran;
+        if (ayah is { } a) MainVm.Quran.Open(a.Surah, a.Ayah);
+        else MainVm.Quran.Mushaf.GoTo(page);
+        if (ayah is { } b) MainVm.Quran.Mushaf.Flash(b.Surah, b.Ayah);
+    }
+
     private void CheckPrayerPrompts()
     {
         CheckFriday();

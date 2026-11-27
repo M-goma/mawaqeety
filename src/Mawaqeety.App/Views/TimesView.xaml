@@ -89,6 +89,37 @@
                 </StackPanel>
             </Border>
 
+            <!-- السنن والنوافل -->
+            <Border Style="{StaticResource Card}" Padding="20,14"
+                    DataContext="{Binding DataContext.Sunan, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <StackPanel>
+                    <DockPanel Margin="0,0,0,10">
+                        <TextBlock DockPanel.Dock="Right" Text="{Binding CountText}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15" VerticalAlignment="Center"/>
+                        <TextBlock Text="✨" FontFamily="Segoe UI Emoji" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBlock Text="السنن والنوافل" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <ItemsControl ItemsSource="{Binding Items}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <ToggleButton IsChecked="{Binding Done}" ToolTip="{Binding Detail}" Margin="0,0,8,8" Padding="14,6">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock x:Name="Tick" Text="&#xE73E;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Margin="0,2,6,0" Visibility="Collapsed"/>
+                                        <TextBlock Text="{Binding Label}"/>
+                                    </StackPanel>
+                                </ToggleButton>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding Done}" Value="True">
+                                        <Setter TargetName="Tick" Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{Binding Hadith}" Style="{StaticResource Muted}" FontSize="12" LineHeight="22" Margin="0,4,0,0"/>
+                </StackPanel>
+            </Border>
+
             <TextBlock Style="{StaticResource Muted}" Margin="4,0" FontSize="12">
                 <Run Text="{l:Tr Method}"/><Run Text=": "/><Run Text="{Binding MethodText, Mode=OneWay}"/>
                 <Run Text="  •  "/><Run Text="{Binding SourceText, Mode=OneWay}"/>

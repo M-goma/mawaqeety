@@ -28,6 +28,13 @@
         <DataTemplate DataType="{x:Type vm:TimesViewModel}"><v:TimesView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:HadithViewModel}"><v:HadithView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:CompanionsViewModel}"><v:CompanionsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:SabeelViewModel}"><v:SabeelView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RamadanViewModel}"><v:RamadanView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:WhiteDaysViewModel}"><v:WhiteDaysView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OccasionsViewModel}"><v:OccasionsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AsmaViewModel}"><v:AsmaView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ZakatViewModel}"><v:ZakatView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:KhatmaViewModel}"><v:KhatmaView/></DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -39,7 +46,7 @@
         <!-- Sidebar -->
         <Border Grid.Column="0" Background="{DynamicResource SidebarBrush}">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Top" Margin="22,28,22,26">
+                <StackPanel DockPanel.Dock="Top" Margin="22,22,22,16">
                     <StackPanel Orientation="Horizontal">
                         <Image Source="pack://application:,,,/Assets/logo.png" Width="44" Height="44" RenderOptions.BitmapScalingMode="HighQuality"/>
                         <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
@@ -52,11 +59,13 @@
                 <TextBlock DockPanel.Dock="Bottom" Margin="24,0,24,18" FontSize="11" Foreground="#7F93AE"
                            Text="{Binding About.Version, StringFormat=v{0}}"/>
 
-                <StackPanel>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Focusable="False">
+                <StackPanel Margin="0,0,0,8">
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE80F;" Content="{l:Tr NavDashboard}" IsChecked="{Binding IsDashboard}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE916;" Content="المواقيت" IsChecked="{Binding IsTimes}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE787;" Content="{l:Tr NavMonthly}" IsChecked="{Binding IsMonthly}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE736;" Content="{l:Tr NavQuran}" IsChecked="{Binding IsQuran}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8BD;" Content="اسأل سبيل" IsChecked="{Binding IsSabeel}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE734;" Content="{l:Tr NavAdhkar}" IsChecked="{Binding IsAdhkar}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE7C1;" Content="{l:Tr NavTasbeeh}" IsChecked="{Binding IsTasbeeh}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE9D2;" Content="{l:Tr NavStats}" IsChecked="{Binding IsStats}"/>
@@ -64,9 +73,15 @@
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE82D;" Content="{l:Tr NavProphets}" IsChecked="{Binding IsProphets}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8F1;" Content="الأحاديث الصحيحة" IsChecked="{Binding IsHadith}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE734;" Content="العشرة المبشرون" IsChecked="{Binding IsCompanions}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE708;" Content="رمضان" IsChecked="{Binding IsRamadan}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE706;" Content="الأيام البيض" IsChecked="{Binding IsWhiteDays}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8BF;" Content="المناسبات" IsChecked="{Binding IsOccasions}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE735;" Content="أسماء الله الحسنى" IsChecked="{Binding IsAsma}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8EF;" Content="حاسبة الزكاة" IsChecked="{Binding IsZakat}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE713;" Content="{l:Tr NavSettings}" IsChecked="{Binding IsSettings}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE946;" Content="{l:Tr NavAbout}" IsChecked="{Binding IsAbout}"/>
                 </StackPanel>
+                </ScrollViewer>
             </DockPanel>
         </Border>
 

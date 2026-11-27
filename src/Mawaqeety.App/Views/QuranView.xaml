@@ -56,6 +56,18 @@
                 </StackPanel>
             </Border>
         </Popup>
+        <!-- «وردك اليوم»: today's pages and the khatma plan (opens the khatma page) -->
+        <Button DockPanel.Dock="Right" Margin="0,0,10,0" Padding="12,4" DataContext="{Binding Khatma}" Command="{Binding OpenCommand}"
+                ToolTip="ورد القرآن والختمة" MaxWidth="420">
+            <DockPanel>
+                <TextBlock Text="📖" FontFamily="Segoe UI Emoji" FontSize="16" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBlock DockPanel.Dock="Right" Text="{Binding WirdCount}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                <StackPanel>
+                    <TextBlock Text="{Binding WirdTitle}" FontWeight="SemiBold" FontSize="13"/>
+                    <TextBlock Text="{Binding WirdSub}" FontSize="11.5" Foreground="{DynamicResource TextMutedBrush}" TextTrimming="CharacterEllipsis"/>
+                </StackPanel>
+            </DockPanel>
+        </Button>
         <TextBlock Text="{Binding Downloads.QuranText}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="14,0" TextTrimming="CharacterEllipsis"
                    Visibility="{Binding Downloads.QuranRunning, Converter={StaticResource BoolVis}}"/>
     </DockPanel>

@@ -194,6 +194,9 @@ public sealed partial class MushafViewModel : ObservableObject
         var gen = ++_loadGen;
         Right = NewPage(RightPage, gen);
         Left = LeftPage is { } l ? NewPage(l, gen) : null;
+        // The pages on screen count as read for today's wird and the khatma plan.
+        App.Instance.NoteQuranPage(RightPage);
+        if (LeftPage is { } lp) App.Instance.NoteQuranPage(lp);
         OnPropertyChanged(nameof(SelectedSurah));
         OnPropertyChanged(nameof(SelectedJuz));
         OnPropertyChanged(nameof(PageText));
