@@ -5,17 +5,21 @@ class Palette {
   final String id, nameAr;
   final Color bg, surface, surface2, primary, accent, accentLight, heroText;
   final List<Color> hero;
+  /// Optional tinted background and card colour for the light mode (e.g. beige for the coffee palettes).
+  final Color? lightBase, lightCard, lightAccent;
   const Palette({
     required this.id, required this.nameAr, required this.bg, required this.surface, required this.surface2,
     required this.primary, required this.accent, required this.accentLight, required this.heroText, required this.hero,
+    this.lightBase, this.lightCard, this.lightAccent,
   });
 
   Color get accentSoft => accent.withValues(alpha: 0.2);
   Color get border => Color.lerp(surface, primary, 0.18)!;
   Color get navBar => Color.lerp(bg, surface, 0.45)!;
   Color get input => Color.lerp(bg, surface, 0.6)!;
-  Color get lightBg => Color.lerp(Colors.white, primary, 0.05)!;
-  Color get lightBorder => Color.lerp(Colors.white, primary, 0.16)!;
+  Color get lightBg => lightBase ?? Color.lerp(Colors.white, primary, 0.05)!;
+  Color get lightSurface => lightCard ?? Colors.white;
+  Color get lightBorder => Color.lerp(lightSurface, primary, 0.16)!;
 }
 
 const palettes = <Palette>[
@@ -49,6 +53,32 @@ const palettes = <Palette>[
   Palette(id: 'silver', nameAr: 'فضّي', bg: Color(0xFF0F1216), surface: Color(0xFF1A1F26), surface2: Color(0xFF252C35),
       primary: Color(0xFF94A3B8), accent: Color(0xFF7DD3FC), accentLight: Color(0xFFA5E1FD), heroText: Color(0xFFE2E8F0),
       hero: [Color(0xFF64748B), Color(0xFF334155), Color(0xFF0F172A)]),
+  // Coffee browns (beige in the light mode).
+  Palette(id: 'mocha', nameAr: 'موكا', bg: Color(0xFF1E1511), surface: Color(0xFF2E211B), surface2: Color(0xFF3D2D24),
+      primary: Color(0xFF9C6B4E), accent: Color(0xFFEBD3B0), accentLight: Color(0xFFF5E4C8), heroText: Color(0xFFF3E6D6),
+      hero: [Color(0xFF8A5E45), Color(0xFF5E4033), Color(0xFF2A1D17)], lightBase: Color(0xFFE6DACC), lightCard: Color(0xFFF7F0E7), lightAccent: Color(0xFF8A5A3C)),
+  Palette(id: 'latte', nameAr: 'لاتيه', bg: Color(0xFF2B2119), surface: Color(0xFF3B2E24), surface2: Color(0xFF4B3B2F),
+      primary: Color(0xFFB48A64), accent: Color(0xFFF3E2C7), accentLight: Color(0xFFFAEEDB), heroText: Color(0xFFFFF4E6),
+      hero: [Color(0xFFB08A6A), Color(0xFF7D5D47), Color(0xFF3B2C22)], lightBase: Color(0xFFEDE3D6), lightCard: Color(0xFFFBF6EF), lightAccent: Color(0xFF96683F)),
+  Palette(id: 'cocoa', nameAr: 'كاكاو', bg: Color(0xFF170E0B), surface: Color(0xFF261813), surface2: Color(0xFF34221B),
+      primary: Color(0xFF7A4A35), accent: Color(0xFFD9A57A), accentLight: Color(0xFFE8BF9A), heroText: Color(0xFFF2DDD0),
+      hero: [Color(0xFF6E4230), Color(0xFF462A1F), Color(0xFF1C110D)], lightBase: Color(0xFFE2D4C9), lightCard: Color(0xFFF5EEE8), lightAccent: Color(0xFF7A4A35)),
+  Palette(id: 'caramel', nameAr: 'كراميل', bg: Color(0xFF1F140A), surface: Color(0xFF2F2012), surface2: Color(0xFF402C19),
+      primary: Color(0xFFC98A45), accent: Color(0xFFF7DDB0), accentLight: Color(0xFFFCEBCB), heroText: Color(0xFFFFEEDB),
+      hero: [Color(0xFFC07F3D), Color(0xFF85552A), Color(0xFF2E1F10)], lightBase: Color(0xFFF0E3D0), lightCard: Color(0xFFFCF7EF), lightAccent: Color(0xFFA8692C)),
+  // More colours.
+  Palette(id: 'rose', nameAr: 'وردي ترابي', bg: Color(0xFF1C1214), surface: Color(0xFF2C1D21), surface2: Color(0xFF3B282D),
+      primary: Color(0xFFC07A86), accent: Color(0xFFF2D0B6), accentLight: Color(0xFFF8E1CF), heroText: Color(0xFFFBE6EA),
+      hero: [Color(0xFFB06C78), Color(0xFF7A4651), Color(0xFF2C1A1F)], lightBase: Color(0xFFF1E3E3), lightCard: Color(0xFFFCF6F6), lightAccent: Color(0xFFA4566A)),
+  Palette(id: 'mint', nameAr: 'نعناعي', bg: Color(0xFF07171A), surface: Color(0xFF0E2629), surface2: Color(0xFF15363A),
+      primary: Color(0xFF3CC7A0), accent: Color(0xFFFFE08A), accentLight: Color(0xFFFFEBB0), heroText: Color(0xFFD8F7EE),
+      hero: [Color(0xFF2FB18D), Color(0xFF1C6E5E), Color(0xFF082224)]),
+  Palette(id: 'navy', nameAr: 'كحلي بحري', bg: Color(0xFF050B16), surface: Color(0xFF0C1626), surface2: Color(0xFF132138),
+      primary: Color(0xFF2F6FB0), accent: Color(0xFFE6E1D3), accentLight: Color(0xFFF2EEE4), heroText: Color(0xFFD9E6F5),
+      hero: [Color(0xFF23578C), Color(0xFF173A60), Color(0xFF07101D)]),
+  Palette(id: 'lavender', nameAr: 'لافندر', bg: Color(0xFF13111E), surface: Color(0xFF211D33), surface2: Color(0xFF2E2846),
+      primary: Color(0xFF9D8BD8), accent: Color(0xFFF4D6A0), accentLight: Color(0xFFF9E4BF), heroText: Color(0xFFEDE7FF),
+      hero: [Color(0xFF8C79CC), Color(0xFF5B4B91), Color(0xFF1C1730)], lightBase: Color(0xFFEDEAF6), lightCard: Color(0xFFFBFAFF), lightAccent: Color(0xFF6F5BB5)),
 ];
 
 Palette paletteById(String id) => palettes.firstWhere((p) => p.id == id, orElse: () => palettes.first);
@@ -101,7 +131,9 @@ class AppColors {
   static Color get navy2 => current.surface;
   static Color get navy3 => current.surface2;
   static Color get emerald => current.primary;
-  static Color get gold => current.accent;
+  /// True while the light mode is showing (set by the app builder).
+  static bool light = false;
+  static Color get gold => light && current.lightAccent != null ? current.lightAccent! : current.accent;
   static Color get goldSoft => current.accentSoft;
   static Color get goldLight => current.accentLight;
   static Color get heroText => current.heroText;
@@ -120,7 +152,7 @@ ThemeData buildTheme(Brightness b, Palette p) {
     brightness: b,
     primary: p.primary,
     secondary: p.accent,
-    surface: dark ? p.surface : Colors.white,
+    surface: dark ? p.surface : p.lightSurface,
   );
   final bg = dark ? p.bg : p.lightBg;
   final fg = dark ? Colors.white : p.bg;
@@ -138,14 +170,14 @@ ThemeData buildTheme(Brightness b, Palette p) {
       titleTextStyle: TextStyle(fontFamily: 'Cairo', fontSize: 19, fontWeight: FontWeight.w700, color: fg),
     ),
     cardTheme: CardThemeData(
-      color: dark ? p.surface : Colors.white,
+      color: dark ? p.surface : p.lightSurface,
       elevation: 0,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16),
           side: BorderSide(color: dark ? p.border : p.lightBorder)),
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
     ),
     navigationBarTheme: NavigationBarThemeData(
-      backgroundColor: dark ? p.navBar : Colors.white,
+      backgroundColor: dark ? p.navBar : p.lightSurface,
       indicatorColor: p.accentSoft,
       elevation: 12,
       shadowColor: Colors.black,
@@ -155,6 +187,8 @@ ThemeData buildTheme(Brightness b, Palette p) {
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
         elevation: 6,
+        backgroundColor: p.primary,
+        foregroundColor: Colors.white,
         shadowColor: Colors.black,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -166,7 +200,7 @@ ThemeData buildTheme(Brightness b, Palette p) {
       shadowColor: Colors.black,
       selectedShadowColor: Colors.black,
       selectedColor: p.primary,
-      backgroundColor: dark ? Color.lerp(p.surface2, Colors.white, 0.05) : Colors.white,
+      backgroundColor: dark ? Color.lerp(p.surface2, Colors.white, 0.05) : p.lightSurface,
       side: BorderSide(color: dark ? Colors.white.withValues(alpha: 0.10) : p.lightBorder),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       labelStyle: TextStyle(fontFamily: 'Cairo', fontSize: 13, color: fg),
@@ -178,13 +212,13 @@ ThemeData buildTheme(Brightness b, Palette p) {
         elevation: const WidgetStatePropertyAll(3),
         shadowColor: const WidgetStatePropertyAll(Colors.black),
         backgroundColor: WidgetStateProperty.resolveWith((st) =>
-            st.contains(WidgetState.selected) ? p.primary : (dark ? p.surface : Colors.white)),
+            st.contains(WidgetState.selected) ? p.primary : (dark ? p.surface : p.lightSurface)),
         foregroundColor: WidgetStateProperty.resolveWith((st) => st.contains(WidgetState.selected) ? Colors.white : fg),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
-      fillColor: dark ? p.input : Colors.white,
+      fillColor: dark ? p.input : p.lightSurface,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
     ),
@@ -208,9 +242,9 @@ class Card3D extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = AppColors.current;
     final dark = _isDark(context);
-    final base = dark ? p.surface : Colors.white;
-    final top = dark ? Color.lerp(base, Colors.white, 0.07)! : Colors.white;
-    final bottom = dark ? Color.lerp(base, Colors.black, 0.22)! : Color.lerp(Colors.white, p.primary, 0.04)!;
+    final base = dark ? p.surface : p.lightSurface;
+    final top = dark ? Color.lerp(base, Colors.white, 0.07)! : base;
+    final bottom = dark ? Color.lerp(base, Colors.black, 0.22)! : Color.lerp(base, p.primary, 0.04)!;
     final side = shape is RoundedRectangleBorder ? (shape as RoundedRectangleBorder).side : BorderSide.none;
     final r = BorderRadius.circular(radius);
     return Padding(
@@ -263,8 +297,8 @@ class Tile3D extends StatelessWidget {
   Widget build(BuildContext context) {
     final p = AppColors.current;
     final dark = _isDark(context);
-    final c1 = gold ? p.accentLight : (dark ? Color.lerp(p.surface2, Colors.white, 0.16)! : Color.lerp(Colors.white, p.primary, 0.10)!);
-    final c2 = gold ? Color.lerp(p.accent, Colors.black, 0.3)! : (dark ? Color.lerp(p.surface, Colors.black, 0.25)! : Color.lerp(Colors.white, p.primary, 0.24)!);
+    final c1 = gold ? p.accentLight : (dark ? Color.lerp(p.surface2, Colors.white, 0.16)! : Color.lerp(p.lightSurface, p.primary, 0.10)!);
+    final c2 = gold ? Color.lerp(p.accent, Colors.black, 0.3)! : (dark ? Color.lerp(p.surface, Colors.black, 0.25)! : Color.lerp(p.lightSurface, p.primary, 0.24)!);
     final size = this.size * UiScale.icon;
     return Container(
       width: size,
