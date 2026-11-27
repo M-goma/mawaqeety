@@ -16,6 +16,13 @@ import 'theme.dart';
 
 const _kaaba = LatLng(Qibla.kaabaLat, Qibla.kaabaLng);
 
+const _overpass = [
+  'https://overpass-api.de/api/interpreter',
+  'https://maps.mail.ru/osm/tools/overpass/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+];
+
 /// A mosque found near the user (OpenStreetMap data via the Overpass API).
 class Mosque {
   final String name;
@@ -84,12 +91,25 @@ class _QiblaMapState extends State<QiblaMap> {
 
   Future<void> _findMosques() async {
     setState(() { _loading = true; _note = null; });
-    final q = '[out:json][timeout:20];('
-        'node["amenity"="place_of_worship"]["religion"="muslim"](around:2500,${_me.latitude},${_me.longitude});'
-        'way["amenity"="place_of_worship"]["religion"="muslim"](around:2500,${_me.latitude},${_me.longitude}););out center 60;';
+    final q = '[out:json][timeout:25];'
+        'nwr["amenity"="place_of_worship"]["religion"="muslim"](around:2500,${_me.latitude},${_me.longitude});out center 80;';
     try {
-      final r = await http.post(Uri.parse('https://overpass-api.de/api/interpreter'), body: {'data': q}).timeout(const Duration(seconds: 25));
-      final els = (jsonDecode(utf8.decode(r.bodyBytes))['elements'] as List?) ?? const [];
+      // Several public Overpass servers: the next one is tried when one is busy or refuses.
+      Map<String, dynamic>? data;
+      for (final host in _overpass) {
+        try {
+          final r = await http.get(Uri.parse('$host?data=${Uri.encodeQueryComponent(q)}'),
+              headers: const {'User-Agent': 'Sabeel/1.24 (com.mawaqeety.app; Islamic companion app)', 'Accept': 'application/json'})
+              .timeout(const Duration(seconds: 20));
+          if (r.statusCode != 200) continue;
+          data = jsonDecode(utf8.decode(r.bodyBytes)) as Map<String, dynamic>;
+          break;
+        } catch (_) {
+          continue;
+        }
+      }
+      if (data == null) throw Exception('no server');
+      final els = (data['elements'] as List?) ?? const [];
       const dist = Distance();
       final list = <Mosque>[
         for (final e in els)

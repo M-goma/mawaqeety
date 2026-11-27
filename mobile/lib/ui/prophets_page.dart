@@ -6,6 +6,8 @@ import '../main.dart';
 import '../services/narration.dart';
 import 'format.dart';
 import 'quran_pages.dart';
+import '../data/atlas.dart';
+import 'atlas_page.dart';
 import 'theme.dart';
 
 class ProphetsPage extends StatelessWidget {
@@ -23,6 +25,11 @@ class ProphetsPage extends StatelessWidget {
           appBar: AppBar(
             title: const Text('قصص الأنبياء'),
             actions: [
+              IconButton(
+                tooltip: 'أطلس قصص الأنبياء',
+                icon: const Icon(Icons.map_outlined),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AtlasPage())),
+              ),
               if (st.supported)
                 IconButton(
                   tooltip: 'تنزيل القصص للاستماع دون إنترنت',
@@ -37,7 +44,21 @@ class ProphetsPage extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 16),
                   itemCount: list.length + 1,
                   itemBuilder: (c, i) {
-                    if (i == 0) return st.downloading ? const _StoryProgress() : const SizedBox.shrink();
+                    if (i == 0) {
+                      return Column(children: [
+                        if (st.downloading) const _StoryProgress(),
+                        Card3D(
+                          margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                          child: ListTile(
+                            leading: const Tile3D(size: 44, child: Text('🗺️', style: TextStyle(fontSize: 21))),
+                            title: const Text('أطلس قصص الأنبياء', style: TextStyle(fontWeight: FontWeight.w700)),
+                            subtitle: const Text('أماكن القصص على الخريطة: مكة، بيت المقدس، مصر، مدين…'),
+                            trailing: const Icon(Icons.chevron_left),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AtlasPage())),
+                          ),
+                        ),
+                      ]);
+                    }
                     final p = list[i - 1];
                     final saved = st.isSaved(p.id, voice);
                     return Card3D(
@@ -222,7 +243,14 @@ class ProphetPage extends StatelessWidget {
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) => Scaffold(
-        appBar: AppBar(title: Text(p.nameAr)),
+        appBar: AppBar(title: Text(p.nameAr), actions: [
+          if (atlasPlaces.any((x) => x.prophets.contains(p.id)))
+            IconButton(
+              tooltip: 'أماكن القصة على الخريطة',
+              icon: const Icon(Icons.map_outlined),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AtlasPage(prophetId: p.id))),
+            ),
+        ]),
         bottomNavigationBar: ListenableBuilder(
           listenable: app.narration,
           builder: (context, _) {
