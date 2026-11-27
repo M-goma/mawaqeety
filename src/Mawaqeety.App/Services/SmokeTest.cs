@@ -32,6 +32,16 @@ public static class SmokeTest
         return null;
     }
 
+    private static IEnumerable<T> FindAll<T>(DependencyObject root) where T : DependencyObject
+    {
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(root); i++)
+        {
+            var c = VisualTreeHelper.GetChild(root, i);
+            if (c is T t) yield return t;
+            foreach (var x in FindAll<T>(c)) yield return x;
+        }
+    }
+
     public static async Task RunAsync(App app, string outDir)
     {
         Directory.CreateDirectory(outDir);
@@ -329,6 +339,9 @@ public static class SmokeTest
             vm.Settings.PaletteId = "navy";
             vm.Page = ViewModels.Page.Settings;
             await Task.Delay(1200);
+            if (FindAll<System.Windows.Controls.ItemsControl>(w.PageHost).FirstOrDefault(i => i.ItemsSource == vm.Settings.Palettes) is { } pal)
+                pal.BringIntoView();
+            await Task.Delay(600);
             Shot(w, "22d-palette-navy-settings");
             vm.Settings.PaletteId = "emerald";
         });

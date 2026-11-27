@@ -50,12 +50,15 @@
                                     <TextBox Style="{StaticResource Num}" Text="{Binding SilverPrice, UpdateSourceTrigger=PropertyChanged}"/>
                                 </StackPanel>
                             </UniformGrid>
-                            <Border CornerRadius="10" Background="{DynamicResource Surface2Brush}" Padding="3" HorizontalAlignment="Left" Margin="0,2,0,0">
-                                <StackPanel Orientation="Horizontal">
-                                    <RadioButton Style="{StaticResource Segment}" Content="النصاب بالذهب (٨٥ جرامًا)" GroupName="nisab"
-                                                 IsChecked="{Binding BySilver, Converter={x:Static c:Not.Instance}}"/>
-                                    <RadioButton Style="{StaticResource Segment}" Content="بالفضة (٥٩٥ جرامًا)" GroupName="nisab" IsChecked="{Binding BySilver}"/>
-                                </StackPanel>
+                            <Border CornerRadius="10" Background="{DynamicResource Surface2Brush}" Padding="3" Margin="0,2,0,0">
+                                <UniformGrid Columns="2">
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="nisab" IsChecked="{Binding BySilver, Converter={x:Static c:Not.Instance}}">
+                                        <TextBlock Text="النصاب بالذهب (٨٥ جرامًا)" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"/>
+                                    </RadioButton>
+                                    <RadioButton Style="{StaticResource Segment}" GroupName="nisab" IsChecked="{Binding BySilver}">
+                                        <TextBlock Text="بالفضة (٥٩٥ جرامًا)" TextWrapping="Wrap" TextAlignment="Center" FontSize="13"/>
+                                    </RadioButton>
+                                </UniformGrid>
                             </Border>
                         </StackPanel>
                     </Border>

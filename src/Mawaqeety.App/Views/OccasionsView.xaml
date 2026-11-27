@@ -39,7 +39,7 @@
                         <Border Style="{StaticResource Card}" Padding="16,8" Margin="0,0,0,10">
                             <Expander Foreground="{DynamicResource TextBrush}">
                                 <Expander.Header>
-                                    <DockPanel Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Expander}, Converter={x:Static c:Minus.By60}}">
+                                    <DockPanel Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType=Expander}, Converter={x:Static c:Minus.By36}}">
                                         <TextBlock DockPanel.Dock="Right" Text="{Binding When}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="13.5" VerticalAlignment="Center"/>
                                         <TextBlock Text="{Binding Emoji}" FontFamily="Segoe UI Emoji" FontSize="20" VerticalAlignment="Center" Margin="4,0,12,0"/>
                                         <StackPanel VerticalAlignment="Center">

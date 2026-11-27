@@ -110,6 +110,7 @@ public sealed class EmptyVisibility : IValueConverter
 public sealed class Minus(double amount) : IValueConverter
 {
     public static readonly Minus By60 = new(60);
+    public static readonly Minus By36 = new(36);
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
         value is double d ? Math.Max(0, d - amount) : value;
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
