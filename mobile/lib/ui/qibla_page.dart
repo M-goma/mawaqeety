@@ -9,6 +9,7 @@ import '../core/arabic.dart';
 import '../core/qibla.dart';
 import '../main.dart';
 import '../services/compass/web_compass.dart';
+import 'qibla_map.dart';
 import 'theme.dart';
 
 class QiblaPage extends StatefulWidget {
@@ -18,6 +19,7 @@ class QiblaPage extends StatefulWidget {
 }
 
 class _QiblaPageState extends State<QiblaPage> {
+  bool _mapMode = false;
   static const _channel = EventChannel('mawaqeety/compass');
   StreamSubscription? _sub;
   double? _heading;
@@ -107,9 +109,31 @@ class _QiblaPageState extends State<QiblaPage> {
     final km = Qibla.distanceKm(p.lat, p.lng);
     final heading = _heading ?? 0;
     final turn = (((q - heading) + 540) % 360) - 180; // + = turn right
+    final modes = Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SegmentedButton<bool>(
+        segments: const [
+          ButtonSegment(value: false, label: Text('البوصلة'), icon: Icon(Icons.explore_outlined)),
+          ButtonSegment(value: true, label: Text('الخريطة'), icon: Icon(Icons.map_outlined)),
+        ],
+        selected: {_mapMode},
+        showSelectedIcon: false,
+        onSelectionChanged: (v) => setState(() => _mapMode = v.first),
+      ),
+    );
+    if (_mapMode) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('اتجاه القبلة')),
+        body: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+          child: Column(children: [modes, const Expanded(child: QiblaMap())]),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: const Text('اتجاه القبلة')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
+        modes,
         Text(p.display, textAlign: TextAlign.center, style: TextStyle(color: AppColors.gold, fontSize: 15)),
         const SizedBox(height: 4),
         Text('القبلة على بُعد ${Arabic.digits(q.round())}° من الشمال • المسافة إلى مكة ${Arabic.digits(km.round())} كم',

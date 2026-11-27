@@ -70,11 +70,11 @@ class HadithCollection {
     return out;
   }
 
-  /// A short hadith with the Prophet's ﷺ own words, a different one each day.
-  Hadith ofDay(DateTime day) {
+  /// A short hadith with the Prophet's ﷺ own words: five a day, a new one with each prayer ([slot] 0–4).
+  Hadith ofDay(DateTime day, [int slot = 0]) {
     final pool = _dailyPool ??= all.where((h) => h.hasMatn && h.matn.length >= 70 && h.matn.length <= 330 && h.matn.contains('"')).toList();
     final n = DateTime.utc(day.year, day.month, day.day).millisecondsSinceEpoch ~/ 86400000;
-    return pool[(n * 7919) % pool.length];
+    return pool[((n * 5 + slot) * 7919) % pool.length];
   }
 
   List<Hadith>? _dailyPool;

@@ -10,6 +10,10 @@ on:
         description: "Track name (alpha = closed testing)"
         required: false
         default: alpha
+      dry_run:
+        description: "true = only check that Google would accept it (publishes nothing)"
+        required: false
+        default: "false"
 jobs:
   promote:
     runs-on: ubuntu-latest
@@ -20,6 +24,7 @@ jobs:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           VERSION_CODE: ${{ inputs.version_code }}
           TRACK: ${{ inputs.track }}
+          DRY_RUN: ${{ inputs.dry_run }}
         run: |
           pip install --quiet google-api-python-client google-auth
           python tools/play_track.py

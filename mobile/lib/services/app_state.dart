@@ -226,6 +226,17 @@ class AppState extends ChangeNotifier {
     return DateTime(n.year, n.month, n.day);
   }
 
+  /// Which of the day's five hadiths to show: it changes with each prayer (Fajr … Isha).
+  int get hadithSlot => switch (status().current) {
+        Prayer.dhuhr => 1,
+        Prayer.asr => 2,
+        Prayer.maghrib => 3,
+        Prayer.isha => 4,
+        _ => 0,
+      };
+
+  String get hadithSlotName => const ['الفجر', 'الظهر', 'العصر', 'المغرب', 'العشاء'][hadithSlot];
+
   PrayerStatus status() {
     final t = today;
     final nowUtc = DateTime.now().toUtc();
