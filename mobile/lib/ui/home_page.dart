@@ -99,25 +99,27 @@ class _AskBar extends StatelessWidget {
 /// A short hadith card; the full one (with its chain, saving and copying) opens on tap.
 class _HadithOfDay extends StatelessWidget {
   const _HadithOfDay();
+  static final _bukhari = HadithCollection.load('bukhari');
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: HadithCollection.load('bukhari'),
-      builder: (context, snap) {
+      future: _bukhari,
+      // Rebuilt with the app so the hadith changes when the next prayer comes in.
+      builder: (context, snap) => ListenableBuilder(listenable: app, builder: (context, _) {
         if (!snap.hasData) return const SizedBox.shrink();
-        final h = snap.data!.ofDay(app.today);
+        final h = snap.data!.ofDay(app.today, app.hadithSlot);
         return Card3D(
           margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
           child: InkWell(
             onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
-                  appBar: AppBar(title: const Text('حديث اليوم')),
+                  appBar: AppBar(title: Text('حديث ${app.hadithSlotName}')),
                   body: ListView(padding: const EdgeInsets.only(top: 6), children: [HadithCard(h)]),
                 ))),
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
               child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 Row(children: [
-                  Text('✦ حديث اليوم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 13.5)),
+                  Text('✦ حديث ${app.hadithSlotName}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 13.5)),
                   const Spacer(),
                   Text('${h.col.name} • ${Arabic.digits(h.number)}', style: TextStyle(fontSize: 11.5, color: Theme.of(context).hintColor)),
                 ]),
@@ -128,7 +130,7 @@ class _HadithOfDay extends StatelessWidget {
             ),
           ),
         );
-      },
+      }),
     );
   }
 }

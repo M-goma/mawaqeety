@@ -40,7 +40,7 @@ class _HadithPageState extends State<HadithPage> {
         builder: (context, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator());
           final bukhari = snap.data![0], col = snap.data![1];
-          final today = bukhari.ofDay(app.today);
+          final today = bukhari.ofDay(app.today, app.hadithSlot);
           return ListView(padding: const EdgeInsets.only(bottom: 20), children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 6, 16, 4),
@@ -51,7 +51,7 @@ class _HadithPageState extends State<HadithPage> {
                 onSelectionChanged: (v) => setState(() => _id = v.first),
               ),
             ),
-            HadithCard(today, title: '✦ حديث اليوم', highlight: true),
+            HadithCard(today, title: '✦ حديث ${app.hadithSlotName}', highlight: true),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
               child: Text('الكتب (${Arabic.digits(col.books.length)} كتابًا)', style: TextStyle(color: Theme.of(context).hintColor)),
