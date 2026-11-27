@@ -39,6 +39,9 @@ class Prophet {
   final List<String> lessons;
   final List<int> surahs;
   Prophet(this.id, this.order, this.nameAr, this.nameEn, this.title, this.summary, this.sections, this.ayat, this.lessons, this.surahs);
+
+  /// The name with its honorific: «محمد عليه أفضل الصلاة والسلام», the others «… عليه السلام».
+  String get displayName => id == 'muhammad' ? 'محمد عليه أفضل الصلاة والسلام' : '$nameAr عليه السلام';
 }
 
 class Reciter {

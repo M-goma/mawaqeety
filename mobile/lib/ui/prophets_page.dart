@@ -47,7 +47,7 @@ class ProphetsPage extends StatelessWidget {
                           size: 44,
                           child: Text(Arabic.digits(p.order), style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 16)),
                         ),
-                        title: Text('${p.nameAr} عليه السلام'.replaceAll('محمد ﷺ عليه السلام', 'محمد ﷺ'),
+                        title: Text(p.displayName,
                             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
                         subtitle: Text(p.title, style: TextStyle(color: AppColors.gold)),
                         trailing: !st.supported || !app.narration.hasRecording(p.id, voice)
@@ -222,7 +222,7 @@ class ProphetPage extends StatelessWidget {
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) => Scaffold(
-        appBar: AppBar(title: Text(p.nameAr)),
+        appBar: AppBar(title: Text(p.displayName, maxLines: 1, overflow: TextOverflow.ellipsis)),
         bottomNavigationBar: ListenableBuilder(
           listenable: app.narration,
           builder: (context, _) {
@@ -244,7 +244,7 @@ class ProphetPage extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                      Text('القصة التالية: ${next.nameAr}',
+                      Text('القصة التالية: ${next.displayName}',
                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
                       Text('تبدأ بعد ${Arabic.digits(app.narration.secondsLeft)} ثوانٍ',
                           style: TextStyle(color: AppColors.heroText, fontSize: 12)),
@@ -264,7 +264,7 @@ class ProphetPage extends StatelessWidget {
             padding: const EdgeInsets.all(18),
             decoration: hero3D(radius: 20),
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(p.nameAr, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
+              Text(p.displayName, style: TextStyle(color: Colors.white, fontSize: p.id == 'muhammad' ? 23 : 28, fontWeight: FontWeight.w700)),
               Text(p.title, style: TextStyle(color: AppColors.goldLight, fontSize: 15)),
               const SizedBox(height: 8),
               Text(p.summary, style: TextStyle(color: AppColors.heroText, height: 1.7)),

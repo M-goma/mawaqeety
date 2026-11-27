@@ -12,7 +12,7 @@ public sealed partial class ProphetListItem(Prophet prophet) : ObservableObject
     [ObservableProperty] private bool _isSaved;
 
     public string OrderText => QuranRepository.ArabicDigits(Prophet.Order);
-    public string DisplayName => Prophet.Id == "muhammad" || Prophet.NameAr.StartsWith("محمد") ? "محمد ﷺ" : $"{Prophet.NameAr} عليه السلام";
+    public string DisplayName => Prophet.Id == "muhammad" || Prophet.NameAr.StartsWith("محمد") ? "محمد عليه أفضل الصلاة والسلام" : $"{Prophet.NameAr} عليه السلام";
 }
 
 public sealed record AyatBlock(int Surah, int From, int To, string Text, string Reference, string Note);
