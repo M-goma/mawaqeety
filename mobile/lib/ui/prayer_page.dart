@@ -278,35 +278,35 @@ class TodayHarvest extends StatelessWidget {
           ),
         );
     return Card3D(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 6),
+      margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StatsPage())),
         child: Container(
           decoration: BoxDecoration(gradient: heroGradient),
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
           child: Row(children: [
             SizedBox(
-              width: 74,
-              height: 74,
+              width: 56,
+              height: 56,
               child: Stack(alignment: Alignment.center, children: [
                 SizedBox.expand(
-                  child: CircularProgressIndicator(value: value, strokeWidth: 8, color: AppColors.goldLight, backgroundColor: Colors.white24),
+                  child: CircularProgressIndicator(value: value, strokeWidth: 6, color: AppColors.goldLight, backgroundColor: Colors.white24),
                 ),
-                Text('${Arabic.digits((value * 100).round())}٪', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 17)),
+                Text('${Arabic.digits((value * 100).round())}٪', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
               ]),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  const Text('حصاد اليوم', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+                  const Text('حصاد اليوم', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15)),
                   const Spacer(),
                   Text('إحصائياتي ›', style: TextStyle(color: AppColors.goldLight, fontSize: 12.5)),
                 ]),
                 Text(left.isEmpty ? 'أتممت يومك، تقبّل الله منك 🤍' : 'باقي: ${left.join('، ')}',
-                    style: TextStyle(color: AppColors.heroText, fontSize: 12.5)),
-                const SizedBox(height: 6),
+                    maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: AppColors.heroText, fontSize: 12)),
+                const SizedBox(height: 4),
                 Wrap(spacing: 6, runSpacing: 4, children: [
                   chip('🕌 ${Arabic.digits(day.prayersDone)}/٥', day.prayersDone == 5),
                   chip('☀️ الصباح', day.morning, () => t.setAdhkar(app.today, morning: true, done: !day.morning)),
@@ -339,7 +339,7 @@ class KahfCard extends StatelessWidget {
           child: InkWell(
             onTap: app.openKahf,
             child: Padding(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
               child: Column(children: [
                 Row(children: [
                   const Tile3D(child: Text('📖', style: TextStyle(fontSize: 21))),
@@ -353,10 +353,10 @@ class KahfCard extends StatelessWidget {
                   ),
                   Text('${Arabic.digits(read)} / ${Arabic.digits(total)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700)),
                 ]),
-                const SizedBox(height: 10),
+                const SizedBox(height: 8),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(5),
-                  child: LinearProgressIndicator(value: read / total, minHeight: 8, color: AppColors.gold),
+                  child: LinearProgressIndicator(value: read / total, minHeight: 5, color: AppColors.gold),
                 ),
               ]),
             ),
@@ -371,6 +371,7 @@ class KahfCard extends StatelessWidget {
 /// The next prayer with its countdown (home page).
 class NextPrayerHero extends StatelessWidget {
   const NextPrayerHero({super.key});
+  // Compact: one row for the prayer and its time, one row for the countdown.
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -380,34 +381,33 @@ class NextPrayerHero extends StatelessWidget {
         final st = app.status();
         final isFriday = app.now.weekday == DateTime.friday;
         return Container(
-          margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-          padding: const EdgeInsets.all(22),
-          decoration: hero3D(radius: 24),
+          margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 12),
+          decoration: hero3D(radius: 22),
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text('الصلاة القادمة', style: TextStyle(color: AppColors.heroText, fontSize: 14)),
             Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-              Text(st.next == Prayer.dhuhr && isFriday ? 'الجمعة' : st.next.nameAr,
-                  style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w700)),
-              const SizedBox(width: 12),
-              Padding(padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(fmtTime(app.local(st.nextTime), s.use24h), style: TextStyle(color: AppColors.goldLight, fontSize: 18))),
-            ]),
-            const SizedBox(height: 4),
-            Row(children: [
-              Text('الوقت المتبقي', style: TextStyle(color: AppColors.heroText, fontSize: 13)),
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text('الصلاة القادمة', style: TextStyle(color: AppColors.heroText, fontSize: 12.5)),
+                Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                  Text(st.next == Prayer.dhuhr && isFriday ? 'الجمعة' : st.next.nameAr,
+                      style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w700, height: 1.25)),
+                  const SizedBox(width: 8),
+                  Padding(padding: const EdgeInsets.only(bottom: 5),
+                      child: Text(fmtTime(app.local(st.nextTime), s.use24h), style: TextStyle(color: AppColors.goldLight, fontSize: 15))),
+                ]),
+              ]),
               const Spacer(),
-              Text(fmtCountdown(st.remaining), textDirection: TextDirection.ltr,
-                  style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700)),
+              Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                Text('الوقت المتبقي', style: TextStyle(color: AppColors.heroText, fontSize: 12)),
+                Text(fmtCountdown(st.remaining), textDirection: TextDirection.ltr,
+                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.w700, height: 1.3)),
+              ]),
             ]),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(value: st.progress, minHeight: 7,
-                  backgroundColor: Colors.white24, color: AppColors.goldLight),
+              child: LinearProgressIndicator(value: st.progress, minHeight: 5, backgroundColor: Colors.white24, color: AppColors.goldLight),
             ),
-            const SizedBox(height: 10),
-            Text(st.current == null ? 'لا توجد صلاة حاليًا (بعد الشروق)' : 'وقت صلاة ${st.current!.nameAr}',
-                style: TextStyle(color: AppColors.heroText, fontSize: 13)),
           ]),
         );
       },

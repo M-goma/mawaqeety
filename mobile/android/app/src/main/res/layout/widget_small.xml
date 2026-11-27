@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_root"
     android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <!-- Background drawn in the app's colours (PrayerWidgets.kt); the drawable is the fallback. -->
+    <ImageView android:id="@+id/widget_bg" android:layout_width="match_parent" android:layout_height="match_parent"
+        android:scaleType="fitXY" android:src="@drawable/widget_bg" android:importantForAccessibility="no"/>
+<LinearLayout
+    android:id="@+id/widget_content"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_bg"
     android:layoutDirection="rtl"
     android:gravity="center_vertical"
     android:orientation="horizontal"
@@ -48,3 +54,4 @@
             android:layoutDirection="ltr" android:textColor="#FFFFFF" android:textSize="26sp" android:textStyle="bold"
             android:fontFamily="sans-serif-condensed" android:visibility="gone"/>
 </LinearLayout>
+</FrameLayout>

@@ -7,6 +7,13 @@ import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import android.os.Build
 import android.os.SystemClock
 import android.view.View
@@ -45,7 +52,9 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
     private data class Item(val name: String, val time: Long, val label: String)
     private data class Day(val date: String, val greg: String, val hijri: String, val items: List<Item>)
 
-    private data class Data(val place: String, val style: String, val use24h: Boolean, val days: List<Day>)
+    /** [hero]: the app's hero gradient (light → dark), [accent]: its highlight colour. */
+    private data class Data(val place: String, val style: String, val use24h: Boolean, val days: List<Day>,
+                            val hero: List<Int> = emptyList(), val accent: Int? = null)
 
     private fun load(context: Context): Data {
         val raw = HomeWidgetPlugin.getData(context).getString("mawaqeety_data", null)
@@ -62,7 +71,10 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
                         Item(o.getString("n"), o.getLong("t"), o.getString("l"))
                     })
             }
-            Data(root.optString("place"), root.optString("style", "clock"), root.optBoolean("use24h", false), list)
+            val colors = root.optJSONObject("colors")
+            val hero = colors?.optJSONArray("hero")?.let { a -> (0 until a.length()).mapNotNull { runCatching { Color.parseColor(a.getString(it)) }.getOrNull() } } ?: emptyList()
+            val accent = colors?.optString("accent")?.takeIf { it.isNotEmpty() }?.let { runCatching { Color.parseColor(it) }.getOrNull() }
+            Data(root.optString("place"), root.optString("style", "clock"), root.optBoolean("use24h", false), list, hero, accent)
         } catch (e: Exception) {
             Data("", "clock", false, emptyList())
         }
@@ -82,6 +94,7 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
 
         for (id in ids) {
             val views = RemoteViews(context.packageName, layout)
+            paint(context, manager, id, views, data)
             views.setOnClickPendingIntent(R.id.widget_root, HomeWidgetLaunchIntent.getActivity(context, MainActivity::class.java))
             val clockFormat = if (data.use24h) "HH:mm" else "h:mm"
             views.setCharSequence(R.id.clock, "setFormat12Hour", clockFormat)
@@ -153,6 +166,34 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
         } else {
             views.setViewVisibility(R.id.date_line, View.VISIBLE)
             views.setTextViewText(R.id.date_line, if (day == null) "" else "${day.hijri}  •  ${day.greg}")
+        }
+    }
+
+    /** Colours the widget like the app: its hero gradient as background and its accent for highlights. */
+    private fun paint(context: Context, manager: AppWidgetManager, id: Int, views: RemoteViews, data: Data) {
+        if (data.hero.size >= 2) {
+            val dm = context.resources.displayMetrics
+            val opts = manager.getAppWidgetOptions(id)
+            val wDp = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH).takeIf { it > 0 } ?: if (large) 320 else 300
+            val hDp = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT).takeIf { it > 0 } ?: if (large) 150 else 70
+            // Keep the bitmap small: RemoteViews have a size limit.
+            val scale = minOf(dm.density, 2f)
+            val w = (wDp * scale).toInt().coerceIn(60, 900)
+            val h = (hDp * scale).toInt().coerceIn(40, 600)
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            val c = Canvas(bmp)
+            val colors = data.hero.reversed().toIntArray() // dark (top-left) → light (bottom-right), like the drawable
+            val p = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                shader = LinearGradient(0f, 0f, w.toFloat(), h.toFloat(), colors, null, Shader.TileMode.CLAMP)
+            }
+            val r = 22f * scale
+            c.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), r, r, p)
+            views.setImageViewBitmap(R.id.widget_bg, bmp)
+        }
+        data.accent?.let { a ->
+            val ids = mutableListOf(R.id.next_time, R.id.countdown_small)
+            if (large) ids += listOf(R.id.cd0, R.id.cd1, R.id.cd2, R.id.cd3, R.id.cd4, R.id.cd5)
+            for (v in ids) views.setTextColor(v, a)
         }
     }
 

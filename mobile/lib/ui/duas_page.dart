@@ -21,7 +21,7 @@ class DuasPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 24),
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: const [1.1, 1.0, 0.92][UiScale.size],
+            childAspectRatio: 1.0,
             children: [
               for (final g in Duas.groups)
                 Card3D(

@@ -51,6 +51,7 @@ class MawaqeetyApp extends StatelessWidget {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
+          builder: (context, child) => AppZoom(child: child ?? const SizedBox.shrink()),
           home: app.ready ? const HomeShell() : const _Splash(),
         );
       },

@@ -1,20 +1,16 @@
 import 'package:flutter/material.dart';
 
-import '../data/duas.dart';
+import '../core/arabic.dart';
 import '../data/hadith.dart';
 import '../main.dart';
-import 'duas_page.dart';
 import 'format.dart';
 import 'hadith_page.dart';
-import 'mushaf_page.dart';
 import 'prayer_page.dart';
-import 'qibla_page.dart';
 import 'radio_page.dart';
-import 'tasbeeh_page.dart';
 import 'theme.dart';
 
-/// The first tab: what matters right now — the next prayer, the radio, today's harvest,
-/// a hadith of the day and quick shortcuts.
+/// The first tab, on one screen: the next prayer, the radio, today's harvest, al-Kahf on Friday,
+/// and the hadith of the day.
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -22,22 +18,23 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return SafeArea(
-      child: ListView(padding: const EdgeInsets.only(bottom: 24), children: [
+      child: ListView(padding: const EdgeInsets.only(bottom: 12), children: [
         ListenableBuilder(
           listenable: app,
           builder: (context, _) {
             final now = app.now;
             return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 16, 20, 4),
-              child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 2),
+              child: Row(children: [
                 Expanded(
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text('السلام عليكم', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
-                    Text('${fmtGregorian(now)} • ${app.hijri(now)}', style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+                    Text('السلام عليكم', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+                    Text('${fmtGregorian(now)} • ${app.hijri(now)}', maxLines: 1, overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
                   ]),
                 ),
                 Text(fmtTime(now, app.settings.use24h), textDirection: TextDirection.ltr,
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
               ]),
             );
           },
@@ -46,56 +43,45 @@ class HomePage extends StatelessWidget {
         const RadioCard(),
         const TodayHarvest(),
         const KahfCard(),
-        FutureBuilder(
-          future: HadithCollection.load('bukhari'),
-          builder: (context, snap) => snap.hasData
-              ? HadithCard(snap.data!.ofDay(app.today), title: '✦ حديث اليوم', highlight: true)
-              : const SizedBox.shrink(),
-        ),
-        const _Shortcuts(),
+        const _HadithOfDay(),
       ]),
     );
   }
 }
 
-class _Shortcuts extends StatelessWidget {
-  const _Shortcuts();
+/// A short hadith card; the full one (with its chain, saving and copying) opens on tap.
+class _HadithOfDay extends StatelessWidget {
+  const _HadithOfDay();
   @override
   Widget build(BuildContext context) {
-    Widget tile(String emoji, String label, VoidCallback onTap) => Expanded(
-          child: Card3D(
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            child: InkWell(
-              onTap: onTap,
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 10 * UiScale.icon),
-                child: Column(children: [
-                  Text(emoji, style: TextStyle(fontSize: 24 * UiScale.icon)),
-                  const SizedBox(height: 4),
-                  Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+    return FutureBuilder(
+      future: HadithCollection.load('bukhari'),
+      builder: (context, snap) {
+        if (!snap.hasData) return const SizedBox.shrink();
+        final h = snap.data!.ofDay(app.today);
+        return Card3D(
+          margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+          child: InkWell(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => Scaffold(
+                  appBar: AppBar(title: const Text('حديث اليوم')),
+                  body: ListView(padding: const EdgeInsets.only(top: 6), children: [HadithCard(h)]),
+                ))),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Row(children: [
+                  Text('✦ حديث اليوم', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700, fontSize: 13.5)),
+                  const Spacer(),
+                  Text('${h.col.name} • ${Arabic.digits(h.number)}', style: TextStyle(fontSize: 11.5, color: Theme.of(context).hintColor)),
                 ]),
-              ),
+                const SizedBox(height: 2),
+                Text(h.matn, maxLines: 3, overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 16, height: 1.9)),
+              ]),
             ),
           ),
         );
-    void push(Widget page) => Navigator.push(context, MaterialPageRoute(builder: (_) => page));
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
-      child: ListenableBuilder(
-        listenable: app,
-        builder: (context, _) => Row(children: [
-          tile('📿', 'السبحة', () => push(const TasbeehPage())),
-          tile('🧭', 'القبلة', () => push(const QiblaPage())),
-          tile('🌙', 'أذكار النوم', () async {
-            await Duas.load();
-            final g = Duas.byId('sleep');
-            if (g != null && context.mounted) push(DuaGroupPage(group: g));
-          }),
-          app.kahfFriday != null
-              ? tile('📖', 'الكهف', app.openKahf)
-              : tile('📖', 'المصحف', () => openMushaf(context, app.settings.mushafPage)),
-        ]),
-      ),
+      },
     );
   }
 }

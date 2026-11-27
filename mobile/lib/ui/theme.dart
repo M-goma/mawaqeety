@@ -56,7 +56,42 @@ Palette paletteById(String id) => palettes.firstWhere((p) => p.id == id, orElse:
 /// Size of icons and tiles, chosen in Settings (small / medium / large).
 class UiScale {
   static int size = 1;
-  static double get icon => const [0.78, 0.88, 1.0][size.clamp(0, 2)];
+  /// The whole interface is zoomed (text, icons, cards and spacing together).
+  static double get zoom => const [0.86, 0.93, 1.0][size.clamp(0, 2)];
+  /// Kept for older call sites: icons follow the global zoom now.
+  static double get icon => 1.0;
+}
+
+/// Zooms the whole app by [UiScale.zoom]: lays it out on a larger virtual screen and scales it down to fit.
+class AppZoom extends StatelessWidget {
+  final Widget child;
+  const AppZoom({super.key, required this.child});
+  @override
+  Widget build(BuildContext context) {
+    final f = UiScale.zoom;
+    if (f == 1.0) return child;
+    final mq = MediaQuery.of(context);
+    return LayoutBuilder(builder: (context, c) {
+      final w = c.maxWidth / f, h = c.maxHeight / f;
+      return FittedBox(
+        fit: BoxFit.fill,
+        alignment: Alignment.topLeft,
+        child: SizedBox(
+          width: w,
+          height: h,
+          child: MediaQuery(
+            data: mq.copyWith(
+              size: Size(w, h),
+              padding: mq.padding / f,
+              viewPadding: mq.viewPadding / f,
+              viewInsets: mq.viewInsets / f,
+            ),
+            child: child,
+          ),
+        ),
+      );
+    });
+  }
 }
 
 /// The active palette's colours (names kept from the original design).

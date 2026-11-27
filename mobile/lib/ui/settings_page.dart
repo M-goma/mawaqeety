@@ -186,7 +186,7 @@ class SettingsPage extends StatelessWidget {
                 ),
                 _PalettePicker(
                   selected: s.palette,
-                  onChanged: (id) => app.update((x) => x.palette = id, reschedule: false),
+                  onChanged: (id) => app.update((x) => x.palette = id, reschedule: false).then((_) => app.widgets.update(app)),
                 ),
                 SwitchListTile(title: const Text('نظام 24 ساعة'), value: s.use24h,
                     onChanged: (v) => app.update((x) => x.use24h = v)),
@@ -194,7 +194,7 @@ class SettingsPage extends StatelessWidget {
             ),
             Card3D(
               child: ListTile(
-                title: const Text('حجم الأيقونات'),
+                title: const Text('حجم العرض (الخط والأيقونات والبطاقات)'),
                 subtitle: Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: SegmentedButton<int>(

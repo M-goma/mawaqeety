@@ -1,16 +1,20 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/painting.dart' show Color;
 import 'package:home_widget/home_widget.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 import '../core/prayer_calculator.dart';
+import '../ui/theme.dart' show paletteById;
 import 'app_state.dart';
 
 /// Feeds the Android home-screen widgets with the prayer timeline of the coming days.
 /// The widgets pick the next prayer and count down by themselves (see PrayerWidgets.kt).
 class WidgetService {
   static const _key = 'mawaqeety_data';
+
+  static String _hex(Color c) => '#${(c.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0').toUpperCase()}';
 
   Future<void> update(AppState app) async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
@@ -40,7 +44,11 @@ class WidgetService {
           ],
         });
       }
-      await HomeWidget.saveWidgetData<String>(_key, jsonEncode({'place': s.place.nameAr, 'style': s.widgetStyle, 'use24h': s.use24h, 'days': days}));
+      await HomeWidget.saveWidgetData<String>(_key, jsonEncode({
+        'place': s.place.nameAr, 'style': s.widgetStyle, 'use24h': s.use24h, 'days': days,
+        // The widget follows the colour chosen in the app.
+        'colors': {'hero': [for (final c in paletteById(s.palette).hero) _hex(c)], 'accent': _hex(paletteById(s.palette).accent)},
+      }));
       await HomeWidget.updateWidget(androidName: 'PrayerWidgetSmall');
       await HomeWidget.updateWidget(androidName: 'PrayerWidgetLarge');
     } catch (e) {

@@ -52,11 +52,11 @@ class MorePage extends StatelessWidget {
       appBar: AppBar(title: const Text('المزيد')),
       body: GridView.count(
         // Small icons: three per row; medium and large: two, shorter tiles.
-        crossAxisCount: UiScale.size == 0 ? 3 : 2,
+        crossAxisCount: 2,
         padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
         mainAxisSpacing: 12,
         crossAxisSpacing: 12,
-        childAspectRatio: const [0.92, 1.45, 1.15][UiScale.size],
+        childAspectRatio: 1.45,
         children: [
           item('📿', 'السبحة', 'العدّاد والورد اليومي', const TasbeehPage()),
           item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
