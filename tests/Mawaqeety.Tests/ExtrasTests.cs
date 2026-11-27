@@ -112,4 +112,12 @@ public class TrackerTests
         Assert.Equal(10, c.Companions.Count);
         Assert.All(c.Companions, x => Assert.True(x.Situations.Count >= 2 && x.Situations.All(s => s.Source.Contains("صحيح"))));
     }
+
+    [Fact]
+    public void MorningAndEveningAdhkarMatchHisnAlMuslim()
+    {
+        // Hisn al-Muslim: 31 morning and 30 evening remembrances (al-Mu'awwidhat counted one by one).
+        Assert.Equal(31, Mawaqeety.Core.Content.Dhikr.All.Count(d => d.AvailableAt(true)));
+        Assert.Equal(30, Mawaqeety.Core.Content.Dhikr.All.Count(d => d.AvailableAt(false)));
+    }
 }
