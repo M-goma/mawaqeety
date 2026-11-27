@@ -59,7 +59,8 @@ public sealed class HadithCollection
 
     private static readonly Regex Diacritics = new("[ً-ْٰـ]", RegexOptions.Compiled);
     public static string Plain(string s) => Diacritics.Replace(s, "")
-        .Replace('أ', 'ا').Replace('إ', 'ا').Replace('آ', 'ا').Replace('ٱ', 'ا').Replace('ى', 'ي').Replace('ة', 'ه');
+        .Replace('أ', 'ا').Replace('إ', 'ا').Replace('آ', 'ا').Replace('ٱ', 'ا').Replace('ى', 'ي').Replace('ة', 'ه')
+        .Replace('ؤ', 'و').Replace('ئ', 'ي');
 
     /// <summary>Hadiths containing every word of <paramref name="query"/> (diacritics and hamza forms ignored).</summary>
     public List<Hadith> Search(string query, int max = 150)

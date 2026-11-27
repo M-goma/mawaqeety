@@ -158,5 +158,151 @@
 "#334155",
 "#0F172A"
 ]
+},
+{
+"id": "mocha",
+"name": "موكا",
+"bg": "#1E1511",
+"surface": "#2E211B",
+"surface2": "#3D2D24",
+"primary": "#9C6B4E",
+"accent": "#EBD3B0",
+"accentLight": "#F5E4C8",
+"heroText": "#F3E6D6",
+"hero": [
+"#8A5E45",
+"#5E4033",
+"#2A1D17"
+],
+"lightBase": "#E6DACC",
+"lightCard": "#F7F0E7",
+"lightAccent": "#8A5A3C"
+},
+{
+"id": "latte",
+"name": "لاتيه",
+"bg": "#2B2119",
+"surface": "#3B2E24",
+"surface2": "#4B3B2F",
+"primary": "#B48A64",
+"accent": "#F3E2C7",
+"accentLight": "#FAEEDB",
+"heroText": "#FFF4E6",
+"hero": [
+"#B08A6A",
+"#7D5D47",
+"#3B2C22"
+],
+"lightBase": "#EDE3D6",
+"lightCard": "#FBF6EF",
+"lightAccent": "#96683F"
+},
+{
+"id": "cocoa",
+"name": "كاكاو",
+"bg": "#170E0B",
+"surface": "#261813",
+"surface2": "#34221B",
+"primary": "#7A4A35",
+"accent": "#D9A57A",
+"accentLight": "#E8BF9A",
+"heroText": "#F2DDD0",
+"hero": [
+"#6E4230",
+"#462A1F",
+"#1C110D"
+],
+"lightBase": "#E2D4C9",
+"lightCard": "#F5EEE8",
+"lightAccent": "#7A4A35"
+},
+{
+"id": "caramel",
+"name": "كراميل",
+"bg": "#1F140A",
+"surface": "#2F2012",
+"surface2": "#402C19",
+"primary": "#C98A45",
+"accent": "#F7DDB0",
+"accentLight": "#FCEBCB",
+"heroText": "#FFEEDB",
+"hero": [
+"#C07F3D",
+"#85552A",
+"#2E1F10"
+],
+"lightBase": "#F0E3D0",
+"lightCard": "#FCF7EF",
+"lightAccent": "#A8692C"
+},
+{
+"id": "rose",
+"name": "وردي ترابي",
+"bg": "#1C1214",
+"surface": "#2C1D21",
+"surface2": "#3B282D",
+"primary": "#C07A86",
+"accent": "#F2D0B6",
+"accentLight": "#F8E1CF",
+"heroText": "#FBE6EA",
+"hero": [
+"#B06C78",
+"#7A4651",
+"#2C1A1F"
+],
+"lightBase": "#F1E3E3",
+"lightCard": "#FCF6F6",
+"lightAccent": "#A4566A"
+},
+{
+"id": "mint",
+"name": "نعناعي",
+"bg": "#07171A",
+"surface": "#0E2629",
+"surface2": "#15363A",
+"primary": "#3CC7A0",
+"accent": "#FFE08A",
+"accentLight": "#FFEBB0",
+"heroText": "#D8F7EE",
+"hero": [
+"#2FB18D",
+"#1C6E5E",
+"#082224"
+]
+},
+{
+"id": "navy",
+"name": "كحلي بحري",
+"bg": "#050B16",
+"surface": "#0C1626",
+"surface2": "#132138",
+"primary": "#2F6FB0",
+"accent": "#E6E1D3",
+"accentLight": "#F2EEE4",
+"heroText": "#D9E6F5",
+"hero": [
+"#23578C",
+"#173A60",
+"#07101D"
+]
+},
+{
+"id": "lavender",
+"name": "لافندر",
+"bg": "#13111E",
+"surface": "#211D33",
+"surface2": "#2E2846",
+"primary": "#9D8BD8",
+"accent": "#F4D6A0",
+"accentLight": "#F9E4BF",
+"heroText": "#EDE7FF",
+"hero": [
+"#8C79CC",
+"#5B4B91",
+"#1C1730"
+],
+"lightBase": "#EDEAF6",
+"lightCard": "#FBFAFF",
+"lightAccent": "#6F5BB5"
 }
 ]

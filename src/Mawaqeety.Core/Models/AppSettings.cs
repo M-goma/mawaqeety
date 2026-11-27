@@ -127,6 +127,27 @@ public sealed class AppSettings
     public int TasbeehCount { get; set; }
     public int TasbeehStep { get; set; }
 
+    // Quran wird and khatma plan (same meaning as the mobile app's khatma* / quran* settings)
+    /// <summary>0 = no plan; else finish the Mushaf in this many days.</summary>
+    public int KhatmaDays { get; set; }
+    /// <summary>yyyy-MM-dd the current khatma began.</summary>
+    public string KhatmaStart { get; set; } = "";
+    /// <summary>Furthest page reached in the current khatma.</summary>
+    public int KhatmaPage { get; set; }
+    /// <summary>Completed khatmas.</summary>
+    public int KhatmaDone { get; set; }
+    /// <summary>yyyy-MM-dd of <see cref="QuranPages"/>.</summary>
+    public string QuranDay { get; set; } = "";
+    /// <summary>Distinct Mushaf pages read that day.</summary>
+    public List<int> QuranPages { get; set; } = [];
+
+    // Zakat calculator
+    /// <summary>Price of a gram of 24k gold / pure silver, entered by the user.</summary>
+    public double GoldPrice { get; set; }
+    public double SilverPrice { get; set; }
+    /// <summary>Nisab by silver (595 g) instead of gold (85 g).</summary>
+    public bool NisabSilver { get; set; }
+
     // Desktop widget
     public bool WidgetEnabled { get; set; }
     public bool WidgetTopmost { get; set; } = true;

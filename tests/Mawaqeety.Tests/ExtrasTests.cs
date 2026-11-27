@@ -40,7 +40,9 @@ public class ExtrasTests
     {
         Assert.True(Dhikr.All.Count >= 20);
         Assert.Contains(Dhikr.All, d => d.Quran.Count > 0);
-        Assert.Equal(10, Palette.All.Count);
+        Assert.Equal(18, Palette.All.Count);
+        Assert.Equal("#E6DACC", Palette.Find("mocha").LightBase);
+        Assert.Null(Palette.Find("navy").LightBase);
         Assert.Equal("emerald", Palette.Find("missing").Id);
         Assert.Equal(2, StoryAudio.Default.Parts("adam", "Male").Count);
         Assert.Equal("female-musa-1.mp3", StoryAudio.Default.Parts("musa", "Female")[0]);

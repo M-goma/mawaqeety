@@ -17,9 +17,14 @@ internal static class Res
     }
 }
 
-/// <summary>A colour style of the interface (the same ten styles as the mobile app). Colours are "#RRGGBB".</summary>
+/// <summary>
+/// A colour style of the interface (the same styles as the mobile app). Colours are "#RRGGBB".
+/// <see cref="LightBase"/>, <see cref="LightCard"/> and <see cref="LightAccent"/> optionally tint the light mode
+/// (e.g. beige for the coffee palettes).
+/// </summary>
 public sealed record Palette(string Id, string Name, string Bg, string Surface, string Surface2, string Primary,
-    string Accent, string AccentLight, string HeroText, IReadOnlyList<string> Hero)
+    string Accent, string AccentLight, string HeroText, IReadOnlyList<string> Hero,
+    string? LightBase = null, string? LightCard = null, string? LightAccent = null)
 {
     private static readonly Lazy<IReadOnlyList<Palette>> _all = new(() => Res.Load<List<Palette>>("palettes.json"));
     public static IReadOnlyList<Palette> All => _all.Value;

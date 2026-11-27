@@ -17,6 +17,7 @@
     <EmbeddedResource Include="Resources\companions.json" />
     <EmbeddedResource Include="Resources\hadith_bukhari.json.gz" />
     <EmbeddedResource Include="Resources\hadith_muslim.json.gz" />
+    <EmbeddedResource Include="Resources\tafsir_muyassar.json.gz" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.15" />

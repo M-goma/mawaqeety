@@ -34,6 +34,32 @@ public readonly record struct HijriDate(int Year, int Month, int Day)
 
     public string MonthName(bool arabic) => (arabic ? MonthsAr : MonthsEn)[Month - 1];
 
+    /// <summary>Arabic name of a Hijri month (1..12).</summary>
+    public static string MonthNameAr(int month) => MonthsAr[(month - 1 + 120) % 12];
+
+    /// <summary>
+    /// The local day of a Hijri date: the inverse of <see cref="From"/> with the same day adjustment
+    /// (Umm al-Qura; day 30 of a 29-day month is the 1st of the next month).
+    /// </summary>
+    public static DateOnly ToGregorian(int year, int month, int day, int dayAdjustment = 0)
+    {
+        while (month > 12) { month -= 12; year++; }
+        while (month < 1) { month += 12; year--; }
+        var extra = Math.Max(0, day - DaysInMonth(year, month));
+        day -= extra;
+        DateTime dt;
+        try { dt = new UmAlQuraCalendar().ToDateTime(year, month, day, 0, 0, 0, 0); }
+        catch (ArgumentOutOfRangeException) { dt = new HijriCalendar().ToDateTime(year, month, day, 0, 0, 0, 0); }
+        return DateOnly.FromDateTime(dt).AddDays(extra - dayAdjustment);
+    }
+
+    /// <summary>Days in a Hijri month (29 or 30).</summary>
+    public static int DaysInMonth(int year, int month)
+    {
+        try { return new UmAlQuraCalendar().GetDaysInMonth(year, month); }
+        catch (ArgumentOutOfRangeException) { return new HijriCalendar().GetDaysInMonth(year, month); }
+    }
+
     public string ToDisplay(bool arabic) => arabic
         ? $"{Day} {MonthName(true)} {Year} هـ"
         : $"{Day} {MonthName(false)} {Year} AH";
