@@ -12,6 +12,8 @@ from googleapiclient.errors import HttpError
 PKG = "com.mawaqeety.app"
 TRACK = os.environ.get("TRACK") or "alpha"
 WANT = os.environ.get("VERSION_CODE", "").strip()
+# "true": only ask Google to validate the change (nothing is published), then discard the edit.
+DRY = os.environ.get("DRY_RUN", "").lower() == "true"
 
 
 def summary(text):
@@ -42,6 +44,11 @@ try:
         "track": TRACK,
         "releases": [{"versionCodes": [code], "status": "completed", "releaseNotes": notes}],
     }).execute()
+    if DRY:
+        api.validate(packageName=PKG, editId=edit).execute()
+        api.delete(packageName=PKG, editId=edit).execute()
+        summary(f"Check only: Google accepts build {code} on the '{TRACK}' track. Nothing was published.")
+        sys.exit(0)
     api.commit(packageName=PKG, editId=edit).execute()
 except HttpError as e:
     summary(f"Google refused ({e.status_code}):\n\n```\n{str(e)[:1500]}\n```")
