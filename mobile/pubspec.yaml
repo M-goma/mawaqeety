@@ -28,6 +28,7 @@ dependencies:
   home_widget: ^0.9.0
   audio_service: ^0.18.19
   audio_session: ^0.2.4
+  archive: ^4.7.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -45,6 +46,9 @@ flutter:
     - assets/data/reciters.json
     - assets/data/story_audio.json
     - assets/data/duas.json
+    - assets/data/hadith_bukhari.json.gz
+    - assets/data/hadith_muslim.json.gz
+    - assets/data/companions.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
   fonts:

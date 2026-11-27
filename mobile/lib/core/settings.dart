@@ -80,6 +80,8 @@ class Settings {
   bool fridayHour = true; // the hour of answered prayer (last hour before Maghrib on Friday)
   String kahfDay = ''; // Friday (yyyy-mm-dd) the pages below belong to
   List<int> kahfPages = []; // Mushaf pages of al-Kahf opened that Friday
+  bool hadithFull = false; // show hadiths with their full chain of narrators (default: the text only)
+  List<String> hadithMarks = []; // saved hadiths: "<collection>:<index>"
   int tasbeehPhrase = 0; // index in the phrase list (built-in first, then custom)
   int tasbeehTarget = 33; // 33, 100, 0 = free, -1 = after-prayer sequence (33+33+34)
   List<String> tasbeehCustom = [];
@@ -101,7 +103,7 @@ class Settings {
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
-        'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint, 'wirdGoal': wirdGoal, 'prayerCheck': prayerCheck, 'fridayKahf': fridayKahf, 'fridayHour': fridayHour, 'kahfDay': kahfDay, 'kahfPages': kahfPages, 'tasbeehPhrase': tasbeehPhrase, 'tasbeehTarget': tasbeehTarget, 'tasbeehCustom': tasbeehCustom, 'tasbeehCount': tasbeehCount, 'tasbeehStep': tasbeehStep,
+        'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint, 'wirdGoal': wirdGoal, 'prayerCheck': prayerCheck, 'fridayKahf': fridayKahf, 'fridayHour': fridayHour, 'kahfDay': kahfDay, 'kahfPages': kahfPages, 'hadithFull': hadithFull, 'hadithMarks': hadithMarks, 'tasbeehPhrase': tasbeehPhrase, 'tasbeehTarget': tasbeehTarget, 'tasbeehCustom': tasbeehCustom, 'tasbeehCount': tasbeehCount, 'tasbeehStep': tasbeehStep,
         'lastRead': lastRead?.toJson(), 'bookmarks': bookmarks.map((b) => b.toJson()).toList(),
       };
 
@@ -156,6 +158,8 @@ class Settings {
       r.fridayHour = j['fridayHour'] ?? true;
       r.kahfDay = j['kahfDay'] ?? '';
       r.kahfPages = [for (final x in (j['kahfPages'] as List?) ?? const []) x as int];
+      r.hadithFull = j['hadithFull'] ?? false;
+      r.hadithMarks = [for (final x in (j['hadithMarks'] as List?) ?? const []) x as String];
       r.tasbeehPhrase = j['tasbeehPhrase'] ?? 0;
       r.tasbeehTarget = j['tasbeehTarget'] ?? 33;
       r.tasbeehCustom = ((j['tasbeehCustom'] ?? []) as List).cast<String>();
