@@ -118,6 +118,8 @@ public sealed class AppSettings
     public bool FridayKahf { get; set; } = true;
     /// <summary>The hour of answered prayer on Friday (the last hour before Maghrib).</summary>
     public bool FridayHour { get; set; } = true;
+    /// <summary>Show hadiths with their full chain of narrators (default: the text only).</summary>
+    public bool HadithFull { get; set; }
     public int TasbeehPhrase { get; set; }
     /// <summary>33, 100, 0 = free counting, -1 = after-prayer sequence (33+33+34).</summary>
     public int TasbeehTarget { get; set; } = 33;

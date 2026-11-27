@@ -88,6 +88,15 @@ public sealed class NotNullVisibility : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
 }
 
+/// <summary>Visible when a count is zero (e.g. "nothing listed yet").</summary>
+public sealed class ZeroVisibility : IValueConverter
+{
+    public static readonly ZeroVisibility Instance = new();
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is int n && n == 0 ? Visibility.Visible : Visibility.Collapsed;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => Binding.DoNothing;
+}
+
 public sealed class EmptyVisibility : IValueConverter
 {
     public static readonly EmptyVisibility Instance = new();

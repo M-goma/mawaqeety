@@ -25,6 +25,8 @@
         <DataTemplate DataType="{x:Type vm:QiblaViewModel}"><v:QiblaView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:TasbeehViewModel}"><v:TasbeehView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:StatsViewModel}"><v:StatsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:HadithViewModel}"><v:HadithView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CompanionsViewModel}"><v:CompanionsView/></DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -58,6 +60,8 @@
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE9D2;" Content="{l:Tr NavStats}" IsChecked="{Binding IsStats}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE707;" Content="{l:Tr NavQibla}" IsChecked="{Binding IsQibla}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE82D;" Content="{l:Tr NavProphets}" IsChecked="{Binding IsProphets}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8F1;" Content="الأحاديث الصحيحة" IsChecked="{Binding IsHadith}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE734;" Content="العشرة المبشرون" IsChecked="{Binding IsCompanions}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE713;" Content="{l:Tr NavSettings}" IsChecked="{Binding IsSettings}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE946;" Content="{l:Tr NavAbout}" IsChecked="{Binding IsAbout}"/>
                 </StackPanel>

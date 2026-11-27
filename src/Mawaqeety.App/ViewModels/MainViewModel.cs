@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Mawaqeety.App.ViewModels;
 
-public enum Page { Dashboard, Monthly, Quran, Adhkar, Tasbeeh, Stats, Qibla, Prophets, Settings, About }
+public enum Page { Dashboard, Monthly, Quran, Adhkar, Tasbeeh, Stats, Qibla, Prophets, Hadith, Companions, Settings, About }
 
 public sealed partial class MainViewModel : ObservableObject
 {
@@ -22,10 +22,14 @@ public sealed partial class MainViewModel : ObservableObject
     public StatsViewModel Stats => _stats ??= new StatsViewModel();
     private TasbeehViewModel? _tasbeeh;
     private StatsViewModel? _stats;
+    public HadithViewModel Hadith => _hadith ??= new HadithViewModel();
+    public CompanionsViewModel Companions => _companions ??= new CompanionsViewModel();
+    private HadithViewModel? _hadith;
+    private CompanionsViewModel? _companions;
     public AboutViewModel About { get; } = new();
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentView), nameof(IsDashboard), nameof(IsMonthly), nameof(IsQuran), nameof(IsAdhkar), nameof(IsTasbeeh), nameof(IsStats), nameof(IsQibla), nameof(IsProphets), nameof(IsSettings), nameof(IsAbout))]
+    [NotifyPropertyChangedFor(nameof(CurrentView), nameof(IsDashboard), nameof(IsMonthly), nameof(IsQuran), nameof(IsAdhkar), nameof(IsTasbeeh), nameof(IsStats), nameof(IsQibla), nameof(IsProphets), nameof(IsHadith), nameof(IsCompanions), nameof(IsSettings), nameof(IsAbout))]
     private Page _page = Page.Dashboard;
 
     public object CurrentView => Page switch
@@ -37,6 +41,8 @@ public sealed partial class MainViewModel : ObservableObject
         Page.Stats => Stats,
         Page.Qibla => Qibla,
         Page.Prophets => Prophets,
+        Page.Hadith => Hadith,
+        Page.Companions => Companions,
         Page.Settings => Settings,
         Page.About => About,
         _ => Dashboard,
@@ -50,6 +56,8 @@ public sealed partial class MainViewModel : ObservableObject
     public bool IsStats { get => Page == Page.Stats; set { if (value) Page = Page.Stats; } }
     public bool IsQibla { get => Page == Page.Qibla; set { if (value) Page = Page.Qibla; } }
     public bool IsProphets { get => Page == Page.Prophets; set { if (value) Page = Page.Prophets; } }
+    public bool IsHadith { get => Page == Page.Hadith; set { if (value) Page = Page.Hadith; } }
+    public bool IsCompanions { get => Page == Page.Companions; set { if (value) Page = Page.Companions; } }
     public bool IsSettings { get => Page == Page.Settings; set { if (value) Page = Page.Settings; } }
     public bool IsAbout { get => Page == Page.About; set { if (value) Page = Page.About; } }
 

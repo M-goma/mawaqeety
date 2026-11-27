@@ -45,7 +45,7 @@ for path, cid, name, names in ((sys.argv[1], "bukhari", "صحيح البخاري
         if not t:
             continue
         # Muslim: the common (Abdul-Baqi) number, e.g. 1907.01 -> 1907; Bukhari's numbers are already the common ones.
-        num = int(float(h.get("arabicnumber") or h["hadithnumber"])) if cid == "muslim" else h["hadithnumber"]
+        num = int(float(h.get("arabicnumber") or h["hadithnumber"])) if cid == "muslim" else int(float(h["hadithnumber"]))
         rows.append([b, num, t, matn_start(t)])
         counts[b] = counts.get(b, 0) + 1
     books = [[b, names[b]] for b in sorted(counts)]

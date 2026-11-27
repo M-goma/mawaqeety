@@ -86,4 +86,30 @@ public class TrackerTests
             foreach (var s in g.Sections)
                 Assert.True(s.Items.All(d => !string.IsNullOrWhiteSpace(d.Source)) || s.Sources is { Count: > 0 }, s.Title);
     }
+
+    [Fact]
+    public void SahihCollectionsLoadSearchAndPickADailyHadith()
+    {
+        var b = Mawaqeety.Core.Content.HadithCollection.Load("bukhari");
+        var m = Mawaqeety.Core.Content.HadithCollection.Load("muslim");
+        Assert.Equal(97, b.Books.Count);
+        Assert.True(b.All.Count > 7500 && m.All.Count > 7000);
+        Assert.Equal("كتاب الأدب", b.BookName(78));
+        // Bukhari 6018: "whoever believes in Allah and the Last Day…", text-only view starts at the companion.
+        var h = b.All.First(x => x.Number == 6018);
+        Assert.StartsWith("عَنْ أَبِي هُرَيْرَةَ", h.Matn);
+        Assert.Contains(b.Search("فليقل خيرا او ليصمت"), x => x.Number == 6018);
+        // Muslim uses the common numbering (e.g. 1907 for "actions are by intentions").
+        Assert.Contains(m.Search("انما الاعمال بالنيه"), x => x.Number == 1907);
+        var today = b.OfDay(new DateOnly(2026, 11, 27));
+        Assert.True(today.HasMatn && today.Matn.Length <= 330);
+    }
+
+    [Fact]
+    public void TenCompanionsHaveSourcedSituations()
+    {
+        var c = Mawaqeety.Core.Content.CompanionsBook.Default;
+        Assert.Equal(10, c.Companions.Count);
+        Assert.All(c.Companions, x => Assert.True(x.Situations.Count >= 2 && x.Situations.All(s => s.Source.Contains("صحيح"))));
+    }
 }

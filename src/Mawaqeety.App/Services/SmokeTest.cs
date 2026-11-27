@@ -134,6 +134,26 @@ public static class SmokeTest
             Shot(w, "09b-story-downloaded");
             if (!Services.DownloadManager.IsStorySaved("adam", "Male")) errors.Add("story download did not save adam (male)");
         });
+        await Step("hadith", async () =>
+        {
+            vm.Page = ViewModels.Page.Hadith;
+            await Task.Delay(2500);
+            Shot(w, "09c-hadith-today");
+            vm.Hadith.Book = vm.Hadith.Books.First(b => b.Number == 78);
+            await Task.Delay(2000);
+            Shot(w, "09d-hadith-book");
+            vm.Hadith.ShowFull = true;
+            await Task.Delay(800);
+            Shot(w, "09e-hadith-full");
+            vm.Hadith.ShowFull = false;
+            vm.Hadith.Query = "الكلمة الطيبة";
+            vm.Hadith.SearchCommand.Execute(null);
+            await Task.Delay(1500);
+            if (vm.Hadith.Items.Count == 0) errors.Add("hadith search found nothing");
+            vm.Page = ViewModels.Page.Companions;
+            await Task.Delay(1200);
+            Shot(w, "09f-companions");
+        });
         await Page(ViewModels.Page.Settings, "10-settings");
         await Step("palette", async () =>
         {
