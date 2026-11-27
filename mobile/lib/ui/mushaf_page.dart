@@ -75,6 +75,7 @@ class _MushafPageState extends State<MushafPage> {
     super.initState();
     app.recitation.addListener(_onRecitation);
     _prefetch(_page);
+    WidgetsBinding.instance.addPostFrameCallback((_) => app.noteMushafPage(_page));
     idx.loadAyahs().then((_) {
       if (mounted) setState(() {});
     });
@@ -114,6 +115,7 @@ class _MushafPageState extends State<MushafPage> {
     setState(() => _page = i + 1);
     _prefetch(_page);
     app.update((x) => x.mushafPage = _page, reschedule: false);
+    app.noteMushafPage(_page);
   }
 
   void _jump(int page, {bool animate = false}) {

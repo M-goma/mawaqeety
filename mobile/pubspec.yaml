@@ -44,6 +44,7 @@ flutter:
     - assets/data/adhan_voices.json
     - assets/data/reciters.json
     - assets/data/story_audio.json
+    - assets/data/duas.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
   fonts:

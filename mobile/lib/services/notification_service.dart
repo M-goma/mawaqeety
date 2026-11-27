@@ -171,9 +171,74 @@ class NotificationService {
         }
       }
       await _schedulePrayerChecks(app);
+      await _scheduleFriday(app);
       await _scheduleCountdown(app);
     } catch (e) {
       debugPrint('scheduling failed: $e');
+    }
+  }
+
+  static const fridayBaseId = 8500;
+
+  static const kahfDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'friday_v1', 'تذكير الجمعة',
+      channelDescription: 'سورة الكهف وساعة الاستجابة يوم الجمعة',
+      importance: Importance.high,
+      priority: Priority.high,
+      styleInformation: BigTextStyleInformation(''),
+      actions: [
+        AndroidNotificationAction('kahf_read', 'اقرأ الآن', showsUserInterface: true),
+        AndroidNotificationAction('kahf_later', 'ذكّرني بعد ساعة'),
+      ],
+    ),
+  );
+  static const kahfTitle = '📖 لا تنسَ سورة الكهف';
+  static const kahfBody = '«من قرأ سورة الكهف يوم الجمعة أضاء له من النور ما بين الجمعتين» — رواه الحاكم والبيهقي، وصححه الألباني';
+
+  /// Friday reminders for the next two Fridays: al-Kahf on Thursday after Maghrib and on Friday morning,
+  /// and the hour of answered prayer (the last hour before Maghrib).
+  Future<void> _scheduleFriday(AppState app) async {
+    final s = app.settings;
+    if (!s.fridayKahf && !s.fridayHour) return;
+    final nowUtc = DateTime.now().toUtc();
+    var id = fridayBaseId;
+    for (var d = 0; d < 14; d++) {
+      final date = app.today.add(Duration(days: d));
+      if (date.weekday != DateTime.friday) continue;
+      final fri = app.day(date);
+      final thu = app.day(date.subtract(const Duration(days: 1)));
+      Future<void> at(DateTime when, String title, String body, NotificationDetails details, String payload) async {
+        if (!when.isAfter(nowUtc)) return;
+        await _plugin.zonedSchedule(
+          id: id++,
+          scheduledDate: tz.TZDateTime.from(when, tz.UTC),
+          notificationDetails: details,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          title: title,
+          body: body,
+          payload: payload,
+        );
+      }
+
+      final done = s.kahfDay == dayKey(date) && s.kahfPages.length >= app.kahfTotal;
+      if (s.fridayKahf && !done) {
+        await at(thu[Prayer.maghrib].add(const Duration(minutes: 40)), kahfTitle, 'ليلة الجمعة بدأت. $kahfBody', kahfDetails, 'kahf');
+        await at(fri[Prayer.sunrise].add(const Duration(minutes: 90)), kahfTitle, kahfBody, kahfDetails, 'kahf');
+      }
+      if (s.fridayHour) {
+        await at(
+          fri[Prayer.maghrib].subtract(const Duration(hours: 1)),
+          '🤲 ساعة الاستجابة',
+          'آخر ساعة من يوم الجمعة: أكثِر من الدعاء والصلاة على النبي ﷺ.',
+          const NotificationDetails(
+            android: AndroidNotificationDetails('friday_v1', 'تذكير الجمعة',
+                channelDescription: 'سورة الكهف وساعة الاستجابة يوم الجمعة',
+                importance: Importance.high, priority: Priority.high),
+          ),
+          'friday_hour',
+        );
+      }
     }
   }
 

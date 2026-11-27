@@ -10,6 +10,9 @@ import 'ui/theme.dart';
 
 final app = AppState();
 
+/// Lets notification taps open a page.
+final navigatorKey = GlobalKey<NavigatorState>();
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('ar');
@@ -34,6 +37,7 @@ class MawaqeetyApp extends StatelessWidget {
         final palette = paletteById(app.settings.palette);
         AppColors.current = palette;
         return MaterialApp(
+          navigatorKey: navigatorKey,
           title: 'مواقيتي',
           debugShowCheckedModeBanner: false,
           theme: buildTheme(Brightness.light, palette),

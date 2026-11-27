@@ -5,11 +5,14 @@ import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
 
 import '../core/arabic.dart';
 import '../data/mushaf.dart';
 import '../data/repository.dart';
 import 'mushaf_store.dart';
+import 'notification_service.dart';
 import 'quran_downloads.dart';
 import 'story_downloads.dart';
 import 'tracker.dart';
@@ -20,6 +23,21 @@ import 'tracker.dart';
 Future<void> downloadActionInBackground(NotificationResponse r) async {
   final port = IsolateNameServer.lookupPortByName(DownloadNotifier.portName);
   final action = r.actionId ?? '';
+  if (action == 'kahf_later') {
+    // Ask again in an hour (works while the app is closed).
+    final plugin = FlutterLocalNotificationsPlugin();
+    tzdata.initializeTimeZones();
+    await plugin.zonedSchedule(
+      id: NotificationService.fridayBaseId + 50,
+      scheduledDate: tz.TZDateTime.now(tz.UTC).add(const Duration(hours: 1)),
+      notificationDetails: NotificationService.kahfDetails,
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      title: NotificationService.kahfTitle,
+      body: NotificationService.kahfBody,
+      payload: 'kahf',
+    );
+    return;
+  }
   if (action.startsWith('pt_')) {
     // "Did you pray?" buttons: tell the running app, or save directly when it is not running.
     if (port != null) {

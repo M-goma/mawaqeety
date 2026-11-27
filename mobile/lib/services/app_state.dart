@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,8 @@ import '../core/prayer_calculator.dart';
 import '../core/settings.dart';
 import '../data/mushaf.dart';
 import '../data/repository.dart';
+import '../main.dart' show navigatorKey;
+import '../ui/mushaf_page.dart' show openMushaf;
 import 'adhan_player.dart';
 import 'app_updater.dart';
 import 'narration.dart';
@@ -94,6 +97,15 @@ class AppState extends ChangeNotifier {
         logPrayerAction(r.actionId!, r.payload ?? '');
         return;
       }
+      if (r.payload == 'kahf') {
+        if (r.actionId == 'kahf_later') {
+          unawaited(downloadActionInBackground(r));
+          return;
+        }
+        WidgetsBinding.instance.addPostFrameCallback((_) => openKahf());
+        return;
+      }
+      if (r.payload == 'friday_hour') return; // just opens the app
       if (r.payload == DownloadNotifier.payload || (r.payload ?? '').startsWith('pt|')) return; // just opens the app
       playAdhanForCurrent();
     });
@@ -228,6 +240,55 @@ class AppState extends ChangeNotifier {
         unawaited(adhan.playFor(p, repo, settings));
       }
     }
+  }
+
+  // ---------------- Friday: Surat al-Kahf ----------------
+  int get kahfFirst => mushaf.pageOf(18, 1);
+  int get kahfLast => mushaf.pageOf(18, 110);
+  int get kahfTotal => kahfLast - kahfFirst + 1;
+
+  /// The Friday whose Kahf reading is due now: Friday itself, or Thursday after Maghrib. Null otherwise.
+  DateTime? get kahfFriday {
+    final t = today;
+    if (t.weekday == DateTime.friday) {
+      // Friday ends at Maghrib.
+      return DateTime.now().toUtc().isBefore(day(t)[Prayer.maghrib]) ? t : null;
+    }
+    if (t.weekday == DateTime.thursday && DateTime.now().toUtc().isAfter(day(t)[Prayer.maghrib])) return t.add(const Duration(days: 1));
+    return null;
+  }
+
+  /// Pages of al-Kahf opened for the current Friday.
+  int get kahfRead {
+    final f = kahfFriday;
+    return f != null && settings.kahfDay == dayKey(f) ? settings.kahfPages.length : 0;
+  }
+
+  /// Called when a Mushaf page is shown.
+  void noteMushafPage(int page) {
+    final f = kahfFriday;
+    if (f == null || page < kahfFirst || page > kahfLast) return;
+    final key = dayKey(f);
+    if (settings.kahfDay == key && settings.kahfPages.contains(page)) return;
+    update((x) {
+      if (x.kahfDay != key) {
+        x.kahfDay = key;
+        x.kahfPages = [];
+      }
+      x.kahfPages = [...x.kahfPages, page];
+    }, reschedule: false);
+  }
+
+  /// Opens the Mushaf at the first unread page of al-Kahf.
+  void openKahf() {
+    final ctx = navigatorKey.currentContext;
+    if (ctx == null) return;
+    final read = kahfFriday != null && settings.kahfDay == dayKey(kahfFriday!) ? settings.kahfPages : const <int>[];
+    var p = kahfFirst;
+    while (p < kahfLast && read.contains(p)) {
+      p++;
+    }
+    openMushaf(ctx, p);
   }
 
   Future<void> playAdhanForCurrent() async {

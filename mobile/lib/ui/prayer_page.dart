@@ -127,6 +127,7 @@ class PrayerPage extends StatelessWidget {
                 ]),
               ),
               const _TodayHarvest(),
+              const _KahfCard(),
               // Today
               for (final p in Prayer.values)
                 _PrayerRow(
@@ -351,6 +352,51 @@ class _TodayHarvest extends StatelessWidget {
           ]),
         ),
       ),
+    );
+  }
+}
+
+
+/// On Friday (from Thursday's Maghrib): Surat al-Kahf with how many of its pages were opened.
+class _KahfCard extends StatelessWidget {
+  const _KahfCard();
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: app,
+      builder: (context, _) {
+        if (app.kahfFriday == null || !app.settings.fridayKahf) return const SizedBox.shrink();
+        final read = app.kahfRead, total = app.kahfTotal;
+        final done = read >= total;
+        return Card3D(
+          margin: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+          child: InkWell(
+            onTap: app.openKahf,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Column(children: [
+                Row(children: [
+                  const Tile3D(child: Text('📖', style: TextStyle(fontSize: 21))),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('سورة الكهف — يوم الجمعة', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                      Text(done ? '✓ أتممتها، تقبّل الله منك' : (read == 0 ? 'اضغط لتبدأ القراءة' : 'تابع من حيث توقفت'),
+                          style: TextStyle(fontSize: 12.5, color: done ? AppColors.emerald : Theme.of(context).hintColor)),
+                    ]),
+                  ),
+                  Text('${Arabic.digits(read)} / ${Arabic.digits(total)}', style: TextStyle(color: AppColors.gold, fontWeight: FontWeight.w700)),
+                ]),
+                const SizedBox(height: 10),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(5),
+                  child: LinearProgressIndicator(value: read / total, minHeight: 8, color: AppColors.gold),
+                ),
+              ]),
+            ),
+          ),
+        );
+      },
     );
   }
 }

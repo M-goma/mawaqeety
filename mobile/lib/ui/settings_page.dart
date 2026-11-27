@@ -95,6 +95,18 @@ class SettingsPage extends StatelessWidget {
                     value: s.prayerCheck,
                     onChanged: (v) => app.update((x) => x.prayerCheck = v),
                   ),
+                SwitchListTile(
+                  title: const Text('تذكير سورة الكهف يوم الجمعة'),
+                  subtitle: const Text('ليلة الجمعة بعد المغرب، وصباح الجمعة، بزر «اقرأ الآن»', style: TextStyle(fontSize: 12)),
+                  value: s.fridayKahf,
+                  onChanged: (v) => app.update((x) => x.fridayKahf = v),
+                ),
+                SwitchListTile(
+                  title: const Text('تذكير ساعة الاستجابة يوم الجمعة'),
+                  subtitle: const Text('قبل المغرب بساعة', style: TextStyle(fontSize: 12)),
+                  value: s.fridayHour,
+                  onChanged: (v) => app.update((x) => x.fridayHour = v),
+                ),
                 if (Theme.of(context).platform == TargetPlatform.android)
                   _Dropdown<String>(
                     label: 'شكل الودجت على الشاشة الرئيسية',
