@@ -27,6 +27,7 @@ public sealed partial class HadithViewModel : ObservableObject
     [ObservableProperty] private string _title = "";
     [ObservableProperty] private string _status = "";
     [ObservableProperty] private HadithItem? _today;
+    [ObservableProperty] private string _todayTitle = "✦ حديث اليوم";
     [ObservableProperty] private string _query = "";
     [ObservableProperty] private HadithBookItem? _book;
     public ObservableCollection<HadithBookItem> Books { get; } = [];
@@ -61,7 +62,9 @@ public sealed partial class HadithViewModel : ObservableObject
 
     private void LoadCollection()
     {
-        Today = new HadithItem(HadithCollection.Load("bukhari").OfDay(App.Instance.Today), this);
+        var slot = HadithCollection.SlotFor(App.Instance.ComputeStatus(DateTimeOffset.Now).Current);
+        TodayTitle = $"✦ حديث {HadithCollection.SlotNames[slot]}";
+        Today = new HadithItem(HadithCollection.Load("bukhari").OfDay(App.Instance.Today, slot), this);
         Books.Clear();
         foreach (var (n, _) in Col.Books) Books.Add(new HadithBookItem(n, Col.BookName(n), Count(Col.BookCount(n))));
         Items.Clear();

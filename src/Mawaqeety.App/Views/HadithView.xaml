@@ -74,7 +74,7 @@
                 </DockPanel>
             </Border>
             <StackPanel DockPanel.Dock="Top" MaxWidth="900" Visibility="{Binding Items.Count, Converter={x:Static c:ZeroVisibility.Instance}}">
-                <TextBlock Text="✦ حديث اليوم" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding TodayTitle}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="16" Margin="0,0,0,8"/>
                 <ContentControl Content="{Binding Today}" ContentTemplate="{StaticResource HadithCard}"/>
                 <TextBlock Text="الصحيحان أصحّ كتب الحديث باتفاق العلماء. النص العربي الكامل بأرقام الأحاديث المعتمدة." Style="{StaticResource Muted}" Margin="4,0"/>
             </StackPanel>

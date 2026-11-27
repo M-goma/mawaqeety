@@ -154,7 +154,7 @@
             <!-- Hadith of the day (Sahih al-Bukhari) -->
             <Border Style="{StaticResource Card}" Padding="18,14">
                 <StackPanel>
-                    <TextBlock Text="✦ حديث اليوم" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding HadithTitle}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15"/>
                     <TextBlock Text="{Binding HadithText}" TextWrapping="Wrap" FontFamily="{StaticResource QuranFont}" FontSize="19" LineHeight="38" Margin="0,4,0,0"/>
                     <Border CornerRadius="8" Background="#2912A372" Padding="8,2" HorizontalAlignment="Left" Margin="0,6,0,0">
                         <TextBlock Text="{Binding HadithRef}" FontSize="12" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>

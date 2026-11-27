@@ -131,12 +131,20 @@ public sealed partial class DashboardViewModel : ObservableObject
     // ---------------- Hadith of the day (same choice as the mobile app) ----------------
     [ObservableProperty] private string _hadithText = "";
     [ObservableProperty] private string _hadithRef = "";
+    [ObservableProperty] private string _hadithTitle = "✦ حديث اليوم";
+    private int _hadithSlot = -1;
+    private DateOnly _hadithDay;
 
     private void UpdateHadith()
     {
         try
         {
-            var h = Core.Content.HadithCollection.Load("bukhari").OfDay(App.Instance.Today);
+            var slot = Core.Content.HadithCollection.SlotFor(App.Instance.ComputeStatus(DateTimeOffset.Now).Current);
+            if (slot == _hadithSlot && _hadithDay == App.Instance.Today) return;
+            _hadithSlot = slot;
+            _hadithDay = App.Instance.Today;
+            HadithTitle = $"✦ حديث {Core.Content.HadithCollection.SlotNames[slot]}";
+            var h = Core.Content.HadithCollection.Load("bukhari").OfDay(App.Instance.Today, slot);
             HadithText = h.Matn;
             HadithRef = $"{h.Collection.Name} • {Core.Content.QuranRepository.ArabicDigits(h.Number)} • {h.Collection.BookName(h.Book)}";
         }
@@ -205,6 +213,7 @@ public sealed partial class DashboardViewModel : ObservableObject
 
         Clock = local.ToString(s.Use24HourClock ? "HH:mm:ss" : "hh:mm:ss tt", loc.Culture);
         var st = app.ComputeStatus(now);
+        UpdateHadith(); // a new hadith with each prayer
         NextPrayerName = loc.Prayer(st.Next);
         NextPrayerTime = loc.FormatTime(st.NextTime, s.Use24HourClock);
         Countdown = loc.FormatCountdown(st.Remaining);

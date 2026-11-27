@@ -74,13 +74,22 @@ public sealed class HadithCollection
         return outList;
     }
 
-    /// <summary>A short hadith with the Prophet's ﷺ own words, a different one each day (same choice as the mobile app).</summary>
-    public Hadith OfDay(DateOnly day)
+    /// <summary>A short hadith with the Prophet's ﷺ own words: five a day, a new one with each prayer
+    /// (<paramref name="slot"/> 0 = Fajr … 4 = Isha; same choice as the mobile app).</summary>
+    public Hadith OfDay(DateOnly day, int slot = 0)
     {
         _daily ??= All.Where(h => h.HasMatn && h.Matn.Length is >= 70 and <= 330 && h.Matn.Contains('"')).ToList();
         var n = (long)(day.ToDateTime(TimeOnly.MinValue) - DateTime.UnixEpoch).TotalDays;
-        return _daily[(int)(n * 7919 % _daily.Count)];
+        return _daily[(int)((n * 5 + slot) * 7919 % _daily.Count)];
     }
+
+    /// <summary>Which of the day's five hadiths goes with the current prayer.</summary>
+    public static int SlotFor(Models.Prayer? current) => current switch
+    {
+        Models.Prayer.Dhuhr => 1, Models.Prayer.Asr => 2, Models.Prayer.Maghrib => 3, Models.Prayer.Isha => 4, _ => 0,
+    };
+
+    public static readonly string[] SlotNames = ["الفجر", "الظهر", "العصر", "المغرب", "العشاء"];
 }
 
 /// <summary>The ten companions promised Paradise (companions.json).</summary>
