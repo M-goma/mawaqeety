@@ -36,9 +36,10 @@ class MawaqeetyApp extends StatelessWidget {
         };
         final palette = paletteById(app.settings.palette);
         AppColors.current = palette;
+        UiScale.size = app.settings.iconSize;
         return MaterialApp(
           navigatorKey: navigatorKey,
-          title: 'مواقيتي',
+          title: 'سبيل – رفيق المسلم',
           debugShowCheckedModeBanner: false,
           theme: buildTheme(Brightness.light, palette),
           darkTheme: buildTheme(Brightness.dark, palette),
@@ -66,8 +67,8 @@ class _Splash extends StatelessWidget {
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Image.asset('assets/images/logo.png', width: 96),
             const SizedBox(height: 16),
-            const Text('مواقيتي', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w700)),
-            Text('صلاتك في وقتها', style: TextStyle(color: AppColors.gold, fontSize: 15)),
+            const Text('سبيل', style: TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700)),
+            Text('رفيق المسلم', style: TextStyle(color: AppColors.gold, fontSize: 15)),
           ]),
         ),
       );

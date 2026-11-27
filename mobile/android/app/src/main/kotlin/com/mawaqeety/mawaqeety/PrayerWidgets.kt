@@ -95,7 +95,7 @@ abstract class PrayerWidgetBase(private val layout: Int, private val large: Bool
             views.setViewVisibility(R.id.next_time, View.VISIBLE)
 
             if (next == null) {
-                views.setTextViewText(R.id.next_name, "مواقيتي")
+                views.setTextViewText(R.id.next_name, "سبيل")
                 views.setTextViewText(R.id.next_time, "افتح التطبيق لتحديث المواقيت")
             } else {
                 if (bigCountdown) {

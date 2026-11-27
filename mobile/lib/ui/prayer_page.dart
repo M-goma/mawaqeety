@@ -61,38 +61,6 @@ class PrayerPage extends StatelessWidget {
                       style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
                 ]),
               ),
-              // Hero
-              Container(
-                margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                padding: const EdgeInsets.all(22),
-                decoration: hero3D(radius: 24),
-                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('الصلاة القادمة', style: TextStyle(color: AppColors.heroText, fontSize: 14)),
-                  Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                    Text(st.next == Prayer.dhuhr && isFriday ? 'الجمعة' : st.next.nameAr,
-                        style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w700)),
-                    const SizedBox(width: 12),
-                    Padding(padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(fmtTime(app.local(st.nextTime), s.use24h), style: TextStyle(color: AppColors.goldLight, fontSize: 18))),
-                  ]),
-                  const SizedBox(height: 4),
-                  Row(children: [
-                    Text('الوقت المتبقي', style: TextStyle(color: AppColors.heroText, fontSize: 13)),
-                    const Spacer(),
-                    Text(fmtCountdown(st.remaining), textDirection: TextDirection.ltr,
-                        style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700)),
-                  ]),
-                  const SizedBox(height: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(value: st.progress, minHeight: 7,
-                        backgroundColor: Colors.white24, color: AppColors.goldLight),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(st.current == null ? 'لا توجد صلاة حاليًا (بعد الشروق)' : 'وقت صلاة ${st.current!.nameAr}',
-                      style: TextStyle(color: AppColors.heroText, fontSize: 13)),
-                ]),
-              ),
               // Adhan control
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -126,8 +94,6 @@ class PrayerPage extends StatelessWidget {
                   ),
                 ]),
               ),
-              const _TodayHarvest(),
-              const _KahfCard(),
               // Today
               for (final p in Prayer.values)
                 _PrayerRow(
@@ -287,8 +253,8 @@ void showPrayerLogSheet(BuildContext context, DateTime date, Prayer p) {
 }
 
 /// Today's prayers, adhkar and wird in one ring.
-class _TodayHarvest extends StatelessWidget {
-  const _TodayHarvest();
+class TodayHarvest extends StatelessWidget {
+  const TodayHarvest();
   @override
   Widget build(BuildContext context) => ListenableBuilder(listenable: Listenable.merge([app, app.tracker]), builder: (context, _) => _card(context));
 
@@ -358,8 +324,8 @@ class _TodayHarvest extends StatelessWidget {
 
 
 /// On Friday (from Thursday's Maghrib): Surat al-Kahf with how many of its pages were opened.
-class _KahfCard extends StatelessWidget {
-  const _KahfCard();
+class KahfCard extends StatelessWidget {
+  const KahfCard();
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -395,6 +361,54 @@ class _KahfCard extends StatelessWidget {
               ]),
             ),
           ),
+        );
+      },
+    );
+  }
+}
+
+
+/// The next prayer with its countdown (home page).
+class NextPrayerHero extends StatelessWidget {
+  const NextPrayerHero({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: app,
+      builder: (context, _) {
+        final s = app.settings;
+        final st = app.status();
+        final isFriday = app.now.weekday == DateTime.friday;
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+          padding: const EdgeInsets.all(22),
+          decoration: hero3D(radius: 24),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text('الصلاة القادمة', style: TextStyle(color: AppColors.heroText, fontSize: 14)),
+            Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
+              Text(st.next == Prayer.dhuhr && isFriday ? 'الجمعة' : st.next.nameAr,
+                  style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.w700)),
+              const SizedBox(width: 12),
+              Padding(padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(fmtTime(app.local(st.nextTime), s.use24h), style: TextStyle(color: AppColors.goldLight, fontSize: 18))),
+            ]),
+            const SizedBox(height: 4),
+            Row(children: [
+              Text('الوقت المتبقي', style: TextStyle(color: AppColors.heroText, fontSize: 13)),
+              const Spacer(),
+              Text(fmtCountdown(st.remaining), textDirection: TextDirection.ltr,
+                  style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.w700)),
+            ]),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(value: st.progress, minHeight: 7,
+                  backgroundColor: Colors.white24, color: AppColors.goldLight),
+            ),
+            const SizedBox(height: 10),
+            Text(st.current == null ? 'لا توجد صلاة حاليًا (بعد الشروق)' : 'وقت صلاة ${st.current!.nameAr}',
+                style: TextStyle(color: AppColors.heroText, fontSize: 13)),
+          ]),
         );
       },
     );

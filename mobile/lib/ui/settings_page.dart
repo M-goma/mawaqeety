@@ -192,6 +192,24 @@ class SettingsPage extends StatelessWidget {
                     onChanged: (v) => app.update((x) => x.use24h = v)),
               ]),
             ),
+            Card3D(
+              child: ListTile(
+                title: const Text('حجم الأيقونات'),
+                subtitle: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(value: 0, label: Text('صغير')),
+                      ButtonSegment(value: 1, label: Text('متوسط')),
+                      ButtonSegment(value: 2, label: Text('كبير')),
+                    ],
+                    selected: {s.iconSize},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (v) => app.update((x) => x.iconSize = v.first, reschedule: false),
+                  ),
+                ),
+              ),
+            ),
             const _Header('التحديثات', Icons.system_update_outlined),
             const _UpdateCard(),
             const _Header('حول التطبيق', Icons.info_outline),
@@ -199,7 +217,7 @@ class SettingsPage extends StatelessWidget {
               child: Padding(
                 padding: EdgeInsets.all(16),
                 child: Text(
-                  'مواقيتي – صلاتك في وقتها\n\n'
+                  'سبيل – رفيق المسلم (من مواقيتي)\n\n'
                   'المواقيت تُحسب على جهازك دون إنترنت بنفس محرك برنامج الكمبيوتر.\n'
                   'نص القرآن الكريم: الرسم العثماني من موسوعة القرآن الكريم (quranenc.com) عبر مشروع quran-json – رخصة CC BY-SA 4.0.\n'
                   'صفحات المصحف: مصحف المدينة النبوية (رواية حفص) من مجمع الملك فهد لطباعة المصحف الشريف، عبر مشروع Quran-PNG على GitHub.\n'

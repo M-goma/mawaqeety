@@ -1,11 +1,11 @@
 {
-  "name": "مواقيتي",
-  "short_name": "مواقيتي",
+  "name": "سبيل – رفيق المسلم",
+  "short_name": "سبيل",
   "start_url": ".",
   "display": "standalone",
   "background_color": "#07152A",
   "theme_color": "#0E8A5F",
-  "description": "مواقيت الصلاة والقرآن الكريم وقصص الأنبياء",
+  "description": "أذان كامل، مصحف وإذاعة القرآن، أذكار وأدعية، وأحاديث صحيحة، وقصص الأنبياء",
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "icons": [

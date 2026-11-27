@@ -53,6 +53,12 @@ const palettes = <Palette>[
 
 Palette paletteById(String id) => palettes.firstWhere((p) => p.id == id, orElse: () => palettes.first);
 
+/// Size of icons and tiles, chosen in Settings (small / medium / large).
+class UiScale {
+  static int size = 1;
+  static double get icon => const [0.78, 0.88, 1.0][size.clamp(0, 2)];
+}
+
 /// The active palette's colours (names kept from the original design).
 class AppColors {
   static Palette current = palettes.first;
@@ -224,6 +230,7 @@ class Tile3D extends StatelessWidget {
     final dark = _isDark(context);
     final c1 = gold ? p.accentLight : (dark ? Color.lerp(p.surface2, Colors.white, 0.16)! : Color.lerp(Colors.white, p.primary, 0.10)!);
     final c2 = gold ? Color.lerp(p.accent, Colors.black, 0.3)! : (dark ? Color.lerp(p.surface, Colors.black, 0.25)! : Color.lerp(Colors.white, p.primary, 0.24)!);
+    final size = this.size * UiScale.icon;
     return Container(
       width: size,
       height: size,
@@ -237,7 +244,7 @@ class Tile3D extends StatelessWidget {
           BoxShadow(color: Colors.black.withValues(alpha: dark ? 0.45 : 0.10), blurRadius: 0, offset: const Offset(0, 3)),
         ],
       ),
-      child: child,
+      child: Transform.scale(scale: UiScale.icon, child: child),
     );
   }
 }

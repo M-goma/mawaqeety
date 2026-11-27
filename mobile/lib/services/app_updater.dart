@@ -64,7 +64,7 @@ class AppUpdater {
       final current = int.tryParse(i.buildNumber) ?? 0;
       if (latest == null) return const UpdateResult(UpdateStatus.failed, 'تعذّر التحقق من التحديثات. تأكد من الاتصال بالإنترنت.');
       if (latest <= current) return const UpdateResult(UpdateStatus.upToDate, 'أنت تستخدم أحدث إصدار.');
-      if (!apply) return const UpdateResult(UpdateStatus.available, 'يتوفر إصدار جديد من مواقيتي.');
+      if (!apply) return const UpdateResult(UpdateStatus.available, 'يتوفر إصدار جديد من سبيل.');
 
       if (kIsWeb) {
         await launchUrl(Uri.base, webOnlyWindowName: '_self');

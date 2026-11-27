@@ -21,7 +21,7 @@ class DuasPage extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(14, 8, 14, 24),
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: 0.92,
+            childAspectRatio: const [1.1, 1.0, 0.92][UiScale.size],
             children: [
               for (final g in Duas.groups)
                 Card3D(
@@ -31,7 +31,7 @@ class DuasPage extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(4, 12, 4, 8),
                       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-                        Text(g.emoji, style: const TextStyle(fontSize: 30, shadows: [Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 4))])),
+                        Text(g.emoji, style: TextStyle(fontSize: 30 * UiScale.icon, shadows: const [Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 4))])),
                         const SizedBox(height: 6),
                         Text(g.title, textAlign: TextAlign.center, maxLines: 2, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                         Text('${Arabic.digits(g.count)} ${g.count == 1 ? 'دعاء' : (g.count <= 10 ? 'أدعية' : 'دعاءً')}',

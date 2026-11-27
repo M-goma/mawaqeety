@@ -6,7 +6,7 @@ import 'adhkar_page.dart';
 import 'prayer_page.dart';
 import 'more_page.dart';
 import 'quran_pages.dart';
-import 'tasbeeh_page.dart';
+import 'home_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -51,17 +51,17 @@ class _HomeShellState extends State<HomeShell> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    const pages = [PrayerPage(), QuranIndexPage(), AdhkarPage(), TasbeehPage(), MorePage()];
+    const pages = [HomePage(), PrayerPage(), QuranIndexPage(), AdhkarPage(), MorePage()];
     return Scaffold(
       body: IndexedStack(index: _index, children: pages),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'الرئيسية'),
           NavigationDestination(icon: Icon(Icons.access_time_outlined), selectedIcon: Icon(Icons.access_time_filled), label: 'المواقيت'),
           NavigationDestination(icon: Icon(Icons.menu_book_outlined), selectedIcon: Icon(Icons.menu_book), label: 'القرآن'),
           NavigationDestination(icon: Icon(Icons.favorite_border), selectedIcon: Icon(Icons.favorite), label: 'الأذكار'),
-          NavigationDestination(icon: Icon(Icons.radio_button_checked_outlined), selectedIcon: Icon(Icons.radio_button_checked), label: 'السبحة'),
           NavigationDestination(icon: Icon(Icons.menu), selectedIcon: Icon(Icons.menu_open), label: 'المزيد'),
         ],
       ),
