@@ -39,8 +39,6 @@ class HomePage extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
                   ]),
                 ),
-                const _AskButton(),
-                const SizedBox(width: 10),
                 Text(fmtTime(now, app.settings.use24h), textDirection: TextDirection.ltr,
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
               ]),
@@ -53,29 +51,45 @@ class HomePage extends StatelessWidget {
         const KahfCard(),
         const _HadithOfDay(),
         const _Sections(),
+        const _AskBar(),
       ]),
     );
   }
 }
 
-/// Opens «سبيل» (ask about an ayah or a hadith) from the home header.
-class _AskButton extends StatelessWidget {
-  const _AskButton();
+/// Opens «سبيل» (ask about an ayah or a hadith): a wide bar under the section tiles.
+class _AskBar extends StatelessWidget {
+  const _AskBar();
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppColors.gold.withValues(alpha: 0.16),
-      shape: StadiumBorder(side: BorderSide(color: AppColors.gold.withValues(alpha: 0.55))),
+    final theme = Theme.of(context);
+    return Card3D(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18), side: BorderSide(color: AppColors.gold.withValues(alpha: 0.6), width: 1.2)),
       child: InkWell(
-        customBorder: const StadiumBorder(),
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SabeelPage())),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          child: Row(mainAxisSize: MainAxisSize.min, children: [
-            Icon(Icons.search_rounded, size: 18, color: AppColors.gold),
-            const SizedBox(width: 4),
-            Text('اسأل سبيل', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.gold)),
-          ]),
+        child: SizedBox(
+          height: 56,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(children: [
+              Container(
+                width: 38, height: 38,
+                decoration: BoxDecoration(color: AppColors.gold.withValues(alpha: 0.18), shape: BoxShape.circle),
+                child: Icon(Icons.search_rounded, color: AppColors.gold, size: 23),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('اسأل سبيل', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                  Text('تفسير آية أو حديث صحيح — بلا إنترنت', maxLines: 1, overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
+                ]),
+              ),
+              Icon(Icons.chevron_right_rounded, color: theme.hintColor),
+            ]),
+          ),
         ),
       ),
     );
@@ -149,14 +163,14 @@ class _Sections extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(children: [
         SizedBox(
-          height: 82,
+          height: 76,
           child: Row(children: [
             for (var i = 0; i < 3; i++) ...[if (i > 0) const SizedBox(width: 10), Expanded(child: items[i])],
           ]),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         SizedBox(
-          height: 82,
+          height: 76,
           child: Row(children: [
             for (var i = 3; i < 6; i++) ...[if (i > 3) const SizedBox(width: 10), Expanded(child: items[i])],
           ]),
