@@ -1,0 +1,35 @@
+name: mushaf-bundles
+# Manual: packs the Mushaf pages (branch mushaf-pages) into 13 zip bundles of 50 pages and
+# attaches them to the "mushaf-pages-v1" release. The apps download these for offline reading:
+# 13 large downloads are far more reliable than 604 small ones (raw.githubusercontent rate limits).
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  bundles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: mushaf-pages
+      - name: Pack and attach
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cd pages
+          test "$(ls *.png | wc -l)" = 604
+          mkdir ../out
+          i=0
+          ls *.png | sort | split -l 50 - ../chunk_
+          for c in ../chunk_*; do
+            i=$((i+1)); n=$(printf "%02d" $i)
+            zip -q -0 ../out/mushaf-$n.zip $(cat $c)
+          done
+          cd ..
+          ls -la out
+          gh release view mushaf-pages-v1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 || \
+            gh release create mushaf-pages-v1 --repo "$GITHUB_REPOSITORY" --prerelease --title "Mushaf pages (bundles)" \
+              --notes "Madinah Mushaf page images in 13 zip bundles of 50 pages, for fast offline download in the apps." --target main
+          gh release upload mushaf-pages-v1 out/*.zip --repo "$GITHUB_REPOSITORY" --clobber
