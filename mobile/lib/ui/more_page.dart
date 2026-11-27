@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'prophets_page.dart';
-import 'qibla_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
-import 'companions_page.dart';
-import 'hadith_page.dart';
-import 'tasbeeh_page.dart';
 import 'theme.dart';
 
 /// "More" tab: statistics, prophets' stories, Qibla and settings.
@@ -58,12 +53,7 @@ class MorePage extends StatelessWidget {
         crossAxisSpacing: 12,
         childAspectRatio: 1.45,
         children: [
-          item('📿', 'السبحة', 'العدّاد والورد اليومي', const TasbeehPage()),
           item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
-          item('📜', 'الأحاديث الصحيحة', 'صحيح البخاري وصحيح مسلم', const HadithPage()),
-          item('🌟', 'العشرة المبشرون', 'مواقف من الصحيحين', const CompanionsPage()),
-          item('🐪', 'قصص الأنبياء', '٢٥ قصة بصوتَي نبيل وعرين', const ProphetsPage()),
-          item('🧭', 'اتجاه القبلة', 'بوصلة ثلاثية الأبعاد', const QiblaPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
           guide(),
         ],
