@@ -160,6 +160,7 @@ class NotificationService {
             'path': await app.adhan.localPath(v) ?? '',
             'flip': s.adhanFlip,
             'power': s.adhanPower,
+            'silent': s.adhanSilent,
           });
         }
       }

@@ -143,10 +143,12 @@ class AdhanService : Service(), SensorEventListener {
         if (Build.VERSION.SDK_INT >= 29) startForeground(NOTE_ID, note, ServiceInfo.FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK)
         else startForeground(NOTE_ID, note)
 
-        // Silent or vibrate mode: the notification alone, no sound.
         val audio = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        // Silent or vibrate mode: the notification alone, unless the user wants the adhan anyway
+        // (it plays on the alarm stream, which silent mode does not mute).
+        val muted = audio.ringerMode != AudioManager.RINGER_MODE_NORMAL && !o.optBoolean("silent", true)
         // Something is already playing (a recitation, story, the radio or another app): don't cut it off.
-        if (audio.ringerMode != AudioManager.RINGER_MODE_NORMAL || audio.isMusicActive) {
+        if (muted || audio.isMusicActive) {
             getSystemService(NotificationManager::class.java)
                 .notify(NOTE_ID + 1, notification(o.optString("title", "حان وقت الصلاة"), o.optString("body", ""), playing = false))
             stopForegroundCompat(true)

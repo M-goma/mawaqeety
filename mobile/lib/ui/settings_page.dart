@@ -110,7 +110,7 @@ class SettingsPage extends StatelessWidget {
                 ),
                 if (Theme.of(context).platform == TargetPlatform.android)
                   _Dropdown<String>(
-                    label: 'شكل الودجت على الشاشة الرئيسية',
+                    label: 'شكل الأداة على الشاشة الرئيسية',
                     value: s.widgetStyle,
                     items: const {
                       'clock': 'الساعة + عدّاد بجوار الصلاة القادمة',
@@ -136,13 +136,20 @@ class SettingsPage extends StatelessWidget {
                 SwitchListTile(
                   title: Text(Theme.of(context).platform == TargetPlatform.android ? 'تشغيل الأذان كاملًا في وقت كل صلاة' : 'تشغيل الأذان عند دخول الوقت والتطبيق مفتوح'),
                   subtitle: Theme.of(context).platform == TargetPlatform.android
-                      ? const Text('حتى لو كان التطبيق مغلقًا. لا يعمل إذا كان الهاتف صامتًا أو كنت تستمع إلى شيء', style: TextStyle(fontSize: 12))
+                      ? const Text('حتى لو كان التطبيق مغلقًا. لا يقطع تلاوة أو إذاعة تستمع إليها', style: TextStyle(fontSize: 12))
                       : null,
                   value: s.adhanEnabled,
                   // Android: re-plan the native adhans.
                   onChanged: (v) => app.update((x) => x.adhanEnabled = v),
                 ),
                 if (Theme.of(context).platform == TargetPlatform.android) ...[
+                  SwitchListTile(
+                    secondary: const Icon(Icons.volume_off_outlined),
+                    title: const Text('الأذان حتى والهاتف صامت'),
+                    subtitle: const Text('يعمل بصوت المنبّه؛ اضبط مستواه من إعدادات الصوت', style: TextStyle(fontSize: 12)),
+                    value: s.adhanSilent,
+                    onChanged: s.adhanEnabled ? (v) => app.update((x) => x.adhanSilent = v) : null,
+                  ),
                   SwitchListTile(
                     secondary: const Text('📱', style: TextStyle(fontSize: 22)),
                     title: const Text('إسكات الأذان بقلب الهاتف على وجهه'),
