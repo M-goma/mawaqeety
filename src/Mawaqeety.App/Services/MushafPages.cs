@@ -25,8 +25,12 @@ public sealed class MushafPages(IAppLog log)
         catch { return 0; }
     }
 
+    /// <summary>A copy of the pages on a CDN, used when GitHub refuses (it limits many requests in a row).</summary>
+    private const string Mirror = "https://cdn.jsdelivr.net/gh/M-goma/mawaqeety@mushaf-pages/pages/";
+    private DateTime _coolDownUntil = DateTime.MinValue;
+
     /// <summary>The page image from the device, or from the internet (then saved). Null when offline and not saved.</summary>
-    public Task<byte[]?> LoadAsync(int page)
+    public Task<byte[]?> LoadAsync(int page, bool bulk = false, CancellationToken ct = default)
     {
         var f = FileOf(page);
         if (File.Exists(f))
@@ -34,32 +38,47 @@ public sealed class MushafPages(IAppLog log)
             try { return Task.FromResult<byte[]?>(File.ReadAllBytes(f)); }
             catch (Exception ex) { log.Warn($"Reading Mushaf page {page} failed", ex); }
         }
-        return _pending.GetOrAdd(page, p => FetchAsync(p).ContinueWith(t =>
+        return _pending.GetOrAdd(page, p => FetchAsync(p, bulk ? 8 : 3, ct).ContinueWith(t =>
         {
             _pending.TryRemove(p, out _);
             return t.IsCompletedSuccessfully ? t.Result : null;
         }));
     }
 
-    private async Task<byte[]?> FetchAsync(int page)
+    private async Task<byte[]?> FetchAsync(int page, int attempts, CancellationToken ct)
     {
-        for (var attempt = 0; attempt < 3; attempt++)
+        for (var attempt = 0; attempt < attempts; attempt++)
         {
+            if (ct.IsCancellationRequested) return null;
+            var wait = _coolDownUntil - DateTime.UtcNow;
+            if (wait > TimeSpan.Zero) await Task.Delay(wait, CancellationToken.None);
+            var delay = TimeSpan.FromSeconds(1 + attempt * 2);
             try
             {
-                var bytes = await Http.GetByteArrayAsync(MushafIndex.Default.Url(page));
-                if (bytes.Length > 1000)
+                var url = attempt % 2 == 0 ? MushafIndex.Default.Url(page) : $"{Mirror}{page:000}.png";
+                using var r = await Http.GetAsync(url, CancellationToken.None);
+                if (r.IsSuccessStatusCode)
                 {
-                    Directory.CreateDirectory(Dir);
-                    var tmp = FileOf(page) + ".part";
-                    await File.WriteAllBytesAsync(tmp, bytes);
-                    File.Move(tmp, FileOf(page), overwrite: true);
-                    return bytes;
+                    var bytes = await r.Content.ReadAsByteArrayAsync(CancellationToken.None);
+                    if (bytes.Length > 1000)
+                    {
+                        Directory.CreateDirectory(Dir);
+                        var tmp = FileOf(page) + ".part";
+                        await File.WriteAllBytesAsync(tmp, bytes, CancellationToken.None);
+                        File.Move(tmp, FileOf(page), overwrite: true);
+                        return bytes;
+                    }
+                }
+                else if ((int)r.StatusCode == 429 || (int)r.StatusCode >= 500)
+                {
+                    // Too many requests: every download waits a little before the next one.
+                    delay = r.Headers.RetryAfter?.Delta ?? TimeSpan.FromSeconds(Math.Clamp(5 * (attempt + 1), 5, 30));
+                    _coolDownUntil = DateTime.UtcNow + delay;
                 }
             }
-            catch (Exception ex) when (attempt == 2) { log.Warn($"Mushaf page {page} download failed", ex); }
+            catch (Exception ex) when (attempt == attempts - 1) { log.Warn($"Mushaf page {page} download failed", ex); }
             catch { /* retry */ }
-            await Task.Delay(TimeSpan.FromSeconds(1 + attempt * 2));
+            await Task.Delay(delay, CancellationToken.None);
         }
         return null;
     }

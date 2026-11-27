@@ -52,10 +52,22 @@ class MushafStore extends ChangeNotifier {
     return _pending.putIfAbsent(page, () => _fetch(page).whenComplete(() => _pending.remove(page)));
   }
 
-  Future<Uint8List?> _fetch(int page) async {
-    for (var attempt = 0; attempt < 3; attempt++) {
+  /// A copy of the pages on a CDN, used when GitHub refuses or is slow (it limits many requests in a row).
+  static const _mirror = 'https://cdn.jsdelivr.net/gh/M-goma/mawaqeety@mushaf-pages/pages/';
+  DateTime _coolDownUntil = DateTime(2000);
+
+  String _urlFor(int page, int attempt) =>
+      attempt.isEven ? index!.url(page) : '$_mirror${page.toString().padLeft(3, '0')}.png';
+
+  Future<Uint8List?> _fetch(int page, {bool bulk = false}) async {
+    final attempts = bulk ? 8 : 3;
+    for (var attempt = 0; attempt < attempts; attempt++) {
+      if (bulk && _cancel) return null;
+      final wait = _coolDownUntil.difference(DateTime.now());
+      if (wait > Duration.zero) await Future.delayed(wait);
+      var delay = Duration(seconds: 1 + attempt * 2);
       try {
-        final r = await http.get(Uri.parse(index!.url(page))).timeout(const Duration(seconds: 30));
+        final r = await http.get(Uri.parse(_urlFor(page, attempt))).timeout(const Duration(seconds: 30));
         if (r.statusCode == 200 && r.bodyBytes.length > 1000) {
           if (_dir != null) {
             await _file(page).writeAsBytes(r.bodyBytes, flush: true);
@@ -64,12 +76,24 @@ class MushafStore extends ChangeNotifier {
           }
           return r.bodyBytes;
         }
+        if (r.statusCode == 429 || r.statusCode >= 500) {
+          // Too many requests: everyone waits a little before the next one.
+          final s = int.tryParse(r.headers['retry-after'] ?? '') ?? (5 * (attempt + 1)).clamp(5, 30);
+          delay = Duration(seconds: s);
+          _coolDownUntil = DateTime.now().add(delay);
+        }
       } catch (e) {
         debugPrint('mushaf page $page failed: $e');
       }
-      await Future.delayed(Duration(seconds: 1 + attempt * 2));
+      await Future.delayed(delay);
     }
     return null;
+  }
+
+  Future<Uint8List?> _loadBulk(int page) {
+    final f = localFile(page);
+    if (f != null) return Future.value(Uint8List(1));
+    return _pending.putIfAbsent(page, () => _fetch(page, bulk: true).whenComplete(() => _pending.remove(page)));
   }
 
   /// Saves every page that is not on the device yet (about 66 MB in total).
@@ -85,10 +109,10 @@ class MushafStore extends ChangeNotifier {
     Future<void> worker() async {
       while (!_cancel && i < missing.length) {
         final p = missing[i++];
-        if (await load(p) == null) failed++;
+        if (await _loadBulk(p) == null && !_cancel) failed++;
       }
     }
-    await Future.wait([for (var w = 0; w < 6; w++) worker()]);
+    await Future.wait([for (var w = 0; w < 4; w++) worker()]);
     downloading = false;
     if (failed > 0 && !_cancel) error = 'تعذّر تنزيل $failed صفحة. تأكد من الاتصال ثم أعد المحاولة.';
     notifyListeners();

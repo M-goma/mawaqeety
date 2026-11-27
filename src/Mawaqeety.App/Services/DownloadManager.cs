@@ -128,7 +128,7 @@ public sealed partial class DownloadManager(QuranAudioService recitation, Mushaf
             {
                 int p;
                 lock (gate) { if (missing.Count == 0) return; p = missing.Dequeue(); }
-                if (await pages.LoadAsync(p) is null) Interlocked.Increment(ref failed);
+                if (await pages.LoadAsync(p, bulk: true, ct) is null && !ct.IsCancellationRequested) Interlocked.Increment(ref failed);
                 var done = Interlocked.Increment(ref _mushafDone);
                 if (done % 4 == 0 || done == MushafIndex.PageCount)
                     _ = App.Instance.Dispatcher.BeginInvoke(() =>
@@ -138,7 +138,7 @@ public sealed partial class DownloadManager(QuranAudioService recitation, Mushaf
                     });
             }
         }
-        try { await Task.WhenAll(Enumerable.Range(0, 6).Select(_ => Task.Run(Worker))); }
+        try { await Task.WhenAll(Enumerable.Range(0, 4).Select(_ => Task.Run(Worker))); }
         catch (Exception ex) { log.Warn("Mushaf download failed", ex); }
         MushafRunning = false;
         if (ct.IsCancellationRequested) MushafText = "تم إيقاف التنزيل. ما نُزِّل محفوظ.";
