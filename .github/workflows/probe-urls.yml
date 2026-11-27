@@ -1,0 +1,22 @@
+name: probe-urls
+# Manual: checks that audio stream URLs answer (used before adding a radio station).
+on:
+  workflow_dispatch:
+    inputs:
+      urls:
+        description: "Space-separated URLs"
+        required: true
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe
+        env:
+          URLS: ${{ inputs.urls }}
+        run: |
+          for u in $URLS; do
+            echo "=== $u"
+            curl -sL -m 12 -A "Mozilla/5.0" -D /tmp/h -o /tmp/b -r 0-200000 "$u" -w "final=%{url_effective} code=%{http_code} bytes=%{size_download}\n" || true
+            grep -iE "^HTTP|content-type|icy-name|icy-br|location" /tmp/h | tr -d '\r' || true
+            head -c 300 /tmp/b | tr -cd '[:print:]\n' | head -5; echo
+          done
