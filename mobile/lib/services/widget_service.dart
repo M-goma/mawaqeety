@@ -49,8 +49,9 @@ class WidgetService {
         // The widget follows the colour chosen in the app.
         'colors': {'hero': [for (final c in paletteById(s.palette).hero) _hex(c)], 'accent': _hex(paletteById(s.palette).accent)},
       }));
-      await HomeWidget.updateWidget(androidName: 'PrayerWidgetSmall');
-      await HomeWidget.updateWidget(androidName: 'PrayerWidgetLarge');
+      // Full class names: the app id (com.mawaqeety.app) differs from the Kotlin package, so a short name misses the widgets.
+      await HomeWidget.updateWidget(qualifiedAndroidName: 'com.mawaqeety.mawaqeety.PrayerWidgetSmall');
+      await HomeWidget.updateWidget(qualifiedAndroidName: 'com.mawaqeety.mawaqeety.PrayerWidgetLarge');
     } catch (e) {
       debugPrint('widget update failed: $e');
     }
