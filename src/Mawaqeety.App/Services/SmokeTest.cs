@@ -71,6 +71,7 @@ public static class SmokeTest
         }
 
         await Page(ViewModels.Page.Dashboard, "01-dashboard");
+        await Page(ViewModels.Page.Times, "01b-times");
         await Step("mushaf", async () =>
         {
             vm.Page = ViewModels.Page.Quran;

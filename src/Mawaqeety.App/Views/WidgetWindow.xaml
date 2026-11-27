@@ -1,7 +1,7 @@
 <Window x:Class="Mawaqeety.App.Views.WidgetWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="مواقيتي" Width="280" SizeToContent="Height"
+        Title="سبيل" Width="280" SizeToContent="Height"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
         ShowInTaskbar="False" ShowActivated="False" FontFamily="{StaticResource AppFont}" FlowDirection="RightToLeft"
         UseLayoutRounding="True">
@@ -12,7 +12,7 @@
         </Border.Effect>
         <Border.ContextMenu>
             <ContextMenu>
-                <MenuItem Header="فتح مواقيتي" Click="Open_Click"/>
+                <MenuItem Header="فتح سبيل" Click="Open_Click"/>
                 <MenuItem x:Name="TopmostItem" Header="تبقى فوق كل النوافذ" IsCheckable="True" Click="Topmost_Click"/>
                 <Separator/>
                 <MenuItem Header="إخفاء الويدجت" Click="Hide_Click"/>

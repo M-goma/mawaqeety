@@ -114,7 +114,7 @@ public sealed class QuranAudioService
             CurrentAyah = basmala ? 0 : ayah;
             var name = QuranRepository.Default[shownSurah].Name;
             _media.SetInfo($"سورة {name} • {(basmala ? "البسملة" : "الآية " + QuranRepository.ArabicDigits(ayah))}",
-                Reciters.Find(reciter).Name, "القرآن الكريم – مواقيتي");
+                Reciters.Find(reciter).Name, "القرآن الكريم – سبيل");
             if (IsPaused) { IsPaused = false; StateChanged?.Invoke(); }
             AyahStarted?.Invoke(shownSurah, CurrentAyah);
         });

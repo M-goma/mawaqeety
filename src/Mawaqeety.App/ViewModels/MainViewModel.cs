@@ -3,11 +3,13 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace Mawaqeety.App.ViewModels;
 
-public enum Page { Dashboard, Monthly, Quran, Adhkar, Tasbeeh, Stats, Qibla, Prophets, Hadith, Companions, Settings, About }
+public enum Page { Dashboard, Times, Monthly, Quran, Adhkar, Tasbeeh, Stats, Qibla, Prophets, Hadith, Companions, Settings, About }
 
 public sealed partial class MainViewModel : ObservableObject
 {
     public DashboardViewModel Dashboard { get; } = new();
+    public TimesViewModel Times => _times ??= new TimesViewModel(Dashboard);
+    private TimesViewModel? _times;
     public MonthlyViewModel Monthly { get; } = new();
     public SettingsViewModel Settings { get; } = new();
     public QuranViewModel Quran => _quran ??= new QuranViewModel();
@@ -29,11 +31,12 @@ public sealed partial class MainViewModel : ObservableObject
     public AboutViewModel About { get; } = new();
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(CurrentView), nameof(IsDashboard), nameof(IsMonthly), nameof(IsQuran), nameof(IsAdhkar), nameof(IsTasbeeh), nameof(IsStats), nameof(IsQibla), nameof(IsProphets), nameof(IsHadith), nameof(IsCompanions), nameof(IsSettings), nameof(IsAbout))]
+    [NotifyPropertyChangedFor(nameof(CurrentView), nameof(IsDashboard), nameof(IsTimes), nameof(IsMonthly), nameof(IsQuran), nameof(IsAdhkar), nameof(IsTasbeeh), nameof(IsStats), nameof(IsQibla), nameof(IsProphets), nameof(IsHadith), nameof(IsCompanions), nameof(IsSettings), nameof(IsAbout))]
     private Page _page = Page.Dashboard;
 
     public object CurrentView => Page switch
     {
+        Page.Times => Times,
         Page.Monthly => Monthly,
         Page.Quran => Quran,
         Page.Adhkar => Adhkar,
@@ -49,6 +52,7 @@ public sealed partial class MainViewModel : ObservableObject
     };
 
     public bool IsDashboard { get => Page == Page.Dashboard; set { if (value) Page = Page.Dashboard; } }
+    public bool IsTimes { get => Page == Page.Times; set { if (value) Page = Page.Times; } }
     public bool IsMonthly { get => Page == Page.Monthly; set { if (value) { Page = Page.Monthly; Monthly.Reload(); } } }
     public bool IsQuran { get => Page == Page.Quran; set { if (value) Page = Page.Quran; } }
     public bool IsAdhkar { get => Page == Page.Adhkar; set { if (value) Page = Page.Adhkar; } }
@@ -76,4 +80,10 @@ public sealed partial class MainViewModel : ObservableObject
         Dashboard.Reload();
         Monthly.Reload();
     }
+}
+
+/// The prayer-times page: today's times and logging, using the home page's data.
+public sealed class TimesViewModel(DashboardViewModel dash)
+{
+    public DashboardViewModel Dash { get; } = dash;
 }

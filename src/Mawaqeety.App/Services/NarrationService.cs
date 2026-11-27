@@ -180,7 +180,7 @@ public sealed class NarrationService
             {
                 if (session != _session) return;
                 _media.Open(src);
-                _media.SetInfo(_title, _artist, "قصص الأنبياء – مواقيتي");
+                _media.SetInfo(_title, _artist, "قصص الأنبياء – سبيل");
                 ChunkStarted?.Invoke(idx);
             });
         }

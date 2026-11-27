@@ -151,81 +151,16 @@
                 </DockPanel>
             </Border>
 
-            <!-- Today's table -->
-            <Border Style="{StaticResource Card}" Padding="14,16">
+            <!-- Hadith of the day (Sahih al-Bukhari) -->
+            <Border Style="{StaticResource Card}" Padding="18,14">
                 <StackPanel>
-                    <TextBlock Text="{l:Tr TodayTimes}" Style="{StaticResource H2}" Margin="8,0,8,10"/>
-                    <ItemsControl ItemsSource="{Binding Rows}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border x:Name="Row" CornerRadius="12" Padding="16,11" Margin="0,3" BorderThickness="1"
-                                        BorderBrush="Transparent" Background="Transparent">
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="40"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                            <ColumnDefinition Width="120"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Border Width="32" Height="32" CornerRadius="16" Background="{DynamicResource AccentSoftBrush}">
-                                            <TextBlock x:Name="Icon" Text="{Binding Icon}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="15"
-                                                       Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                        </Border>
-                                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" Margin="12,0"/>
-                                        <Border x:Name="Badge" Grid.Column="2" CornerRadius="8" Padding="10,1" Margin="10,0" Background="{DynamicResource GoldBrush}"
-                                                Visibility="Collapsed" VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding Badge}" FontSize="12" FontWeight="SemiBold" Foreground="#0B1F3A"/>
-                                        </Border>
-                                        <Button x:Name="LogButton" Grid.Column="3" Content="{Binding LogText}" Padding="12,3" Margin="6,0" FontSize="12.5"
-                                                VerticalAlignment="Center" Click="Log_Click" Tag="{Binding}"
-                                                Visibility="{Binding CanLog, Converter={StaticResource BoolVis}}" ToolTip="كيف صليتها؟"/>
-                                        <TextBlock Grid.Column="4" Text="{Binding Time}" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Right"
-                                                   VerticalAlignment="Center" FlowDirection="LeftToRight"/>
-                                    </Grid>
-                                </Border>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding Log}" Value="Mosque">
-                                        <Setter TargetName="LogButton" Property="Background" Value="#3312A372"/>
-                                        <Setter TargetName="LogButton" Property="Foreground" Value="#2FD39A"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Log}" Value="Jamaah">
-                                        <Setter TargetName="LogButton" Property="Background" Value="#333B82F6"/>
-                                        <Setter TargetName="LogButton" Property="Foreground" Value="#7FB0FF"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Log}" Value="Alone">
-                                        <Setter TargetName="LogButton" Property="Background" Value="{DynamicResource GoldSoftBrush}"/>
-                                        <Setter TargetName="LogButton" Property="Foreground" Value="{DynamicResource GoldBrush}"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Log}" Value="Qada">
-                                        <Setter TargetName="LogButton" Property="Background" Value="#33E57373"/>
-                                        <Setter TargetName="LogButton" Property="Foreground" Value="#E57373"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsPassed}" Value="True">
-                                        <Setter TargetName="Row" Property="Opacity" Value="0.55"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsCurrent}" Value="True">
-                                        <Setter TargetName="Row" Property="Background" Value="{DynamicResource AccentSoftBrush}"/>
-                                        <Setter TargetName="Badge" Property="Visibility" Value="Visible"/>
-                                        <Setter TargetName="Badge" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding IsNext}" Value="True">
-                                        <Setter TargetName="Row" Property="Background" Value="{DynamicResource GoldSoftBrush}"/>
-                                        <Setter TargetName="Row" Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
-                                        <Setter TargetName="Badge" Property="Visibility" Value="Visible"/>
-                                        <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource GoldBrush}"/>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                    <TextBlock Text="✦ حديث اليوم" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding HadithText}" TextWrapping="Wrap" FontFamily="{StaticResource QuranFont}" FontSize="19" LineHeight="38" Margin="0,4,0,0"/>
+                    <Border CornerRadius="8" Background="#2912A372" Padding="8,2" HorizontalAlignment="Left" Margin="0,6,0,0">
+                        <TextBlock Text="{Binding HadithRef}" FontSize="12" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
+                    </Border>
                 </StackPanel>
             </Border>
-
-            <TextBlock Style="{StaticResource Muted}" Margin="4,0" FontSize="12">
-                <Run Text="{l:Tr Method}"/><Run Text=": "/><Run Text="{Binding MethodText, Mode=OneWay}"/>
-                <Run Text="  •  "/><Run Text="{Binding SourceText, Mode=OneWay}"/>
-            </TextBlock>
         </StackPanel>
     </ScrollViewer>
 </UserControl>

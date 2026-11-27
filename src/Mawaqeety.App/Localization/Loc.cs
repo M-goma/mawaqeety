@@ -76,8 +76,8 @@ public sealed class Loc : INotifyPropertyChanged
 
     private static readonly Dictionary<string, (string Ar, string En)> Strings = new()
     {
-        ["AppName"] = ("مواقيتي", "Mawaqeety"),
-        ["Slogan"] = ("صلاتك في وقتها", "Your prayer, on time"),
+        ["AppName"] = ("سبيل", "Sabeel"),
+        ["Slogan"] = ("رفيق المسلم", "The Muslim's companion"),
         // prayers
         ["Fajr"] = ("الفجر", "Fajr"),
         ["Sunrise"] = ("الشروق", "Sunrise"),
@@ -121,7 +121,7 @@ public sealed class Loc : INotifyPropertyChanged
         ["Method"] = ("طريقة الحساب", "Calculation method"),
         ["ChangeLocation"] = ("تغيير الموقع", "Change location"),
         // tray
-        ["TrayOpen"] = ("فتح مواقيتي", "Open Mawaqeety"),
+        ["TrayOpen"] = ("فتح سبيل", "Open Sabeel"),
         ["TrayPause"] = ("إيقاف التنبيهات مؤقتًا", "Pause alerts"),
         ["TrayPause30"] = ("30 دقيقة", "30 minutes"),
         ["TrayPause60"] = ("ساعة واحدة", "1 hour"),
@@ -131,7 +131,7 @@ public sealed class Loc : INotifyPropertyChanged
         ["TrayStopSound"] = ("إيقاف الصوت", "Stop sound"),
         ["TrayExit"] = ("إنهاء البرنامج", "Exit"),
         ["TrayNext"] = ("{0} بعد {1}", "{0} in {1}"),
-        ["TrayStillRunning"] = ("مواقيتي يعمل في الخلفية وسيذكّرك بمواعيد الصلاة.", "Mawaqeety keeps running in the background and will remind you of prayer times."),
+        ["TrayStillRunning"] = ("سبيل يعمل في الخلفية وسيذكّرك بمواعيد الصلاة.", "Sabeel keeps running in the background and will remind you of prayer times."),
         // notifications
         ["ToastAtTime"] = ("حان الآن موعد صلاة {0}", "It's time for {0} prayer"),
         ["ToastAtTimeSunrise"] = ("حان وقت الشروق", "Sunrise has started"),

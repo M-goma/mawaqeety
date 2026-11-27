@@ -13,7 +13,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Image Source="pack://application:,,,/Assets/logo.png" Width="72" Height="72" RenderOptions.BitmapScalingMode="HighQuality"/>
                         <StackPanel Margin="18,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="Mawaqeety – مواقيتي" Style="{StaticResource H1}"/>
+                            <TextBlock Text="سبيل – رفيق المسلم" Style="{StaticResource H1}"/>
                             <TextBlock Text="{l:Tr Slogan}" Foreground="{DynamicResource GoldBrush}" FontSize="15"/>
                         </StackPanel>
                     </StackPanel>

@@ -25,6 +25,7 @@
         <DataTemplate DataType="{x:Type vm:QiblaViewModel}"><v:QiblaView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:TasbeehViewModel}"><v:TasbeehView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:StatsViewModel}"><v:StatsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TimesViewModel}"><v:TimesView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:HadithViewModel}"><v:HadithView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:CompanionsViewModel}"><v:CompanionsView/></DataTemplate>
     </Window.Resources>
@@ -53,6 +54,7 @@
 
                 <StackPanel>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE80F;" Content="{l:Tr NavDashboard}" IsChecked="{Binding IsDashboard}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE916;" Content="المواقيت" IsChecked="{Binding IsTimes}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE787;" Content="{l:Tr NavMonthly}" IsChecked="{Binding IsMonthly}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE736;" Content="{l:Tr NavQuran}" IsChecked="{Binding IsQuran}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE734;" Content="{l:Tr NavAdhkar}" IsChecked="{Binding IsAdhkar}"/>

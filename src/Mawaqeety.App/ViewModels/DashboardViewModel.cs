@@ -123,10 +123,26 @@ public sealed partial class DashboardViewModel : ObservableObject
         App.Instance.Tracker.Changed += () => App.Instance.Dispatcher.BeginInvoke(() => UpdateHarvest(App.Instance.Today));
         App.Instance.Radio.Changed += UpdateRadio;
         UpdateRadio();
+        UpdateHadith();
         Reload();
     }
 
     // ---------------- Quran radio ----------------
+    // ---------------- Hadith of the day (same choice as the mobile app) ----------------
+    [ObservableProperty] private string _hadithText = "";
+    [ObservableProperty] private string _hadithRef = "";
+
+    private void UpdateHadith()
+    {
+        try
+        {
+            var h = Core.Content.HadithCollection.Load("bukhari").OfDay(App.Instance.Today);
+            HadithText = h.Matn;
+            HadithRef = $"{h.Collection.Name} • {Core.Content.QuranRepository.ArabicDigits(h.Number)} • {h.Collection.BookName(h.Book)}";
+        }
+        catch { /* optional card */ }
+    }
+
     [ObservableProperty] private bool _radioOn;
     [ObservableProperty] private string _radioStatus = "";
     [ObservableProperty] private int _radioSleep;
