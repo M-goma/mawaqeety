@@ -5,7 +5,11 @@ import '../data/hadith.dart';
 import '../main.dart';
 import 'format.dart';
 import 'hadith_page.dart';
+import 'companions_page.dart';
 import 'prayer_page.dart';
+import 'prophets_page.dart';
+import 'qibla_page.dart';
+import 'tasbeeh_page.dart';
 import 'radio_page.dart';
 import 'theme.dart';
 
@@ -44,6 +48,7 @@ class HomePage extends StatelessWidget {
         const TodayHarvest(),
         const KahfCard(),
         const _HadithOfDay(),
+        const _Sections(),
       ]),
     );
   }
@@ -82,6 +87,54 @@ class _HadithOfDay extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// The main sections as compact tiles, filling the rest of the home screen.
+class _Sections extends StatelessWidget {
+  const _Sections();
+  @override
+  Widget build(BuildContext context) {
+    Widget tile(String emoji, String label, Widget page) => Card3D(
+          margin: EdgeInsets.zero,
+          child: InkWell(
+            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => page)),
+            child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+              Text(emoji, style: const TextStyle(fontSize: 26, shadows: [Shadow(color: Colors.black54, blurRadius: 5, offset: Offset(0, 3))])),
+              const SizedBox(height: 4),
+              Text(label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
+            ]),
+          ),
+        );
+    final items = [
+      tile('🐪', 'قصص الأنبياء', const ProphetsPage()),
+      tile('🌟', 'العشرة المبشرون', const CompanionsPage()),
+      tile('📜', 'الأحاديث', const HadithPage()),
+      tile('📿', 'السبحة', const TasbeehPage()),
+      tile('🧭', 'القبلة', const QiblaPage()),
+    ];
+    // Three on the first row, two wider ones on the second.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      child: Column(children: [
+        SizedBox(
+          height: 82,
+          child: Row(children: [
+            for (var i = 0; i < 3; i++) ...[if (i > 0) const SizedBox(width: 10), Expanded(child: items[i])],
+          ]),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 82,
+          child: Row(children: [
+            Expanded(child: items[3]),
+            const SizedBox(width: 10),
+            Expanded(child: items[4]),
+          ]),
+        ),
+      ]),
     );
   }
 }
