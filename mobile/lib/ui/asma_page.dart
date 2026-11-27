@@ -22,7 +22,7 @@ class _AsmaPageState extends State<AsmaPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final today = asmaOfDay(app.today);
-    final (dn, dm) = asmaAlHusna[today];
+    final (dn, dm, _) = asmaAlHusna[today];
     final q = Arabic.normalize(_q);
     final list = [
       for (var i = 0; i < asmaAlHusna.length; i++)
@@ -89,7 +89,7 @@ class _AsmaPageState extends State<AsmaPage> {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
             child: Text(
               '«إن لله تسعةً وتسعين اسمًا، مائةً إلا واحدًا، من أحصاها دخل الجنة» — صحيح البخاري ٢٧٣٦، صحيح مسلم ٢٦٧٧.\n'
-              'هذا السرد هو المشهور في جامع الترمذي، وفي تعيين الأسماء فيه خلاف بين العلماء، والمعاني مختصرة للتقريب.',
+              'هذا السرد هو المشهور في جامع الترمذي، وفي تعيين الأسماء فيه خلاف بين العلماء. والأسماء المتقابلة (القابض الباسط، الخافض الرافع، المعز المذل، الضار النافع، المعطي المانع) تُذكر مقترنة. المعاني مختصرة من شروح أهل العلم كما في موقعَي الإسلام سؤال وجواب وابن باز.',
               style: TextStyle(fontSize: 12, color: theme.hintColor, height: 1.7),
             ),
           ),
@@ -99,7 +99,7 @@ class _AsmaPageState extends State<AsmaPage> {
   }
 
   void _show(BuildContext context, int i) {
-    final (n, m) = asmaAlHusna[i];
+    final (n, m, disputed) = asmaAlHusna[i];
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -110,6 +110,12 @@ class _AsmaPageState extends State<AsmaPage> {
           Text(n, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 40, height: 1.7)),
           const SizedBox(height: 6),
           Text(m, textAlign: TextAlign.center, style: const TextStyle(fontSize: 17, height: 1.8)),
+          if (disputed)
+            Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: Text('مما اختلف العلماء في عدّه من الأسماء، والمعنى ثابت لله تعالى',
+                  textAlign: TextAlign.center, style: TextStyle(fontSize: 12.5, color: Theme.of(c).hintColor)),
+            ),
           const SizedBox(height: 14),
           OutlinedButton.icon(
             icon: const Icon(Icons.share_outlined),
