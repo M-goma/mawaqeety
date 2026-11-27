@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'prophets_page.dart';
 import 'qibla_page.dart';
@@ -30,6 +31,22 @@ class MorePage extends StatelessWidget {
             ),
           ),
         );
+    Widget guide() => Card3D(
+          margin: EdgeInsets.zero,
+          child: InkWell(
+            onTap: () => launchUrl(Uri.parse('https://m-goma.github.io/mawaqeety/guide/'), mode: LaunchMode.externalApplication),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(8, 16, 8, 12),
+              child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Text('📘', style: TextStyle(fontSize: 38, shadows: [Shadow(color: Colors.black54, blurRadius: 6, offset: Offset(0, 4))])),
+                const SizedBox(height: 8),
+                const Text('دليل الاستخدام', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15.5)),
+                const SizedBox(height: 2),
+                Text('شرح مصوّر وفيديو قصير', textAlign: TextAlign.center, style: TextStyle(fontSize: 11.5, color: Theme.of(context).hintColor)),
+              ]),
+            ),
+          ),
+        );
     return Scaffold(
       appBar: AppBar(title: const Text('المزيد')),
       body: GridView.count(
@@ -45,6 +62,7 @@ class MorePage extends StatelessWidget {
           item('🐪', 'قصص الأنبياء', '٢٥ قصة بصوتَي نبيل وعرين', const ProphetsPage()),
           item('🧭', 'اتجاه القبلة', 'بوصلة ثلاثية الأبعاد', const QiblaPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
+          guide(),
         ],
       ),
     );
