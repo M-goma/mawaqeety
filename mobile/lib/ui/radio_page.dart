@@ -141,7 +141,7 @@ class RadioPage extends StatelessWidget {
                     const Text('⏲  إيقاف تلقائي', style: TextStyle(fontWeight: FontWeight.w700)),
                     const Spacer(),
                     if (r.sleepAt != null)
-                      Text('بعد ${Arabic.digits((left ?? 0) + 1)} دقيقة', style: TextStyle(color: AppColors.gold, fontSize: 12.5)),
+                      Text('بعد ${Arabic.minutes((left ?? 0) + 1)}', style: TextStyle(color: AppColors.gold, fontSize: 12.5)),
                   ]),
                   const SizedBox(height: 8),
                   Wrap(children: [

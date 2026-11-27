@@ -23,6 +23,7 @@ class MainActivity : AudioServiceActivity() {
             when (call.method) {
                 "schedule" -> { AdhanAlarms.schedule(applicationContext, (call.arguments as? List<*>)?.filterIsInstance<Map<*, *>>() ?: emptyList()); result.success(null) }
                 "cancel" -> { AdhanAlarms.cancelAll(applicationContext); result.success(null) }
+                "notes" -> { NoteAlarms.schedule(applicationContext, (call.arguments as? List<*>)?.filterIsInstance<Map<*, *>>() ?: emptyList()); result.success(null) }
                 "stop" -> { startService(Intent(applicationContext, AdhanService::class.java).setAction(AdhanService.STOP)); result.success(null) }
                 else -> result.notImplemented()
             }

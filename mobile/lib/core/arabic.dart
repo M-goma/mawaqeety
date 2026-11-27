@@ -2,6 +2,13 @@
 class Arabic {
   static const _digits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
 
+  /// «٥ دقائق»، «١٥ دقيقة»، «دقيقتان»، «دقيقة واحدة».
+  static String minutes(int n) {
+    if (n == 1) return 'دقيقة واحدة';
+    if (n == 2) return 'دقيقتان';
+    return n >= 3 && n <= 10 ? '${digits(n)} دقائق' : '${digits(n)} دقيقة';
+  }
+
   static String digits(Object n) => n.toString().split('').map((c) {
         final d = int.tryParse(c);
         return d == null ? c : _digits[d];

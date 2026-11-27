@@ -3,6 +3,7 @@ import 'package:flutter/services.dart' show MethodChannel;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
+import '../core/arabic.dart';
 import '../core/prayer_calculator.dart';
 import 'app_state.dart';
 import 'download_notifier.dart';
@@ -180,6 +181,9 @@ class NotificationService {
       final nowUtc = DateTime.now().toUtc();
       var id = 1;
       var count = 0;
+      // Android: our own alarms post these, so a late one (phone asleep or the app just updated) is dropped.
+      final native = !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      final notes = <Map<String, Object>>[];
       for (var dayOffset = 0; dayOffset < 14 && count < _maxPending; dayOffset++) {
         final date = app.today.add(Duration(days: dayOffset));
         final times = app.day(date);
@@ -187,34 +191,57 @@ class NotificationService {
           if (!(s.notify[p] ?? false)) continue;
           final at = times[p];
           final timeText = _fmt(app.local(at), s.use24h);
+          final name = p == Prayer.dhuhr && date.weekday == DateTime.friday ? 'الجمعة' : p.nameAr;
           if (s.preAlertMinutes > 0 && count < _maxPending) {
             final pre = at.subtract(Duration(minutes: s.preAlertMinutes));
             if (pre.isAfter(nowUtc)) {
-              await _plugin.zonedSchedule(
-                id: id++,
-                scheduledDate: tz.TZDateTime.from(pre, tz.UTC),
-                notificationDetails: _preDetails,
-                androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-                title: p == Prayer.sunrise ? 'بقي ${s.preAlertMinutes} دقيقة على الشروق' : 'بقي ${s.preAlertMinutes} دقيقة على صلاة ${p.nameAr}',
-                body: '${p.nameAr} • $timeText',
-              );
+              final left = Arabic.minutes(s.preAlertMinutes);
+              final title = p == Prayer.sunrise ? 'بقي $left على الشروق' : 'بقي $left على صلاة $name';
+              final body = '$name • $timeText';
+              if (native) {
+                // Shown only until the prayer time; never after it.
+                notes.add({'at': pre.millisecondsSinceEpoch, 'title': title, 'body': body,
+                  'late': s.preAlertMinutes * 60000 ~/ 2, 'ttl': s.preAlertMinutes * 60000});
+              } else {
+                await _plugin.zonedSchedule(
+                  id: id++,
+                  scheduledDate: tz.TZDateTime.from(pre, tz.UTC),
+                  notificationDetails: _preDetails,
+                  androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+                  title: title,
+                  body: body,
+                );
+              }
               count++;
             }
           }
           // The native adhan shows its own notification at prayer time.
           if (full && p.isObligatory) continue;
           if (at.isAfter(nowUtc) && count < _maxPending) {
-            await _plugin.zonedSchedule(
-              id: id++,
-              scheduledDate: tz.TZDateTime.from(at, tz.UTC),
-              notificationDetails: _details,
-              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-              title: p == Prayer.sunrise ? 'حان وقت الشروق' : 'حان الآن موعد صلاة ${p.nameAr}',
-              body: '${p.nameAr} • $timeText • ${s.place.nameAr}',
-              payload: p.name,
-            );
+            final title = p == Prayer.sunrise ? 'حان وقت الشروق' : 'حان الآن موعد صلاة $name';
+            final body = '$name • $timeText • ${s.place.nameAr}';
+            if (native) {
+              notes.add({'at': at.millisecondsSinceEpoch, 'title': title, 'body': body, 'late': 15 * 60000, 'ttl': 40 * 60000});
+            } else {
+              await _plugin.zonedSchedule(
+                id: id++,
+                scheduledDate: tz.TZDateTime.from(at, tz.UTC),
+                notificationDetails: _details,
+                androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+                title: title,
+                body: body,
+                payload: p.name,
+              );
+            }
             count++;
           }
+        }
+      }
+      if (native) {
+        try {
+          await _adhan.invokeMethod('notes', notes);
+        } catch (e) {
+          debugPrint('reminder scheduling failed: $e');
         }
       }
       await _schedulePrayerChecks(app);
@@ -344,3 +371,4 @@ class NotificationService {
     return '$h:${t.minute.toString().padLeft(2, '0')} ${t.hour < 12 ? 'ص' : 'م'}';
   }
 }
+
