@@ -222,7 +222,7 @@ class ProphetPage extends StatelessWidget {
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) => Scaffold(
-        appBar: AppBar(title: Text(p.displayName, maxLines: 1, overflow: TextOverflow.ellipsis)),
+        appBar: AppBar(title: Text(p.nameAr)),
         bottomNavigationBar: ListenableBuilder(
           listenable: app.narration,
           builder: (context, _) {
