@@ -54,7 +54,9 @@ class HadithCollection {
       .replaceAll(_diacritics, '')
       .replaceAll(RegExp('[أإآٱ]'), 'ا')
       .replaceAll('ى', 'ي')
-      .replaceAll('ة', 'ه');
+      .replaceAll('ة', 'ه')
+      .replaceAll('ؤ', 'و')
+      .replaceAll('ئ', 'ي');
 
   late final List<String> _plain = [for (final h in all) plain(h.text)];
 

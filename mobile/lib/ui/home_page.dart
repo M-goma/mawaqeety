@@ -12,6 +12,7 @@ import 'prophets_page.dart';
 import 'qibla_page.dart';
 import 'tasbeeh_page.dart';
 import 'radio_page.dart';
+import 'sabeel_page.dart';
 import 'theme.dart';
 
 /// The first tab, on one screen: the next prayer, the radio, today's harvest, al-Kahf on Friday,
@@ -38,6 +39,8 @@ class HomePage extends StatelessWidget {
                         style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
                   ]),
                 ),
+                const _AskButton(),
+                const SizedBox(width: 10),
                 Text(fmtTime(now, app.settings.use24h), textDirection: TextDirection.ltr,
                     style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
               ]),
@@ -51,6 +54,30 @@ class HomePage extends StatelessWidget {
         const _HadithOfDay(),
         const _Sections(),
       ]),
+    );
+  }
+}
+
+/// Opens «سبيل» (ask about an ayah or a hadith) from the home header.
+class _AskButton extends StatelessWidget {
+  const _AskButton();
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.gold.withValues(alpha: 0.16),
+      shape: StadiumBorder(side: BorderSide(color: AppColors.gold.withValues(alpha: 0.55))),
+      child: InkWell(
+        customBorder: const StadiumBorder(),
+        onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SabeelPage())),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [
+            Icon(Icons.search_rounded, size: 18, color: AppColors.gold),
+            const SizedBox(width: 4),
+            Text('اسأل سبيل', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.gold)),
+          ]),
+        ),
+      ),
     );
   }
 }
