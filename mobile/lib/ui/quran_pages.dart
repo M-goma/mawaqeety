@@ -6,6 +6,7 @@ import '../data/repository.dart';
 import '../main.dart';
 import 'downloads_page.dart';
 import 'mushaf_page.dart';
+import 'radio_page.dart';
 import 'theme.dart';
 
 TextStyle quranStyle(BuildContext context, double size) => TextStyle(
@@ -66,6 +67,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
                 onTap: () => openMushaf(context, page),
               ),
             ),
+            const RadioCard(),
             if (last != null)
               Card3D(
                 color: AppColors.goldSoft,

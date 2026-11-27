@@ -67,18 +67,21 @@ class MediaControls extends BaseAudioHandler with SeekHandler {
     Duration position = Duration.zero,
     Duration? duration,
     bool story = false,
+    bool live = false,
   }) {
     _source = source;
     final item = MediaItem(id: id, title: title, artist: subtitle, album: album, duration: duration, artUri: _art);
     if (mediaItem.value != item) mediaItem.add(item);
     final pp = playing ? MediaControl.pause : MediaControl.play;
-    final controls = story
+    final controls = live
+        ? [pp, MediaControl.stop]
+        : story
         ? [MediaControl.skipToPrevious, MediaControl.rewind, pp, MediaControl.fastForward, MediaControl.skipToNext, MediaControl.stop]
         : [MediaControl.skipToPrevious, pp, MediaControl.skipToNext, MediaControl.stop];
     playbackState.add(PlaybackState(
       controls: controls,
-      androidCompactActionIndices: story ? const [1, 2, 3] : const [0, 1, 2],
-      systemActions: const {MediaAction.seek, MediaAction.seekForward, MediaAction.seekBackward},
+      androidCompactActionIndices: live ? const [0, 1] : (story ? const [1, 2, 3] : const [0, 1, 2]),
+      systemActions: live ? const {} : const {MediaAction.seek, MediaAction.seekForward, MediaAction.seekBackward},
       processingState: loading ? AudioProcessingState.loading : AudioProcessingState.ready,
       playing: playing,
       updatePosition: position,

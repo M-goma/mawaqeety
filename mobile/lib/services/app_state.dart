@@ -21,6 +21,7 @@ import 'notification_service.dart';
 import 'quran_downloads.dart';
 import 'story_downloads.dart';
 import 'tracker.dart';
+import 'radio.dart';
 import 'recitation.dart';
 import 'widget_service.dart';
 
@@ -47,6 +48,7 @@ class AppState extends ChangeNotifier {
   final tracker = Tracker();
   late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories);
   final narration = Narration();
+  final radio = QuranRadio();
   final updater = AppUpdater();
   final widgets = WidgetService();
   late SharedPreferences _prefs;
@@ -75,6 +77,17 @@ class AppState extends ChangeNotifier {
     narration.onSaved = stories.noteSaved;
     narration.storyOrder = [for (final p in repo.prophets) p.id];
     recitation.downloads = downloads;
+    // Only one thing plays at a time: starting the radio stops a recitation or story, and the other way round.
+    radio.onStart = () {
+      if (recitation.active) unawaited(recitation.stop());
+      if (narration.speaking) unawaited(narration.stop());
+    };
+    recitation.addListener(() {
+      if (recitation.playing && radio.on) unawaited(radio.stop());
+    });
+    narration.addListener(() {
+      if (narration.speaking && !narration.paused && radio.on) unawaited(radio.stop());
+    });
     await notifications.init(onTap: (r) {
       if (r.actionId?.startsWith('dl_') ?? false) return downloadNotifier.handleAction(r.actionId);
       if (r.actionId?.startsWith('pt_') ?? false) {
@@ -209,8 +222,9 @@ class AppState extends ChangeNotifier {
       final key = '${today.toIso8601String()}-${p.name}';
       if (diff >= 0 && diff < 5 && _lastAutoAdhan != key) {
         _lastAutoAdhan = key;
-        unawaited(recitation.stop());
-        unawaited(narration.stop());
+        // Never cut off a recitation, story or the radio the user is listening to:
+        // the prayer notification still alerts them, and the in-app adhan is skipped.
+        if (recitation.playing || (narration.speaking && !narration.paused) || radio.playing) continue;
         unawaited(adhan.playFor(p, repo, settings));
       }
     }
@@ -221,6 +235,7 @@ class AppState extends ChangeNotifier {
     final p = st.current ?? Prayer.dhuhr;
     await recitation.stop();
     await narration.stop();
+    await radio.stop();
     await adhan.playFor(p, repo, settings);
   }
 
