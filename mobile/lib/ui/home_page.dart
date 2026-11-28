@@ -57,7 +57,7 @@ class HomePage extends StatelessWidget {
   }
 }
 
-/// Opens «سبيل» (ask about an ayah or a hadith): a wide bar under the section tiles.
+/// Opens «سبيل» (ask about an ayah, a hadith or anything in the app): a wide bar under the section tiles.
 class _AskBar extends StatelessWidget {
   const _AskBar();
   @override
@@ -83,7 +83,7 @@ class _AskBar extends StatelessWidget {
               Expanded(
                 child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('اسأل سبيل', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: AppColors.gold)),
-                  Text('تفسير آية أو حديث صحيح — بلا إنترنت', maxLines: 1, overflow: TextOverflow.ellipsis,
+                  Text('آية، حديث، مسألة، غزوة… من محتوى التطبيق', maxLines: 1, overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor)),
                 ]),
               ),

@@ -14,7 +14,17 @@ public sealed record SabeelAyah(Surah Surah, int Ayah, string Tafsir)
 /// </summary>
 public sealed record SabeelAnswer(string Title, IReadOnlyList<SabeelAyah> Ayat, IReadOnlyList<Hadith> Hadith, bool Ruling = false, bool More = false)
 {
-    public bool IsEmpty => Ayat.Count == 0 && Hadith.Count == 0;
+    /// <summary>Entries «من محتوى التطبيق» (fiqh, battles, companions…), best first.</summary>
+    public LibraryResult Library { get; init; } = LibraryResult.Empty;
+
+    /// <summary>Found by keywords (not a named ayah or a surah/ayah number).</summary>
+    public bool ByKeywords { get; init; }
+
+    public bool IsEmpty => Ayat.Count == 0 && Hadith.Count == 0 && Library.Entries.Count == 0;
+
+    /// <summary>Show the app's content before the ayat: a ruling question, or an entry whose title has every word asked.</summary>
+    public bool LibraryFirst => Library.Entries.Count > 0 && (Ruling || Library.Strong);
+
     internal SabeelAnswer WithRuling(bool r) => r ? this with { Ruling = true } : this;
 }
 
@@ -26,7 +36,7 @@ public sealed record SabeelAnswer(string Title, IReadOnlyList<SabeelAyah> Ayat, 
 public sealed class Sabeel
 {
     private static readonly Lazy<Sabeel> _default = new(() => new Sabeel(QuranRepository.Default, Content.Tafsir.Default,
-        HadithCollection.Ids.Select(HadithCollection.Load).ToList()));
+        HadithCollection.Ids.Select(HadithCollection.Load).ToList(), SabeelLibrary.Default));
     public static Sabeel Default => _default.Value;
 
     private readonly QuranRepository _repo;
@@ -34,10 +44,12 @@ public sealed class Sabeel
     private readonly IReadOnlyList<HadithCollection> _hadith;
     private readonly Dictionary<string, int> _surahNames = [];
     private readonly string[][] _verseKeys;
+    private readonly SabeelLibrary? _library;
 
-    public Sabeel(QuranRepository repo, Tafsir tafsir, IReadOnlyList<HadithCollection> hadith)
+    public Sabeel(QuranRepository repo, Tafsir tafsir, IReadOnlyList<HadithCollection> hadith, SabeelLibrary? library = null)
     {
         _repo = repo;
+        _library = library;
         Tafsir = tafsir;
         _hadith = hadith;
         foreach (var s in repo.Surahs)
@@ -102,7 +114,26 @@ public sealed class Sabeel
 
     private static string D(int n) => QuranRepository.ArabicDigits(n);
 
+    /// <summary>The query's words without question/filler words, ruling words and numbers (normalized, not stemmed).</summary>
+    public static List<string> KeywordsOf(string query) => Keywords(Spaces.Replace(Plain(LatinDigits(query)), " ").Trim());
+
+    /// <summary>True when the query asks for a ruling (حكم، يجوز، حلال…).</summary>
+    public static bool IsRuling(string query)
+    {
+        var tokens = Spaces.Replace(Plain(query), " ").Trim().Split(' ');
+        return RulingWords.Any(w => tokens.Any(t => t == w || t.StartsWith(w, StringComparison.Ordinal)));
+    }
+
+    /// <summary>Answers <paramref name="query"/> from the Quran, the tafsir, the two Sahihs and the app's own content.</summary>
     public SabeelAnswer Ask(string query)
+    {
+        var a = AskCore(query);
+        if (_library is null) return a;
+        // A named ayah or a surah: add only entries that name every word (e.g. «سبب نزول سورة …»).
+        return a with { Library = _library.Search(query, titleOnly: !a.ByKeywords && !a.IsEmpty) };
+    }
+
+    private SabeelAnswer AskCore(string query)
     {
         var raw = LatinDigits(query);
         var q = Spaces.Replace(Plain(raw), " ").Trim();
@@ -159,7 +190,7 @@ public sealed class Sabeel
 
         // 4) Keywords: search the ayat (and their tafsir) and the hadith.
         var kw = Keywords(q);
-        if (kw.Count == 0) return new SabeelAnswer("", [], [], ruling);
+        if (kw.Count == 0) return new SabeelAnswer("", [], [], ruling) { ByKeywords = true };
         // «حديث …» quotes a hadith: show only ayat that have every word.
         return KeywordAnswer(kw, null, ruling, exact: tokens.Contains("حديث"));
     }
@@ -225,7 +256,7 @@ public sealed class Sabeel
         var top = scored.Take(12).Select(e => Ayah(e.S, e.A)).ToList();
         var where = onlySurah is { } o ? $" في سورة {_repo[o].Name}" : "";
         return new SabeelAnswer($"نتائج «{string.Join(' ', kw)}»{where}", top, onlySurah is null ? FindHadith(stems) : [],
-            ruling, scored.Count > top.Count);
+            ruling, scored.Count > top.Count) { ByKeywords = onlySurah is null };
     }
 
     private static readonly Dictionary<string, Regex> Re = [];

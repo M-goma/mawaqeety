@@ -215,6 +215,27 @@ public static class SmokeTest
             await Task.Delay(1000);
             Shot(w, "14d-sabeel-ruling");
             if (!vm.Sabeel.Ruling) errors.Add("sabeel did not mark a ruling question");
+            // «من محتوى التطبيق»: a fiqh question, a battle and a feature.
+            await vm.Sabeel.AskCommand.ExecuteAsync("ما حكم المسح على الجوارب؟");
+            await Task.Delay(1000);
+            Shot(w, "14f-sabeel-library-fiqh");
+            if (vm.Sabeel.LibraryBefore.Count == 0 || vm.Sabeel.LibraryBefore[0].E.Target != "fiqh") errors.Add("sabeel did not show a fiqh entry first");
+            await vm.Sabeel.AskCommand.ExecuteAsync("غزوة بدر");
+            await Task.Delay(1000);
+            Shot(w, "14g-sabeel-library-badr");
+            if (vm.Sabeel.LibraryBefore.FirstOrDefault()?.E.Id != "ghazawat:badr") errors.Add("sabeel did not find the battle of Badr");
+            else
+            {
+                vm.Sabeel.OpenEntryCommand.Execute(vm.Sabeel.LibraryBefore[0]);
+                await Task.Delay(1500);
+                Shot(w, "14h-sabeel-open-badr");
+                if (vm.Page != ViewModels.Page.Ghazawat || vm.Ghazawat.Selected?.G.Id != "badr") errors.Add("sabeel did not open the battle of Badr");
+                vm.Page = ViewModels.Page.Sabeel;
+            }
+            await vm.Sabeel.AskCommand.ExecuteAsync("نصاب الزكاة");
+            await Task.Delay(1000);
+            Shot(w, "14i-sabeel-library-zakat");
+            if (!vm.Sabeel.LibraryBefore.Concat(vm.Sabeel.LibraryAfter).Any(x => x.E.Id == "feature:zakat")) errors.Add("sabeel did not offer the zakat page");
             await vm.Sabeel.AskCommand.ExecuteAsync("2:255");
             vm.Sabeel.OpenInMushafCommand.Execute(vm.Sabeel.Ayat[0]);
             await Task.Delay(4000);

@@ -10,6 +10,30 @@
             <Setter Property="Padding" Value="16,12"/>
             <Setter Property="Margin" Value="0,0,0,12"/>
         </Style>
+        <!-- An entry «من محتوى التطبيق»: section chip, title, quote and source; the button opens it in its page. -->
+        <DataTemplate x:Key="LibraryCard">
+            <Border Style="{StaticResource Card}" Padding="18,12" Margin="0,0,0,10">
+                <StackPanel>
+                    <DockPanel>
+                        <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Padding="10,3"
+                                Command="{Binding DataContext.OpenEntryCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding OpenLabel}"/>
+                                <TextBlock Text="&#xE76B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="6,3,0,0" FontSize="11"/>
+                            </StackPanel>
+                        </Button>
+                        <Border CornerRadius="8" Background="{DynamicResource AccentSoftBrush}" Padding="10,2" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Section}" FontSize="12" Foreground="{DynamicResource AccentBrush}" FontWeight="SemiBold"/>
+                        </Border>
+                    </DockPanel>
+                    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Bold" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                    <TextBlock Text="{Binding Snippet}" FontSize="14" LineHeight="26" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Visibility="{Binding HasSnippet, Converter={StaticResource BoolVis}}"/>
+                    <TextBlock Text="{Binding Source}" Style="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,4,0,0"
+                               Visibility="{Binding HasSource, Converter={StaticResource BoolVis}}"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </UserControl.Resources>
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="32,28,32,24" MaxWidth="980">
@@ -20,7 +44,7 @@
                         <TextBlock Text="&#xE8BD;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="26" Foreground="#E9C75A" VerticalAlignment="Center" Margin="0,4,14,0"/>
                         <StackPanel>
                             <TextBlock Text="اسأل سبيل" Foreground="White" FontSize="26" FontWeight="Bold"/>
-                            <TextBlock Text="اسأل عن تفسير آية أو عن حديث — بلا إنترنت، من المصادر مباشرة" Foreground="{DynamicResource HeroMutedBrush}" FontSize="13.5"/>
+                            <TextBlock Text="اسأل عن آية أو حديث أو مسألة أو غزوة… — بلا إنترنت، من المصادر ومن محتوى التطبيق" Foreground="{DynamicResource HeroMutedBrush}" FontSize="13.5"/>
                         </StackPanel>
                     </StackPanel>
                     <DockPanel Margin="0,16,0,0">
@@ -33,7 +57,7 @@
                         </Button>
                         <Grid>
                             <TextBox x:Name="QueryBox" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}" FontSize="15" Padding="12,8"/>
-                            <TextBlock Text="مثال: تفسير آية الكرسي، أو حديث عن الصدقة" Foreground="{DynamicResource TextMutedBrush}" IsHitTestVisible="False"
+                            <TextBlock Text="مثال: تفسير آية الكرسي، غزوة بدر، نصاب الزكاة" Foreground="{DynamicResource TextMutedBrush}" IsHitTestVisible="False"
                                        VerticalAlignment="Center" Margin="14,0" FontSize="14"
                                        Visibility="{Binding Text, ElementName=QueryBox, Converter={StaticResource Empty}}"/>
                         </Grid>
@@ -58,7 +82,7 @@
                 <StackPanel>
                     <TextBlock Text="كيف تسأل سبيل؟" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}" Margin="0,0,0,8"/>
                     <TextBlock TextWrapping="Wrap" FontSize="14" LineHeight="28"
-                               Text="• تفسير آية: اكتب اسمها (آية الكرسي) أو السورة ورقم الآية (الكهف 10).&#x0a;• موضوع: اكتب كلمة أو أكثر (الصبر، بر الوالدين) فتظهر الآيات وتفسيرها والأحاديث.&#x0a;• حديث: اكتب جزءًا من نصه (إنما الأعمال بالنيات).&#x0a;يعمل بلا إنترنت، وينقل النصوص من مصادرها كما هي."/>
+                               Text="• تفسير آية: اكتب اسمها (آية الكرسي) أو السورة ورقم الآية (الكهف 10).&#x0a;• موضوع: اكتب كلمة أو أكثر (الصبر، بر الوالدين) فتظهر الآيات وتفسيرها والأحاديث.&#x0a;• حديث: اكتب جزءًا من نصه (إنما الأعمال بالنيات).&#x0a;• من محتوى التطبيق: مسألة فقهية (المسح على الجوارب)، غزوة (غزوة بدر)، صحابي (كيف أسلم أبو بكر)، نبي، دعاء، أو صفحة (حاسبة الزكاة) فتفتحها من النتيجة.&#x0a;يعمل بلا إنترنت، وينقل النصوص من مصادرها كما هي."/>
                 </StackPanel>
             </Border>
 
@@ -67,7 +91,7 @@
                 <Border Style="{StaticResource Note}" Visibility="{Binding Ruling, Converter={StaticResource BoolVis}}" BorderBrush="{DynamicResource GoldBrush}">
                     <DockPanel>
                         <TextBlock Text="&#xE7BA;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="18" Foreground="{DynamicResource GoldBrush}" VerticalAlignment="Center" Margin="0,0,12,0"/>
-                        <TextBlock TextWrapping="Wrap" LineHeight="24" Text="سؤالك عن حكم شرعي: هذه نصوص للاطلاع فقط وليست فتوى. اسأل أهل العلم أو دار الإفتاء في بلدك."/>
+                        <TextBlock TextWrapping="Wrap" LineHeight="24" Text="سؤالك عن حكم شرعي: هذه نصوص ونقول من فتاوى منشورة بمصادرها للاطلاع فقط، وليست فتوى لحالك. اسأل أهل العلم أو دار الإفتاء في بلدك."/>
                     </DockPanel>
                 </Border>
                 <Border Style="{StaticResource Note}" Visibility="{Binding IsEmpty, Converter={StaticResource BoolVis}}">
@@ -81,6 +105,12 @@
                     <TextBlock Text="{Binding Title}" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}" TextWrapping="Wrap"
                                Visibility="{Binding Title, Converter={StaticResource NotEmpty}}"/>
                 </DockPanel>
+
+                <TextBlock Text="📚 من محتوى التطبيق" Style="{StaticResource Section}" Margin="4,0,4,10"
+                           Visibility="{Binding LibraryBefore.Count, Converter={x:Static c:ZeroVisibility.Instance}, ConverterParameter=inv}"/>
+                <ItemsControl ItemsSource="{Binding LibraryBefore}" ItemTemplate="{StaticResource LibraryCard}"/>
+                <Button Content="{Binding LibraryMoreText}" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Padding="12,4" Margin="0,0,0,10"
+                        Command="{Binding MoreLibraryCommand}" Visibility="{Binding ShowMoreBefore, Converter={StaticResource BoolVis}}"/>
 
                 <TextBlock Text="📖 الآيات وتفسيرها (التفسير الميسر)" Style="{StaticResource Section}"
                            Visibility="{Binding Ayat.Count, Converter={x:Static c:ZeroVisibility.Instance}, ConverterParameter=inv}"/>
@@ -139,6 +169,12 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <TextBlock Text="📚 من محتوى التطبيق" Style="{StaticResource Section}" Margin="4,8,4,10"
+                           Visibility="{Binding LibraryAfter.Count, Converter={x:Static c:ZeroVisibility.Instance}, ConverterParameter=inv}"/>
+                <ItemsControl ItemsSource="{Binding LibraryAfter}" ItemTemplate="{StaticResource LibraryCard}"/>
+                <Button Content="{Binding LibraryMoreText}" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Padding="12,4" Margin="0,0,0,10"
+                        Command="{Binding MoreLibraryCommand}" Visibility="{Binding ShowMoreAfter, Converter={StaticResource BoolVis}}"/>
             </StackPanel>
 
             <TextBlock Text="{Binding DisclaimerText}" Style="{StaticResource Muted}" FontSize="12" LineHeight="22" Margin="4,8,4,0"/>
