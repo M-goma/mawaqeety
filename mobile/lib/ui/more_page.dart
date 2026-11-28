@@ -55,34 +55,67 @@ class MorePage extends StatelessWidget {
             ),
           ),
         );
+    // A band with the group's name, then its tiles two per row.
+    Widget band(IconData icon, String title) => Container(
+          margin: const EdgeInsets.fromLTRB(14, 18, 14, 10),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: hero3D(radius: 14),
+          child: Row(children: [
+            Icon(icon, color: AppColors.goldLight, size: 20),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 16)),
+            ),
+          ]),
+        );
+    Widget grid(List<Widget> tiles) => GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          mainAxisSpacing: 12,
+          crossAxisSpacing: 12,
+          childAspectRatio: 1.45,
+          children: tiles,
+        );
     return Scaffold(
       appBar: AppBar(title: const Text('المزيد')),
-      body: GridView.count(
-        // Small icons: three per row; medium and large: two, shorter tiles.
-        crossAxisCount: 2,
-        padding: const EdgeInsets.fromLTRB(14, 8, 14, 20),
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.45,
-        children: [
-          item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
+      body: ListView(padding: const EdgeInsets.only(bottom: 24), children: [
+        band(Icons.mosque_outlined, 'السيرة النبوية'),
+        grid([
+          item('🕌', 'السيرة النبوية', 'من المولد إلى الوفاة على خط زمني', const SeerahPage()),
+          item('⚔️', 'غزوات النبي ﷺ', 'بدر وأحد والخندق وفتح مكة…', const GhazawatPage()),
+          item('🌳', 'النسب الشريف', 'نسب النبي ﷺ وملتقى أنساب العشرة', const NasabPage()),
+          item('🤝', 'كيف أسلم الصحابة', 'قصة إسلام العشرة المبشرين', const CompanionsIslamPage()),
+        ]),
+        band(Icons.format_quote_outlined, 'الحديث والفقه'),
+        grid([
+          item('📜', 'الأربعون النووية', 'جوامع الكلم مع فوائدها وتتبّع حفظك', const ArbaeenPage()),
+          item('⚖️', 'فقه العبادات', 'من فتاوى إسلام ويب والأزهر ودار الإفتاء', const FiqhPage()),
+        ]),
+        band(Icons.auto_stories_outlined, 'القرآن والعقيدة'),
+        grid([
+          item('📖', 'أسباب النزول', 'الصحيحة من البخاري ومسلم، والمكي والمدني', const AsbabPage()),
+          item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
+        ]),
+        band(Icons.event_note_outlined, 'المواسم والعبادات'),
+        grid([
           item('🌙', 'رمضان', 'الصيام والتراويح والتهجد', const RamadanPage()),
           item('🤍', 'الأيام البيض', '١٣ و١٤ و١٥ من كل شهر', const WhiteDaysPage()),
           item('🗓️', 'المناسبات والصيام', 'عرفة وعاشوراء والعيدان والاثنين والخميس', const OccasionsPage()),
-          item('📜', 'الأربعون النووية', 'جوامع الكلم مع فوائدها وتتبّع حفظك', const ArbaeenPage()),
-          item('⚖️', 'فقه العبادات', 'من فتاوى إسلام ويب والأزهر ودار الإفتاء', const FiqhPage()),
-          item('📖', 'أسباب النزول', 'الصحيحة من البخاري ومسلم، والمكي والمدني', const AsbabPage()),
-          item('⚔️', 'غزوات النبي ﷺ', 'بدر وأحد والخندق وفتح مكة…', const GhazawatPage()),
-          item('🕌', 'السيرة النبوية', 'من المولد إلى الوفاة على خط زمني', const SeerahPage()),
-          item('🌳', 'النسب الشريف', 'نسب النبي ﷺ وملتقى أنساب العشرة', const NasabPage()),
-          item('🤝', 'كيف أسلم الصحابة', 'قصة إسلام العشرة المبشرين', const CompanionsIslamPage()),
-          item('🏆', 'مسابقات', 'أسئلة قصيرة من محتوى التطبيق بمصادرها', const QuizPage()),
-          item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
           item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
+        ]),
+        band(Icons.emoji_events_outlined, 'تعلّم وتابع تقدّمك'),
+        grid([
+          item('🏆', 'مسابقات', 'أسئلة قصيرة من محتوى التطبيق بمصادرها', const QuizPage()),
+          item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
+        ]),
+        band(Icons.tune, 'التطبيق'),
+        grid([
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
           guide(),
-        ],
-      ),
+        ]),
+      ]),
     );
   }
 }
