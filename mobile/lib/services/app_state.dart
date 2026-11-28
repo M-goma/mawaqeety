@@ -25,6 +25,7 @@ import 'mushaf_store.dart';
 import 'notification_service.dart';
 import 'quran_downloads.dart';
 import 'story_downloads.dart';
+import 'ghazwa_downloads.dart';
 import 'tracker.dart';
 import 'radio.dart';
 import 'recitation.dart';
@@ -50,8 +51,9 @@ class AppState extends ChangeNotifier {
   final mushaf = MushafIndex();
   final mushafStore = MushafStore();
   final stories = StoryDownloads();
+  final ghazawat = GhazwaDownloads();
   final tracker = Tracker();
-  late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories);
+  late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories, ghazawat);
   final narration = Narration();
   final radio = QuranRadio();
   final updater = AppUpdater();
@@ -77,6 +79,7 @@ class AppState extends ChangeNotifier {
     await mushafStore.init(mushaf);
     await narration.loadRecordings();
     await stories.init();
+    await ghazawat.init();
     tracker.wirdGoal = () => settings.wirdGoal;
     await tracker.load();
     narration.onSaved = stories.noteSaved;

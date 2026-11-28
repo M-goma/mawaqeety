@@ -14,6 +14,7 @@ import '../data/repository.dart';
 import 'mushaf_store.dart';
 import 'notification_service.dart';
 import 'quran_downloads.dart';
+import 'ghazwa_downloads.dart';
 import 'story_downloads.dart';
 import 'tracker.dart';
 
@@ -62,7 +63,8 @@ class DownloadNotifier {
   final MushafStore mushaf;
   final Repository repo;
   final StoryDownloads stories;
-  DownloadNotifier(this.quran, this.mushaf, this.repo, this.stories);
+  final GhazwaDownloads ghazawat;
+  DownloadNotifier(this.quran, this.mushaf, this.repo, this.stories, this.ghazawat);
 
   final _plugin = FlutterLocalNotificationsPlugin();
   final _port = ReceivePort();
@@ -73,6 +75,7 @@ class DownloadNotifier {
   final _quranJobs = <String, List<int>>{}; // reciter -> surahs
   bool _mushafJob = false;
   (List<String>, List<String>?)? _storiesJob; // voices, story ids (null = all)
+  List<(String, String)>? _ghazawatJob; // battles (id, name)
   bool _paused = false;
 
   bool get _supported => !kIsWeb && Platform.isAndroid;
@@ -96,9 +99,10 @@ class DownloadNotifier {
     quran.addListener(_changed);
     mushaf.addListener(_changed);
     stories.addListener(_changed);
+    ghazawat.addListener(_changed);
   }
 
-  bool get _anyActive => quran.jobs.isNotEmpty || mushaf.downloading || stories.downloading;
+  bool get _anyActive => quran.jobs.isNotEmpty || mushaf.downloading || stories.downloading || ghazawat.downloading;
 
   void _changed() {
     for (final j in quran.jobs.values) {
@@ -106,13 +110,14 @@ class DownloadNotifier {
     }
     if (mushaf.downloading) _mushafJob = true;
     if (stories.downloading) _storiesJob = (stories.jobGenders, stories.jobIds);
+    if (ghazawat.downloading) _ghazawatJob = ghazawat.job;
     if (_anyActive && !_running) _start();
     if (!_anyActive && _running) _finish();
   }
 
   AndroidNotificationDetails _progressDetails(int done, int total) => AndroidNotificationDetails(
         'downloads_v1', 'التنزيلات',
-        channelDescription: 'تقدّم تنزيل التلاوات وصفحات المصحف',
+        channelDescription: 'تقدّم تنزيل التلاوات وصفحات المصحف والقصص',
         importance: Importance.low,
         priority: Priority.low,
         playSound: false,
@@ -156,6 +161,13 @@ class DownloadNotifier {
       lines.add('${p != null ? 'قصة ${p.nameAr} • ' : ''}${Arabic.digits((stories.progress * 100).round())}٪');
       done += stories.doneFiles;
       total += stories.totalFiles;
+    }
+    if (ghazawat.downloading) {
+      titles.add('جارٍ تنزيل غزوات النبي ﷺ • مازن');
+      final n = ghazawat.currentName;
+      lines.add('${n.isNotEmpty ? '$n • ' : ''}${Arabic.digits((ghazawat.progress * 100).round())}٪');
+      done += ghazawat.doneFiles;
+      total += ghazawat.totalFiles;
     }
     return (titles.isEmpty ? 'جارٍ التنزيل' : titles.first, lines.join('\n'), done, total);
   }
@@ -220,9 +232,11 @@ class DownloadNotifier {
           if (quran.lastError.containsKey(r)) quran.lastError[r]!,
         if (_mushafJob && mushaf.error != null) mushaf.error!,
         if (_storiesJob != null && stories.error != null) stories.error!,
+        if (_ghazawatJob != null && ghazawat.error != null) ghazawat.error!,
       ];
       final cancelled = _quranJobs.keys.any(quran.wasCancelled) || (_mushafJob && mushaf.wasCancelled) ||
-          (_storiesJob != null && stories.wasCancelled);
+          (_storiesJob != null && stories.wasCancelled) ||
+          (_ghazawatJob != null && ghazawat.wasCancelled);
       if (errors.isNotEmpty) {
         title = 'توقّف التنزيل';
         body = errors.first;
@@ -239,6 +253,7 @@ class DownloadNotifier {
         if (_storiesJob case (final g, final ids)?) {
           parts.add(ids == null ? 'قصص الأنبياء بصوت ${_voices(g)}' : 'قصة ${repo.prophets.firstWhere((x) => x.id == ids.first).nameAr}');
         }
+        if (_ghazawatJob != null) parts.add('غزوات النبي ﷺ بصوت مازن');
         if (parts.isNotEmpty) {
           title = '✓ اكتمل التنزيل';
           body = '${parts.join('، ')} جاهز دون إنترنت.';
@@ -249,6 +264,7 @@ class DownloadNotifier {
       _quranJobs.clear();
       _mushafJob = false;
       _storiesJob = null;
+      _ghazawatJob = null;
     }
     _paused = false;
     if (title == null) return;
@@ -284,22 +300,26 @@ class DownloadNotifier {
           _quranJobs.clear();
           _mushafJob = false;
           _storiesJob = null;
+          _ghazawatJob = null;
         }
         for (final r in quran.jobs.keys.toList()) {
           quran.cancel(r);
         }
         if (mushaf.downloading) mushaf.cancel();
         if (stories.downloading) stories.cancel();
+        if (ghazawat.downloading) ghazawat.cancel();
       case 'dl_resume':
         _plugin.cancel(id: _doneId);
         final jobs = Map.of(_quranJobs);
         final m = _mushafJob;
         final st = _storiesJob;
+        final gz = _ghazawatJob;
         for (final e in jobs.entries) {
           quran.download(repo, e.key, surahs: e.value.isEmpty ? null : e.value);
         }
         if (m) mushaf.downloadAll();
         if (st != null) stories.download(st.$1, ids: st.$2);
+        if (gz != null) ghazawat.downloadAll(gz);
     }
   }
 }
