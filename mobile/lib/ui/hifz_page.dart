@@ -17,9 +17,6 @@ String _ayat(int n) {
 
 String _days(int n) => n == 1 ? 'يوم' : n == 2 ? 'يومين' : n <= 10 ? '${Arabic.digits(n)} أيام' : '${Arabic.digits(n)} يومًا';
 
-/// Letters that never join the next one (no tatweel after them).
-const _nonJoining = 'اأإآٱءدذرزوؤة';
-
 String rangeLabel(HifzRange r) {
   final name = app.repo.surahs[r.surah - 1].name;
   return r.from == r.to
@@ -454,13 +451,13 @@ class _HifzPageState extends State<HifzPage> with SingleTickerProviderStateMixin
           child: shown
               ? Text(w, style: quran)
               : store.firstLetters
-                  // The first letter in its joining form (with a tatweel), over the word's own width.
+                  // The first letter (with «ٱل» the next ones too) in its joining form, over the word's own width.
                   ? Stack(children: [
                       Text(w, style: quran.copyWith(color: Colors.transparent)),
                       Positioned.fill(
                         child: Align(
                           alignment: AlignmentDirectional.centerStart,
-                          child: Text(tail.isNotEmpty && !_nonJoining.contains(head[0]) ? '$headـ' : head,
+                          child: Text(tail.isNotEmpty && hintJoins(head) ? '$headـ' : head,
                               style: quran.copyWith(color: AppColors.emerald)),
                         ),
                       ),

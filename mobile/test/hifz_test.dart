@@ -104,7 +104,18 @@ void main() {
 
   group('words', () {
     test('first letter keeps its marks', () {
-      expect(firstLetter('ٱلۡكِتَٰبُ'), ('ٱ', 'لۡكِتَٰبُ'));
+      expect(firstLetter('ٱلۡكِتَٰبُ'), ('ٱلۡكِ', 'تَٰبُ'));
+      expect(firstLetter('ٱلۡمُلۡكُ'), ('ٱلۡمُ', 'لۡكُ'));
+      expect(firstLetter('ٱللَّهِ'), ('ٱللَّ', 'هِ'));
+      expect(firstLetter('ٱهۡدِنَا'), ('ٱهۡ', 'دِنَا'));
+      expect(firstLetter('ٱ'), ('ٱ', ''));
+      expect(firstLetter('رَيۡبَۛ'), ('رَ', 'يۡبَۛ'));
+      expect(firstLetter('ءَآلۡـَٰٔنَ').$1, 'ءَ');
+      expect(firstLetter('قُلۡ'), ('قُ', 'لۡ'));
+      expect(hintJoins('ٱلۡمُ'), isTrue);
+      expect(hintJoins('رَ'), isFalse);
+      expect(hintJoins('بِ'), isTrue);
+      expect(hintJoins('ٱ'), isFalse);
       expect(firstLetter('بِسۡمِ'), ('بِ', 'سۡمِ'));
       expect(firstLetter('لِّلۡمُتَّقِينَ').$1, 'لِّ');
       expect(firstLetter(''), ('', ''));

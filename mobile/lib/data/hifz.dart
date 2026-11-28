@@ -131,13 +131,38 @@ bool _isMark(int c) =>
 /// The words of an ayah, for the self-test.
 List<String> ayahWords(String verse) => verse.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
 
-/// A word split after its first letter (with that letter's marks): «ٱلۡكِتَٰبُ» → («ٱ», «لۡكِتَٰبُ»).
+const _alefWasla = 0x0671, _lam = 0x0644;
+
+/// A word split after its first letter, keeping all the marks on it (harakat, sukun, small high signs):
+/// «بِسۡمِ» → («بِ», «سۡمِ»). A word starting with alef wasla alone would be an unreadable hint, so it
+/// keeps the next letter too, and with the definite article the first letter after it:
+/// «ٱلۡمُلۡكُ» → («ٱلۡمُ», «لۡكُ»), «ٱهۡدِنَا» → («ٱهۡ», «دِنَا»).
 (String, String) firstLetter(String word) {
   final c = word.runes.toList();
   if (c.isEmpty) return ('', '');
-  var i = 1;
-  while (i < c.length && _isMark(c[i])) {
-    i++;
+  var i = 0;
+  void letter() {
+    if (i < c.length) i++;
+    while (i < c.length && _isMark(c[i])) {
+      i++;
+    }
+  }
+
+  letter();
+  if (c[0] == _alefWasla && i < c.length) {
+    final lam = c[i] == _lam;
+    letter();
+    if (lam && i < c.length) letter();
   }
   return (String.fromCharCodes(c.take(i)), String.fromCharCodes(c.skip(i)));
+}
+
+/// Letters that never join the next one.
+const _nonJoining = 'اأإآٱءدذرزوؤةى';
+
+/// Whether a hint ([firstLetter]'s head) ends with a letter that joins the rest of the word (so it is
+/// shown with a tatweel, in its connected form).
+bool hintJoins(String head) {
+  final base = head.runes.where((r) => !_isMark(r)).toList();
+  return base.isNotEmpty && !_nonJoining.contains(String.fromCharCode(base.last));
 }
