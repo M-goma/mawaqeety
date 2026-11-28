@@ -10,6 +10,7 @@ import '../data/companions_islam.dart';
 import '../data/duas.dart';
 import '../data/fiqh.dart';
 import '../data/ghazawat.dart';
+import '../data/hajj.dart';
 import '../data/nasab.dart';
 import '../data/occasions.dart';
 import '../data/quiz.dart' show QuizRef;
@@ -26,6 +27,7 @@ import '../ui/companions_page.dart';
 import '../ui/downloads_page.dart';
 import '../ui/duas_page.dart';
 import '../ui/ghazawat_page.dart';
+import '../ui/hajj_page.dart';
 import '../ui/hadith_page.dart';
 import '../ui/hifz_page.dart';
 import '../ui/khatma_page.dart';
@@ -142,8 +144,7 @@ class SabeelLibrary {
     const LibrarySource('duas', 'أدعية المناسبات', _duas, assets: ['assets/data/duas.json']),
     const LibrarySource('adhkar', 'أذكار الصباح والمساء', _adhkar),
     const LibrarySource('atlas', 'أطلس قصص الأنبياء', _atlas),
-    // Hajj guide (feature/hajj, assets/data/hajj.json + lib/data/hajj.dart), when it is merged:
-    // const LibrarySource('hajj', 'دليل الحج والعمرة', _hajj, assets: ['assets/data/hajj.json']),
+    const LibrarySource('hajj', 'دليل الحج والعمرة', _hajj, assets: ['assets/data/hajj.json']),
     const LibrarySource('features', 'ميزات التطبيق', _features),
   ];
 
@@ -254,6 +255,47 @@ Future<List<LibraryEntry>> _ghazawat(Repository repo) async => [
           open: (c) => _push(c, GhazwaPage(g: g)),
         ),
     ];
+
+Future<List<LibraryEntry>> _hajj(Repository repo) async {
+  final d = await HajjData.load();
+  return [
+    for (final g in d.guides)
+      for (final st in g.steps)
+        LibraryEntry(
+          id: 'hajj:${g.id}:${st.id}',
+          section: 'دليل الحج والعمرة',
+          title: '${g.name}: ${st.title}',
+          snippet: '${st.dayLabel.isEmpty ? '' : '${st.dayLabel} — '}الحكم: ${st.ruling}. ${st.what.isEmpty ? '' : st.what.first}',
+          text: '${st.place} ${st.rulingNote} ${st.what.join(' ')} ${st.mistakes.join(' ')} ${st.others} '
+              '${st.duas.map((x) => x.text).join(' ')}',
+          keywords: 'حج عمره مناسك ${st.title}',
+          source: st.refs.isEmpty ? null : st.refs.first.source,
+          open: (ctx) async {
+            final checks = await HajjChecks.load();
+            if (!ctx.mounted) return;
+            _push(ctx, HajjStepPage(data: d, guide: g, start: g.steps.indexOf(st), checks: ValueNotifier(checks)));
+          },
+        ),
+    LibraryEntry(
+      id: 'hajj:mahzurat',
+      section: 'دليل الحج والعمرة',
+      title: 'محظورات الإحرام',
+      snippet: d.mahzuratIntro,
+      text: d.mahzurat.map((m) => '${m.name} ${m.items.join(' ')}').join(' '),
+      keywords: 'محظورات الاحرام ممنوعات المحرم',
+      open: (ctx) => _push(ctx, const HajjPage(initialTab: 2)),
+    ),
+    LibraryEntry(
+      id: 'hajj:mawaqit',
+      section: 'دليل الحج والعمرة',
+      title: 'المواقيت المكانية للحج والعمرة',
+      snippet: d.mawaqitIntro,
+      text: d.mawaqit.map((m) => '${m.name} ${m.modern} ${m.forWhom} ${m.note}').join(' '),
+      keywords: 'ميقات مواقيت الاحرام',
+      open: (ctx) => _push(ctx, const HajjPage(initialTab: 2)),
+    ),
+  ];
+}
 
 Future<List<LibraryEntry>> _companionsIslam(Repository repo) async => [
       for (final c in CompanionsIslam.list)
