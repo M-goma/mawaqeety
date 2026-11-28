@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>دليل سبيل – رفيق المسلم</title>
+<meta name="description" content="دليل مصوّر لاستخدام تطبيق سبيل – رفيق المسلم (مواقيتي): اسأل سبيل عن تفسير آية أو حديث، مواقيت الصلاة والأذان، المصحف وإذاعة القرآن، الأذكار وأدعية المناسبات، السبحة، الأحاديث الصحيحة، وقصص الأنبياء والصحابة.">
+<style>
+  @font-face { font-family: Cairo; src: url(../assets/assets/fonts/Cairo-Regular.ttf); }
+  @font-face { font-family: Cairo; font-weight: 700; src: url(../assets/assets/fonts/Cairo-Bold.ttf); }
+  :root { --bg: #f7f3ea; --ink: #1d2a3a; --muted: #5d6b7c; --em: #0e7a55; --gold: #b8901f; --card: #fff; --line: #e6dfcf; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #07152a; --ink: #eef4fa; --muted: #93a7c2; --em: #20c08a; --gold: #e9c75a; --card: #0f2544; --line: #1d3a62; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: Cairo, "Segoe UI", Tahoma, sans-serif; line-height: 1.9; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 16px 60px; }
+  header { text-align: center; padding: 28px 16px 18px; background: linear-gradient(160deg, #1d5a8a, #0b2a4a 55%, #07152a); color: #fff; }
+  header img { width: 84px; height: 84px; border-radius: 20px; box-shadow: 0 8px 20px #0008; }
+  .new { display:inline-block; background: var(--gold); color:#07152a; border-radius: 10px; font-size: 12px; padding: 0 8px; margin-right: 6px; vertical-align: middle; }
+  header h1 { margin: 0; font-size: 34px; }
+  header p { margin: 4px 0 0; color: #e9c75a; }
+  .toc { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 18px 0 8px; }
+  .toc a { text-decoration: none; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 2px 12px; font-size: 14px; }
+  section { display: grid; grid-template-columns: 1fr auto; gap: 22px; align-items: center; background: var(--card); border: 1px solid var(--line);
+            border-radius: 18px; padding: 18px 20px; margin: 18px 0; box-shadow: 0 10px 24px #0000001a; break-inside: avoid; }
+  section h2 { margin: 0 0 6px; color: var(--em); font-size: 22px; }
+  section h2 span { display: inline-flex; width: 30px; height: 30px; border-radius: 50%; background: var(--em); color: #fff; align-items: center; justify-content: center; font-size: 15px; margin-left: 8px; }
+  ul { margin: 6px 0; padding-right: 20px; }
+  li { margin: 3px 0; }
+  .shots { display: flex; gap: 10px; }
+  .shots img { width: 180px; border-radius: 16px; box-shadow: 0 8px 18px #00000040; display: block; }
+  .wide img { width: 100%; border-radius: 12px; box-shadow: 0 8px 18px #00000040; }
+  .tip { color: var(--gold); font-weight: 700; }
+  .note { color: var(--muted); font-size: 14px; }
+  footer { text-align: center; color: var(--muted); font-size: 14px; margin-top: 26px; }
+  @media (max-width: 720px) {
+    section { grid-template-columns: minmax(0, 1fr); padding: 16px 14px; }
+    section > div { min-width: 0; }
+    .shots { justify-content: center; }
+    .shots img { width: calc(50% - 5px); max-width: 200px; }
+  }
+  @media print {
+    body { background: #fff; color: #1d2a3a; font-size: 13px; }
+    section { box-shadow: none; grid-template-columns: 1fr auto; padding: 12px 14px; margin: 10px 0; }
+    .shots { justify-content: flex-start; }
+    .shots img { width: 150px; max-width: none; }
+    header { padding: 16px; }
+    .wide img { max-height: 330px; width: auto; display: block; margin: 0 auto; }
+    footer { margin-top: 6px; break-before: avoid; }
+    .toc { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <img src="../icons/Icon-192.png" alt="">
+  <h1>دليل سبيل – رفيق المسلم</h1>
+  <p>كل ما تحتاجه لتستفيد من التطبيق في دقائق</p>
+</header>
+<div class="wrap">
+  <nav class="toc">
+    <a href="#start">البداية</a><a href="#home">الرئيسية</a><a href="#times">المواقيت</a><a href="#adhan">الأذان</a><a href="#quran">القرآن</a><a href="#sabeel">اسأل سبيل</a>
+    <a href="#adhkar">الأذكار</a><a href="#tasbeeh">السبحة</a><a href="#stats">إحصائياتي</a><a href="#hadith">الأحاديث</a><a href="#stories">القصص</a><a href="#look">المظهر</a><a href="#pc">الكمبيوتر</a><a href="#video">الفيديو</a>
+  </nav>
+
+  <section id="start">
+    <div>
+      <h2><span>١</span>البداية</h2>
+      <ul>
+        <li>عند أول فتح اختر مدينتك أو اسمح بتحديد الموقع، فتُحسب المواقيت بطريقة الهيئة المصرية العامة للمساحة (ويمكن تغييرها).</li>
+        <li>اسمح بالإشعارات حتى يصلك الأذان والتذكيرات.</li>
+        <li>في الأسفل خمسة تبويبات: <b>الرئيسية، المواقيت، القرآن، الأذكار، المزيد</b>.</li>
+      </ul>
+      <p class="tip">💡 التطبيق يعمل بلا إنترنت؛ تحتاجه فقط للإذاعة والتلاوات غير المنزّلة.</p>
+    </div>
+    <div class="shots"><img src="img/more.jpg" alt="المزيد"></div>
+  </section>
+
+  <section id="home">
+    <div>
+      <h2><span>٢</span>الرئيسية: يومك في شاشة واحدة</h2>
+      <ul>
+        <li>الصلاة القادمة والوقت المتبقي لها.</li>
+        <li><b>إذاعة القرآن الكريم من القاهرة</b> بضغطة واحدة.</li>
+        <li><b>حصاد اليوم</b>: صلواتك وأذكار الصباح والمساء وورد التسبيح.</li>
+        <li>يوم الجمعة: بطاقة <b>سورة الكهف</b> تتابع ما قرأت منها.</li>
+        <li><b>حديث اليوم</b>، ثم الأقسام: قصص الأنبياء، العشرة المبشرون، الأحاديث، أدعية المناسبات، السبحة، القبلة.</li>
+        <li>وفي الأسفل شريط <b>اسأل سبيل</b>.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/home.jpg" alt="الرئيسية"></div>
+  </section>
+
+  <section id="times">
+    <div>
+      <h2><span>٣</span>المواقيت</h2>
+      <ul>
+        <li>مواقيت اليوم كاملة مع التاريخ الهجري، والتقويم الشهري، واتجاه القبلة.</li>
+        <li>اضغط <b>«سجّل صلاتك»</b>: جماعة في المسجد، أو جماعة، أو منفردًا، أو قضاء.</li>
+        <li>لتغيير المدينة اضغط اسمها أعلى الشاشة.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/prayers.jpg" alt="المواقيت"></div>
+  </section>
+
+  <section id="adhan">
+    <div>
+      <h2><span>٤</span>الأذان وإسكاته</h2>
+      <ul>
+        <li>يعمل الأذان كاملًا في وقت كل صلاة، <b>حتى لو كان التطبيق مغلقًا</b>.</li>
+        <li>لإسكاته: <b>اقلب الهاتف على وجهه</b>، أو <b>اضغط زر التشغيل (Power)</b>، أو زر «إيقاف» في الإشعار.</li>
+        <li>يعمل الأذان <b>حتى والهاتف صامت</b> (بصوت المنبّه)، ويمكنك إيقاف ذلك من الإعدادات. ولا يقطع تلاوة أو إذاعة تستمع إليها.</li>
+        <li>اختر صوت الأذان وأذان الفجر من: <b>المزيد ← الإعدادات ← الأذان</b>.</li>
+        <li>تذكير بسورة الكهف وبساعة الاستجابة يوم الجمعة، وسؤال «هل صليت؟» بعد كل صلاة.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/adhan.jpg" alt="إعدادات الأذان"></div>
+  </section>
+
+  <section id="quran">
+    <div>
+      <h2><span>٥</span>القرآن الكريم</h2>
+      <ul>
+        <li><b>المصحف الشريف</b> بصفحات مصحف المدينة؛ اسحب للتنقل واضغط الصفحة لإظهار الأدوات.</li>
+        <li>اضغط مطولًا على أي آية لتسمعها أو تحفظ موضعك، وتُظلَّل الآية التي تُتلى.</li>
+        <li><b>اختر القارئ</b> من تبويب القرآن أو الإعدادات، ومنهم المنشاوي المرتّل.</li>
+        <li>نزّل المصحف والتلاوات للاستخدام بلا إنترنت من زر التنزيل ⬇.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/mushaf.jpg" alt="صفحة من المصحف"><img src="img/reciter.jpg" alt="اختيار القارئ"></div>
+  </section>
+
+  <section id="sabeel">
+    <div>
+      <h2><span>٦</span>اسأل سبيل<i class="new">جديد</i></h2>
+      <ul>
+        <li>اسأل عن <b>تفسير آية</b> باسمها (آية الكرسي) أو بالسورة ورقمها (الكهف 10).</li>
+        <li>أو اكتب <b>موضوعًا</b> (الصبر، بر الوالدين) فتظهر الآيات وتفسيرها والأحاديث الصحيحة.</li>
+        <li>أو اكتب جزءًا من <b>حديث</b> لتجده في البخاري ومسلم.</li>
+        <li>كل آية معها زر «في المصحف» ونسخ.</li>
+        <li>المصادر: التفسير الميسر (مجمع الملك فهد) وصحيحا البخاري ومسلم، ويعمل بلا إنترنت.</li>
+      </ul>
+      <p class="tip">💡 سبيل بحث في النصوص وليس مفتيًا؛ في الأحكام اسأل أهل العلم.</p>
+    </div>
+    <div class="shots"><img src="img/sabeel-ask.jpg" alt="اسأل سبيل"><img src="img/sabeel.jpg" alt="تفسير آية الكرسي"></div>
+  </section>
+
+  <section id="adhkar">
+    <div>
+      <h2><span>٧</span>الأذكار وأدعية المناسبات</h2>
+      <ul>
+        <li>أذكار الصباح والمساء كاملة، تُختار حسب الوقت، واضغط الذكر ليُعدّ.</li>
+        <li><b>أدعية المناسبات</b> من «حصن المسلم»: النوم، والاستيقاظ، والسفر، والكرب، والاستخارة… مع مصدر كل دعاء.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/adhkar.jpg" alt="الأذكار"><img src="img/duas.jpg" alt="أدعية المناسبات"></div>
+  </section>
+
+  <section id="tasbeeh">
+    <div>
+      <h2><span>٨</span>السبحة</h2>
+      <ul>
+        <li>اضغط في أي مكان للعدّ مع اهتزاز خفيف.</li>
+        <li>اختر الذكر والعدد: ٣٣، أو ١٠٠، أو حر، أو تسبيح ما بعد الصلاة.</li>
+        <li>حدّد <b>وردك اليومي</b> وتابع تقدّمك.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/tasbeeh.jpg" alt="السبحة"></div>
+  </section>
+
+  <section id="stats">
+    <div>
+      <h2><span>٩</span>إحصائياتي</h2>
+      <ul>
+        <li>اكتمال أيامك، والأيام المتتالية، ونسب صلواتك.</li>
+        <li>بياناتك محفوظة على جهازك فقط.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/stats.jpg" alt="إحصائياتي"></div>
+  </section>
+
+  <section id="hadith">
+    <div>
+      <h2><span>١٠</span>الأحاديث الصحيحة</h2>
+      <ul>
+        <li><b>صحيح البخاري وصحيح مسلم</b> بأرقام الأحاديث المعتمدة، مع تصفّح بالكتب وبحث وحفظ.</li>
+        <li>زر <b>«نص الحديث / بالسند»</b> لعرض كلام النبي ﷺ وحده أو الحديث كاملًا.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/hadith.jpg" alt="الأحاديث الصحيحة"></div>
+  </section>
+
+  <section id="stories">
+    <div>
+      <h2><span>١١</span>قصص الأنبياء والصحابة</h2>
+      <ul>
+        <li><b>قصص الأنبياء</b>: ٢٥ قصة مسجّلة صوتيًا تعمل في الخلفية ويمكن تنزيلها.</li>
+        <li><b>العشرة المبشرون بالجنة</b>: نبذة ومواقف من الصحيحين برقم كل حديث.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/prophets.jpg" alt="قصص الأنبياء"><img src="img/companion.jpg" alt="أبو بكر الصديق"></div>
+  </section>
+
+  <section id="look">
+    <div>
+      <h2><span>١٢</span>المظهر وأداة الشاشة الرئيسية</h2>
+      <ul>
+        <li>عشرة ألوان، ووضع ليلي أو نهاري.</li>
+        <li><b>حجم العرض</b>: صغير، متوسط، كبير — يكبّر الخط والأيقونات والبطاقات معًا.</li>
+        <li><b>أداة على الشاشة الرئيسية</b> للهاتف تُريك الصلاة القادمة، وتتلوّن بلون التطبيق تلقائيًا.</li>
+      </ul>
+    </div>
+    <div class="shots"><img src="img/appearance.jpg" alt="المظهر"></div>
+  </section>
+
+  <section id="pc" style="grid-template-columns:1fr">
+    <div>
+      <h2><span>١٣</span>نسخة الكمبيوتر (ويندوز)</h2>
+      <ul>
+        <li>نفس المزايا على الكمبيوتر، مع نافذة صغيرة على سطح المكتب، وأذان من شريط المهام حتى والنافذة مغلقة.</li>
+        <li>تتحدّث تلقائيًا عند صدور نسخة جديدة.</li>
+      </ul>
+    </div>
+    <div class="wide"><img src="img/desktop.jpg" alt="سبيل على الكمبيوتر"></div>
+  </section>
+
+  <section id="video" style="grid-template-columns:1fr;text-align:center">
+    <div>
+      <h2 style="margin-bottom:10px">فيديو تعريفي وملف PDF</h2>
+      <video src="sabeel-promo.mp4" controls playsinline preload="metadata" style="width:100%;max-width:360px;border-radius:18px;box-shadow:0 10px 24px #0005"></video>
+      <p><a href="sabeel-guide.pdf" style="color:var(--em);font-weight:700">⬇ تنزيل الدليل PDF</a></p>
+    </div>
+  </section>
+
+  <footer>
+    سبيل – رفيق المسلم (مواقيتي) — صدقة جارية. نسأل الله أن ينفع به.<br>
+    <a href="../" style="color:var(--em)">افتح التطبيق على الويب</a>
+  </footer>
+</div>
+</body>
+</html>

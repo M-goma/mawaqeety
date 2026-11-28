@@ -1,0 +1,2633 @@
+{
+"Countries": {
+"EG": {
+"En": "Egypt",
+"Ar": "مصر"
+},
+"SA": {
+"En": "Saudi Arabia",
+"Ar": "السعودية"
+},
+"AE": {
+"En": "United Arab Emirates",
+"Ar": "الإمارات"
+},
+"KW": {
+"En": "Kuwait",
+"Ar": "الكويت"
+},
+"QA": {
+"En": "Qatar",
+"Ar": "قطر"
+},
+"BH": {
+"En": "Bahrain",
+"Ar": "البحرين"
+},
+"OM": {
+"En": "Oman",
+"Ar": "عُمان"
+},
+"YE": {
+"En": "Yemen",
+"Ar": "اليمن"
+},
+"JO": {
+"En": "Jordan",
+"Ar": "الأردن"
+},
+"PS": {
+"En": "Palestine",
+"Ar": "فلسطين"
+},
+"LB": {
+"En": "Lebanon",
+"Ar": "لبنان"
+},
+"SY": {
+"En": "Syria",
+"Ar": "سوريا"
+},
+"IQ": {
+"En": "Iraq",
+"Ar": "العراق"
+},
+"SD": {
+"En": "Sudan",
+"Ar": "السودان"
+},
+"SS": {
+"En": "South Sudan",
+"Ar": "جنوب السودان"
+},
+"LY": {
+"En": "Libya",
+"Ar": "ليبيا"
+},
+"TN": {
+"En": "Tunisia",
+"Ar": "تونس"
+},
+"DZ": {
+"En": "Algeria",
+"Ar": "الجزائر"
+},
+"MA": {
+"En": "Morocco",
+"Ar": "المغرب"
+},
+"MR": {
+"En": "Mauritania",
+"Ar": "موريتانيا"
+},
+"SO": {
+"En": "Somalia",
+"Ar": "الصومال"
+},
+"DJ": {
+"En": "Djibouti",
+"Ar": "جيبوتي"
+},
+"KM": {
+"En": "Comoros",
+"Ar": "جزر القمر"
+},
+"TR": {
+"En": "Turkey",
+"Ar": "تركيا"
+},
+"IR": {
+"En": "Iran",
+"Ar": "إيران"
+},
+"PK": {
+"En": "Pakistan",
+"Ar": "باكستان"
+},
+"IN": {
+"En": "India",
+"Ar": "الهند"
+},
+"BD": {
+"En": "Bangladesh",
+"Ar": "بنغلاديش"
+},
+"AF": {
+"En": "Afghanistan",
+"Ar": "أفغانستان"
+},
+"ID": {
+"En": "Indonesia",
+"Ar": "إندونيسيا"
+},
+"MY": {
+"En": "Malaysia",
+"Ar": "ماليزيا"
+},
+"SG": {
+"En": "Singapore",
+"Ar": "سنغافورة"
+},
+"BN": {
+"En": "Brunei",
+"Ar": "بروناي"
+},
+"MV": {
+"En": "Maldives",
+"Ar": "جزر المالديف"
+},
+"GB": {
+"En": "United Kingdom",
+"Ar": "المملكة المتحدة"
+},
+"IE": {
+"En": "Ireland",
+"Ar": "أيرلندا"
+},
+"FR": {
+"En": "France",
+"Ar": "فرنسا"
+},
+"DE": {
+"En": "Germany",
+"Ar": "ألمانيا"
+},
+"NL": {
+"En": "Netherlands",
+"Ar": "هولندا"
+},
+"BE": {
+"En": "Belgium",
+"Ar": "بلجيكا"
+},
+"ES": {
+"En": "Spain",
+"Ar": "إسبانيا"
+},
+"PT": {
+"En": "Portugal",
+"Ar": "البرتغال"
+},
+"IT": {
+"En": "Italy",
+"Ar": "إيطاليا"
+},
+"CH": {
+"En": "Switzerland",
+"Ar": "سويسرا"
+},
+"AT": {
+"En": "Austria",
+"Ar": "النمسا"
+},
+"SE": {
+"En": "Sweden",
+"Ar": "السويد"
+},
+"NO": {
+"En": "Norway",
+"Ar": "النرويج"
+},
+"DK": {
+"En": "Denmark",
+"Ar": "الدنمارك"
+},
+"FI": {
+"En": "Finland",
+"Ar": "فنلندا"
+},
+"PL": {
+"En": "Poland",
+"Ar": "بولندا"
+},
+"GR": {
+"En": "Greece",
+"Ar": "اليونان"
+},
+"BA": {
+"En": "Bosnia and Herzegovina",
+"Ar": "البوسنة والهرسك"
+},
+"AL": {
+"En": "Albania",
+"Ar": "ألبانيا"
+},
+"XK": {
+"En": "Kosovo",
+"Ar": "كوسوفو"
+},
+"RU": {
+"En": "Russia",
+"Ar": "روسيا"
+},
+"UA": {
+"En": "Ukraine",
+"Ar": "أوكرانيا"
+},
+"KZ": {
+"En": "Kazakhstan",
+"Ar": "كازاخستان"
+},
+"UZ": {
+"En": "Uzbekistan",
+"Ar": "أوزبكستان"
+},
+"AZ": {
+"En": "Azerbaijan",
+"Ar": "أذربيجان"
+},
+"US": {
+"En": "United States",
+"Ar": "الولايات المتحدة"
+},
+"CA": {
+"En": "Canada",
+"Ar": "كندا"
+},
+"MX": {
+"En": "Mexico",
+"Ar": "المكسيك"
+},
+"BR": {
+"En": "Brazil",
+"Ar": "البرازيل"
+},
+"AR": {
+"En": "Argentina",
+"Ar": "الأرجنتين"
+},
+"AU": {
+"En": "Australia",
+"Ar": "أستراليا"
+},
+"NZ": {
+"En": "New Zealand",
+"Ar": "نيوزيلندا"
+},
+"NG": {
+"En": "Nigeria",
+"Ar": "نيجيريا"
+},
+"SN": {
+"En": "Senegal",
+"Ar": "السنغال"
+},
+"KE": {
+"En": "Kenya",
+"Ar": "كينيا"
+},
+"ET": {
+"En": "Ethiopia",
+"Ar": "إثيوبيا"
+},
+"ZA": {
+"En": "South Africa",
+"Ar": "جنوب أفريقيا"
+},
+"TZ": {
+"En": "Tanzania",
+"Ar": "تنزانيا"
+},
+"ML": {
+"En": "Mali",
+"Ar": "مالي"
+},
+"NE": {
+"En": "Niger",
+"Ar": "النيجر"
+},
+"TD": {
+"En": "Chad",
+"Ar": "تشاد"
+},
+"ER": {
+"En": "Eritrea",
+"Ar": "إريتريا"
+},
+"JP": {
+"En": "Japan",
+"Ar": "اليابان"
+},
+"CN": {
+"En": "China",
+"Ar": "الصين"
+},
+"KR": {
+"En": "South Korea",
+"Ar": "كوريا الجنوبية"
+},
+"TH": {
+"En": "Thailand",
+"Ar": "تايلاند"
+},
+"PH": {
+"En": "Philippines",
+"Ar": "الفلبين"
+},
+"LK": {
+"En": "Sri Lanka",
+"Ar": "سريلانكا"
+},
+"CY": {
+"En": "Cyprus",
+"Ar": "قبرص"
+}
+},
+"Cities": [
+{
+"En": "Cairo",
+"Ar": "القاهرة",
+"Cc": "EG",
+"Lat": 30.0444,
+"Lng": 31.2357,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Giza",
+"Ar": "الجيزة",
+"Cc": "EG",
+"Lat": 30.0131,
+"Lng": 31.2089,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Alexandria",
+"Ar": "الإسكندرية",
+"Cc": "EG",
+"Lat": 31.2001,
+"Lng": 29.9187,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Shubra El Kheima",
+"Ar": "شبرا الخيمة",
+"Cc": "EG",
+"Lat": 30.1286,
+"Lng": 31.2422,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Banha",
+"Ar": "بنها",
+"Cc": "EG",
+"Lat": 30.466,
+"Lng": 31.1858,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Port Said",
+"Ar": "بورسعيد",
+"Cc": "EG",
+"Lat": 31.2653,
+"Lng": 32.3019,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Suez",
+"Ar": "السويس",
+"Cc": "EG",
+"Lat": 29.9668,
+"Lng": 32.5498,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Ismailia",
+"Ar": "الإسماعيلية",
+"Cc": "EG",
+"Lat": 30.5965,
+"Lng": 32.2715,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Damietta",
+"Ar": "دمياط",
+"Cc": "EG",
+"Lat": 31.4165,
+"Lng": 31.8133,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Mansoura",
+"Ar": "المنصورة",
+"Cc": "EG",
+"Lat": 31.0409,
+"Lng": 31.3785,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Tanta",
+"Ar": "طنطا",
+"Cc": "EG",
+"Lat": 30.7865,
+"Lng": 31.0004,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "El Mahalla El Kubra",
+"Ar": "المحلة الكبرى",
+"Cc": "EG",
+"Lat": 30.9697,
+"Lng": 31.1681,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Zagazig",
+"Ar": "الزقازيق",
+"Cc": "EG",
+"Lat": 30.5877,
+"Lng": 31.502,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "10th of Ramadan City",
+"Ar": "مدينة العاشر من رمضان",
+"Cc": "EG",
+"Lat": 30.2967,
+"Lng": 31.7433,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Shibin El Kom",
+"Ar": "شبين الكوم",
+"Cc": "EG",
+"Lat": 30.5586,
+"Lng": 31.01,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Sadat City",
+"Ar": "مدينة السادات",
+"Cc": "EG",
+"Lat": 30.3667,
+"Lng": 30.5167,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Kafr El Sheikh",
+"Ar": "كفر الشيخ",
+"Cc": "EG",
+"Lat": 31.1107,
+"Lng": 30.9388,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Damanhur",
+"Ar": "دمنهور",
+"Cc": "EG",
+"Lat": 31.0341,
+"Lng": 30.4682,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Marsa Matruh",
+"Ar": "مرسى مطروح",
+"Cc": "EG",
+"Lat": 31.3543,
+"Lng": 27.2373,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Siwa",
+"Ar": "سيوة",
+"Cc": "EG",
+"Lat": 29.2032,
+"Lng": 25.5195,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "El Alamein",
+"Ar": "العلمين",
+"Cc": "EG",
+"Lat": 30.83,
+"Lng": 28.955,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Faiyum",
+"Ar": "الفيوم",
+"Cc": "EG",
+"Lat": 29.3084,
+"Lng": 30.8428,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Beni Suef",
+"Ar": "بني سويف",
+"Cc": "EG",
+"Lat": 29.0661,
+"Lng": 31.0994,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Minya",
+"Ar": "المنيا",
+"Cc": "EG",
+"Lat": 28.1099,
+"Lng": 30.7503,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Asyut",
+"Ar": "أسيوط",
+"Cc": "EG",
+"Lat": 27.1809,
+"Lng": 31.1837,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Sohag",
+"Ar": "سوهاج",
+"Cc": "EG",
+"Lat": 26.5591,
+"Lng": 31.6957,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Qena",
+"Ar": "قنا",
+"Cc": "EG",
+"Lat": 26.1551,
+"Lng": 32.716,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Luxor",
+"Ar": "الأقصر",
+"Cc": "EG",
+"Lat": 25.6872,
+"Lng": 32.6396,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Aswan",
+"Ar": "أسوان",
+"Cc": "EG",
+"Lat": 24.0889,
+"Lng": 32.8998,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Edfu",
+"Ar": "إدفو",
+"Cc": "EG",
+"Lat": 24.9781,
+"Lng": 32.8734,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Kom Ombo",
+"Ar": "كوم أمبو",
+"Cc": "EG",
+"Lat": 24.4765,
+"Lng": 32.9468,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Hurghada",
+"Ar": "الغردقة",
+"Cc": "EG",
+"Lat": 27.2579,
+"Lng": 33.8116,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Safaga",
+"Ar": "سفاجا",
+"Cc": "EG",
+"Lat": 26.7292,
+"Lng": 33.9365,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Marsa Alam",
+"Ar": "مرسى علم",
+"Cc": "EG",
+"Lat": 25.0676,
+"Lng": 34.879,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Kharga",
+"Ar": "الخارجة",
+"Cc": "EG",
+"Lat": 25.439,
+"Lng": 30.5586,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Dakhla",
+"Ar": "الداخلة",
+"Cc": "EG",
+"Lat": 25.4947,
+"Lng": 28.979,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Arish",
+"Ar": "العريش",
+"Cc": "EG",
+"Lat": 31.1316,
+"Lng": 33.7984,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "El Tor",
+"Ar": "الطور",
+"Cc": "EG",
+"Lat": 28.2366,
+"Lng": 33.6222,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Sharm El Sheikh",
+"Ar": "شرم الشيخ",
+"Cc": "EG",
+"Lat": 27.9158,
+"Lng": 34.3299,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Dahab",
+"Ar": "دهب",
+"Cc": "EG",
+"Lat": 28.5091,
+"Lng": 34.5136,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Nuweiba",
+"Ar": "نويبع",
+"Cc": "EG",
+"Lat": 29.0333,
+"Lng": 34.6667,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Saint Catherine",
+"Ar": "سانت كاترين",
+"Cc": "EG",
+"Lat": 28.556,
+"Lng": 33.948,
+"Tz": "Africa/Cairo",
+"Elev": 1586
+},
+{
+"En": "6th of October City",
+"Ar": "مدينة السادس من أكتوبر",
+"Cc": "EG",
+"Lat": 29.9285,
+"Lng": 30.9188,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Sheikh Zayed City",
+"Ar": "مدينة الشيخ زايد",
+"Cc": "EG",
+"Lat": 30.0444,
+"Lng": 30.976,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "New Administrative Capital",
+"Ar": "العاصمة الإدارية الجديدة",
+"Cc": "EG",
+"Lat": 30.02,
+"Lng": 31.76,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "New Cairo",
+"Ar": "القاهرة الجديدة",
+"Cc": "EG",
+"Lat": 30.03,
+"Lng": 31.47,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Helwan",
+"Ar": "حلوان",
+"Cc": "EG",
+"Lat": 29.85,
+"Lng": 31.3342,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Obour City",
+"Ar": "مدينة العبور",
+"Cc": "EG",
+"Lat": 30.228,
+"Lng": 31.48,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Qalyub",
+"Ar": "قليوب",
+"Cc": "EG",
+"Lat": 30.1794,
+"Lng": 31.2056,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Desouk",
+"Ar": "دسوق",
+"Cc": "EG",
+"Lat": 31.1325,
+"Lng": 30.6478,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Kafr El Dawwar",
+"Ar": "كفر الدوار",
+"Cc": "EG",
+"Lat": 31.1339,
+"Lng": 30.1297,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Mallawi",
+"Ar": "ملوي",
+"Cc": "EG",
+"Lat": 27.7314,
+"Lng": 30.8417,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Girga",
+"Ar": "جرجا",
+"Cc": "EG",
+"Lat": 26.3383,
+"Lng": 31.8917,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Nag Hammadi",
+"Ar": "نجع حمادي",
+"Cc": "EG",
+"Lat": 26.049,
+"Lng": 32.2414,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Ras Gharib",
+"Ar": "رأس غارب",
+"Cc": "EG",
+"Lat": 28.3597,
+"Lng": 33.0786,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Abu Simbel",
+"Ar": "أبو سمبل",
+"Cc": "EG",
+"Lat": 22.3372,
+"Lng": 31.6258,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Bilbeis",
+"Ar": "بلبيس",
+"Cc": "EG",
+"Lat": 30.42,
+"Lng": 31.56,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Mit Ghamr",
+"Ar": "ميت غمر",
+"Cc": "EG",
+"Lat": 30.7164,
+"Lng": 31.2592,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Rosetta (Rashid)",
+"Ar": "رشيد",
+"Cc": "EG",
+"Lat": 31.4044,
+"Lng": 30.4164,
+"Tz": "Africa/Cairo"
+},
+{
+"En": "Makkah",
+"Ar": "مكة المكرمة",
+"Cc": "SA",
+"Lat": 21.4225,
+"Lng": 39.8262,
+"Tz": "Asia/Riyadh",
+"Elev": 277
+},
+{
+"En": "Madinah",
+"Ar": "المدينة المنورة",
+"Cc": "SA",
+"Lat": 24.4672,
+"Lng": 39.6111,
+"Tz": "Asia/Riyadh",
+"Elev": 608
+},
+{
+"En": "Riyadh",
+"Ar": "الرياض",
+"Cc": "SA",
+"Lat": 24.7136,
+"Lng": 46.6753,
+"Tz": "Asia/Riyadh",
+"Elev": 612
+},
+{
+"En": "Jeddah",
+"Ar": "جدة",
+"Cc": "SA",
+"Lat": 21.4858,
+"Lng": 39.1925,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Dammam",
+"Ar": "الدمام",
+"Cc": "SA",
+"Lat": 26.4207,
+"Lng": 50.0888,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Khobar",
+"Ar": "الخبر",
+"Cc": "SA",
+"Lat": 26.2172,
+"Lng": 50.1971,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Dhahran",
+"Ar": "الظهران",
+"Cc": "SA",
+"Lat": 26.2361,
+"Lng": 50.0393,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Taif",
+"Ar": "الطائف",
+"Cc": "SA",
+"Lat": 21.2703,
+"Lng": 40.4158,
+"Tz": "Asia/Riyadh",
+"Elev": 1879
+},
+{
+"En": "Tabuk",
+"Ar": "تبوك",
+"Cc": "SA",
+"Lat": 28.3835,
+"Lng": 36.5662,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Buraydah",
+"Ar": "بريدة",
+"Cc": "SA",
+"Lat": 26.3592,
+"Lng": 43.9818,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Abha",
+"Ar": "أبها",
+"Cc": "SA",
+"Lat": 18.2164,
+"Lng": 42.5053,
+"Tz": "Asia/Riyadh",
+"Elev": 2270
+},
+{
+"En": "Khamis Mushait",
+"Ar": "خميس مشيط",
+"Cc": "SA",
+"Lat": 18.306,
+"Lng": 42.729,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Hail",
+"Ar": "حائل",
+"Cc": "SA",
+"Lat": 27.5114,
+"Lng": 41.7208,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Jazan",
+"Ar": "جازان",
+"Cc": "SA",
+"Lat": 16.8892,
+"Lng": 42.5511,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Najran",
+"Ar": "نجران",
+"Cc": "SA",
+"Lat": 17.4924,
+"Lng": 44.1277,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Al Ahsa (Hofuf)",
+"Ar": "الأحساء (الهفوف)",
+"Cc": "SA",
+"Lat": 25.3833,
+"Lng": 49.5833,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Yanbu",
+"Ar": "ينبع",
+"Cc": "SA",
+"Lat": 24.089,
+"Lng": 38.0637,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Al Jubail",
+"Ar": "الجبيل",
+"Cc": "SA",
+"Lat": 27.0046,
+"Lng": 49.646,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Arar",
+"Ar": "عرعر",
+"Cc": "SA",
+"Lat": 30.9753,
+"Lng": 41.0381,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Sakaka",
+"Ar": "سكاكا",
+"Cc": "SA",
+"Lat": 29.9697,
+"Lng": 40.2064,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Al Baha",
+"Ar": "الباحة",
+"Cc": "SA",
+"Lat": 20.0129,
+"Lng": 41.4677,
+"Tz": "Asia/Riyadh"
+},
+{
+"En": "Dubai",
+"Ar": "دبي",
+"Cc": "AE",
+"Lat": 25.2048,
+"Lng": 55.2708,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Abu Dhabi",
+"Ar": "أبوظبي",
+"Cc": "AE",
+"Lat": 24.4539,
+"Lng": 54.3773,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Sharjah",
+"Ar": "الشارقة",
+"Cc": "AE",
+"Lat": 25.3463,
+"Lng": 55.4209,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Ajman",
+"Ar": "عجمان",
+"Cc": "AE",
+"Lat": 25.4052,
+"Lng": 55.5136,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Ras Al Khaimah",
+"Ar": "رأس الخيمة",
+"Cc": "AE",
+"Lat": 25.8007,
+"Lng": 55.9762,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Fujairah",
+"Ar": "الفجيرة",
+"Cc": "AE",
+"Lat": 25.1288,
+"Lng": 56.3265,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Al Ain",
+"Ar": "العين",
+"Cc": "AE",
+"Lat": 24.2075,
+"Lng": 55.7447,
+"Tz": "Asia/Dubai"
+},
+{
+"En": "Kuwait City",
+"Ar": "مدينة الكويت",
+"Cc": "KW",
+"Lat": 29.3759,
+"Lng": 47.9774,
+"Tz": "Asia/Kuwait"
+},
+{
+"En": "Al Jahra",
+"Ar": "الجهراء",
+"Cc": "KW",
+"Lat": 29.3375,
+"Lng": 47.6581,
+"Tz": "Asia/Kuwait"
+},
+{
+"En": "Doha",
+"Ar": "الدوحة",
+"Cc": "QA",
+"Lat": 25.2854,
+"Lng": 51.531,
+"Tz": "Asia/Qatar"
+},
+{
+"En": "Al Wakrah",
+"Ar": "الوكرة",
+"Cc": "QA",
+"Lat": 25.1659,
+"Lng": 51.5976,
+"Tz": "Asia/Qatar"
+},
+{
+"En": "Manama",
+"Ar": "المنامة",
+"Cc": "BH",
+"Lat": 26.2285,
+"Lng": 50.586,
+"Tz": "Asia/Bahrain"
+},
+{
+"En": "Muscat",
+"Ar": "مسقط",
+"Cc": "OM",
+"Lat": 23.588,
+"Lng": 58.3829,
+"Tz": "Asia/Muscat"
+},
+{
+"En": "Salalah",
+"Ar": "صلالة",
+"Cc": "OM",
+"Lat": 17.0151,
+"Lng": 54.0924,
+"Tz": "Asia/Muscat"
+},
+{
+"En": "Sohar",
+"Ar": "صحار",
+"Cc": "OM",
+"Lat": 24.347,
+"Lng": 56.709,
+"Tz": "Asia/Muscat"
+},
+{
+"En": "Nizwa",
+"Ar": "نزوى",
+"Cc": "OM",
+"Lat": 22.9333,
+"Lng": 57.5333,
+"Tz": "Asia/Muscat"
+},
+{
+"En": "Sanaa",
+"Ar": "صنعاء",
+"Cc": "YE",
+"Lat": 15.3694,
+"Lng": 44.191,
+"Tz": "Asia/Aden",
+"Elev": 2250
+},
+{
+"En": "Aden",
+"Ar": "عدن",
+"Cc": "YE",
+"Lat": 12.7855,
+"Lng": 45.0187,
+"Tz": "Asia/Aden"
+},
+{
+"En": "Taiz",
+"Ar": "تعز",
+"Cc": "YE",
+"Lat": 13.5795,
+"Lng": 44.0209,
+"Tz": "Asia/Aden"
+},
+{
+"En": "Mukalla",
+"Ar": "المكلا",
+"Cc": "YE",
+"Lat": 14.5425,
+"Lng": 49.1242,
+"Tz": "Asia/Aden"
+},
+{
+"En": "Hodeidah",
+"Ar": "الحديدة",
+"Cc": "YE",
+"Lat": 14.7978,
+"Lng": 42.9545,
+"Tz": "Asia/Aden"
+},
+{
+"En": "Amman",
+"Ar": "عمّان",
+"Cc": "JO",
+"Lat": 31.9454,
+"Lng": 35.9284,
+"Tz": "Asia/Amman",
+"Elev": 850
+},
+{
+"En": "Irbid",
+"Ar": "إربد",
+"Cc": "JO",
+"Lat": 32.5556,
+"Lng": 35.85,
+"Tz": "Asia/Amman"
+},
+{
+"En": "Zarqa",
+"Ar": "الزرقاء",
+"Cc": "JO",
+"Lat": 32.0728,
+"Lng": 36.088,
+"Tz": "Asia/Amman"
+},
+{
+"En": "Aqaba",
+"Ar": "العقبة",
+"Cc": "JO",
+"Lat": 29.5321,
+"Lng": 35.0063,
+"Tz": "Asia/Amman"
+},
+{
+"En": "Jerusalem (Al-Quds)",
+"Ar": "القدس",
+"Cc": "PS",
+"Lat": 31.778,
+"Lng": 35.2354,
+"Tz": "Asia/Hebron",
+"Elev": 754
+},
+{
+"En": "Gaza",
+"Ar": "غزة",
+"Cc": "PS",
+"Lat": 31.5017,
+"Lng": 34.4668,
+"Tz": "Asia/Gaza"
+},
+{
+"En": "Hebron",
+"Ar": "الخليل",
+"Cc": "PS",
+"Lat": 31.5326,
+"Lng": 35.0998,
+"Tz": "Asia/Hebron"
+},
+{
+"En": "Nablus",
+"Ar": "نابلس",
+"Cc": "PS",
+"Lat": 32.2211,
+"Lng": 35.2544,
+"Tz": "Asia/Hebron"
+},
+{
+"En": "Ramallah",
+"Ar": "رام الله",
+"Cc": "PS",
+"Lat": 31.9038,
+"Lng": 35.2034,
+"Tz": "Asia/Hebron"
+},
+{
+"En": "Beirut",
+"Ar": "بيروت",
+"Cc": "LB",
+"Lat": 33.8938,
+"Lng": 35.5018,
+"Tz": "Asia/Beirut"
+},
+{
+"En": "Tripoli (Lebanon)",
+"Ar": "طرابلس (لبنان)",
+"Cc": "LB",
+"Lat": 34.4367,
+"Lng": 35.8497,
+"Tz": "Asia/Beirut"
+},
+{
+"En": "Sidon",
+"Ar": "صيدا",
+"Cc": "LB",
+"Lat": 33.5571,
+"Lng": 35.3729,
+"Tz": "Asia/Beirut"
+},
+{
+"En": "Damascus",
+"Ar": "دمشق",
+"Cc": "SY",
+"Lat": 33.5138,
+"Lng": 36.2765,
+"Tz": "Asia/Damascus",
+"Elev": 680
+},
+{
+"En": "Aleppo",
+"Ar": "حلب",
+"Cc": "SY",
+"Lat": 36.2021,
+"Lng": 37.1343,
+"Tz": "Asia/Damascus"
+},
+{
+"En": "Homs",
+"Ar": "حمص",
+"Cc": "SY",
+"Lat": 34.7324,
+"Lng": 36.7137,
+"Tz": "Asia/Damascus"
+},
+{
+"En": "Latakia",
+"Ar": "اللاذقية",
+"Cc": "SY",
+"Lat": 35.5317,
+"Lng": 35.7901,
+"Tz": "Asia/Damascus"
+},
+{
+"En": "Hama",
+"Ar": "حماة",
+"Cc": "SY",
+"Lat": 35.1318,
+"Lng": 36.7578,
+"Tz": "Asia/Damascus"
+},
+{
+"En": "Baghdad",
+"Ar": "بغداد",
+"Cc": "IQ",
+"Lat": 33.3152,
+"Lng": 44.3661,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Basra",
+"Ar": "البصرة",
+"Cc": "IQ",
+"Lat": 30.5085,
+"Lng": 47.7804,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Mosul",
+"Ar": "الموصل",
+"Cc": "IQ",
+"Lat": 36.335,
+"Lng": 43.1189,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Erbil",
+"Ar": "أربيل",
+"Cc": "IQ",
+"Lat": 36.1901,
+"Lng": 44.0091,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Najaf",
+"Ar": "النجف",
+"Cc": "IQ",
+"Lat": 32.0259,
+"Lng": 44.3462,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Karbala",
+"Ar": "كربلاء",
+"Cc": "IQ",
+"Lat": 32.616,
+"Lng": 44.0249,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Kirkuk",
+"Ar": "كركوك",
+"Cc": "IQ",
+"Lat": 35.4681,
+"Lng": 44.3922,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Sulaymaniyah",
+"Ar": "السليمانية",
+"Cc": "IQ",
+"Lat": 35.565,
+"Lng": 45.4329,
+"Tz": "Asia/Baghdad"
+},
+{
+"En": "Khartoum",
+"Ar": "الخرطوم",
+"Cc": "SD",
+"Lat": 15.5007,
+"Lng": 32.5599,
+"Tz": "Africa/Khartoum"
+},
+{
+"En": "Omdurman",
+"Ar": "أم درمان",
+"Cc": "SD",
+"Lat": 15.6445,
+"Lng": 32.4777,
+"Tz": "Africa/Khartoum"
+},
+{
+"En": "Port Sudan",
+"Ar": "بورتسودان",
+"Cc": "SD",
+"Lat": 19.6158,
+"Lng": 37.2164,
+"Tz": "Africa/Khartoum"
+},
+{
+"En": "Kassala",
+"Ar": "كسلا",
+"Cc": "SD",
+"Lat": 15.451,
+"Lng": 36.4,
+"Tz": "Africa/Khartoum"
+},
+{
+"En": "Juba",
+"Ar": "جوبا",
+"Cc": "SS",
+"Lat": 4.8594,
+"Lng": 31.5713,
+"Tz": "Africa/Juba"
+},
+{
+"En": "Mogadishu",
+"Ar": "مقديشو",
+"Cc": "SO",
+"Lat": 2.0469,
+"Lng": 45.3182,
+"Tz": "Africa/Mogadishu"
+},
+{
+"En": "Hargeisa",
+"Ar": "هرجيسا",
+"Cc": "SO",
+"Lat": 9.56,
+"Lng": 44.065,
+"Tz": "Africa/Mogadishu"
+},
+{
+"En": "Djibouti",
+"Ar": "جيبوتي",
+"Cc": "DJ",
+"Lat": 11.5721,
+"Lng": 43.1456,
+"Tz": "Africa/Djibouti"
+},
+{
+"En": "Moroni",
+"Ar": "موروني",
+"Cc": "KM",
+"Lat": -11.7172,
+"Lng": 43.2473,
+"Tz": "Indian/Comoro"
+},
+{
+"En": "Asmara",
+"Ar": "أسمرة",
+"Cc": "ER",
+"Lat": 15.3229,
+"Lng": 38.9251,
+"Tz": "Africa/Asmara",
+"Elev": 2325
+},
+{
+"En": "Tripoli",
+"Ar": "طرابلس",
+"Cc": "LY",
+"Lat": 32.8872,
+"Lng": 13.1913,
+"Tz": "Africa/Tripoli"
+},
+{
+"En": "Benghazi",
+"Ar": "بنغازي",
+"Cc": "LY",
+"Lat": 32.1167,
+"Lng": 20.0667,
+"Tz": "Africa/Tripoli"
+},
+{
+"En": "Misrata",
+"Ar": "مصراتة",
+"Cc": "LY",
+"Lat": 32.3754,
+"Lng": 15.0925,
+"Tz": "Africa/Tripoli"
+},
+{
+"En": "Sabha",
+"Ar": "سبها",
+"Cc": "LY",
+"Lat": 27.0377,
+"Lng": 14.4283,
+"Tz": "Africa/Tripoli"
+},
+{
+"En": "Tobruk",
+"Ar": "طبرق",
+"Cc": "LY",
+"Lat": 32.0836,
+"Lng": 23.9764,
+"Tz": "Africa/Tripoli"
+},
+{
+"En": "Tunis",
+"Ar": "تونس",
+"Cc": "TN",
+"Lat": 36.8065,
+"Lng": 10.1815,
+"Tz": "Africa/Tunis"
+},
+{
+"En": "Sfax",
+"Ar": "صفاقس",
+"Cc": "TN",
+"Lat": 34.7406,
+"Lng": 10.7603,
+"Tz": "Africa/Tunis"
+},
+{
+"En": "Sousse",
+"Ar": "سوسة",
+"Cc": "TN",
+"Lat": 35.8256,
+"Lng": 10.6084,
+"Tz": "Africa/Tunis"
+},
+{
+"En": "Kairouan",
+"Ar": "القيروان",
+"Cc": "TN",
+"Lat": 35.6781,
+"Lng": 10.0963,
+"Tz": "Africa/Tunis"
+},
+{
+"En": "Algiers",
+"Ar": "الجزائر العاصمة",
+"Cc": "DZ",
+"Lat": 36.7538,
+"Lng": 3.0588,
+"Tz": "Africa/Algiers"
+},
+{
+"En": "Oran",
+"Ar": "وهران",
+"Cc": "DZ",
+"Lat": 35.6971,
+"Lng": -0.6308,
+"Tz": "Africa/Algiers"
+},
+{
+"En": "Constantine",
+"Ar": "قسنطينة",
+"Cc": "DZ",
+"Lat": 36.365,
+"Lng": 6.6147,
+"Tz": "Africa/Algiers"
+},
+{
+"En": "Annaba",
+"Ar": "عنابة",
+"Cc": "DZ",
+"Lat": 36.9,
+"Lng": 7.7667,
+"Tz": "Africa/Algiers"
+},
+{
+"En": "Setif",
+"Ar": "سطيف",
+"Cc": "DZ",
+"Lat": 36.1911,
+"Lng": 5.4137,
+"Tz": "Africa/Algiers"
+},
+{
+"En": "Tamanrasset",
+"Ar": "تمنراست",
+"Cc": "DZ",
+"Lat": 22.785,
+"Lng": 5.5228,
+"Tz": "Africa/Algiers"
+},
+{
+"En": "Rabat",
+"Ar": "الرباط",
+"Cc": "MA",
+"Lat": 34.0209,
+"Lng": -6.8416,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Casablanca",
+"Ar": "الدار البيضاء",
+"Cc": "MA",
+"Lat": 33.5731,
+"Lng": -7.5898,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Marrakesh",
+"Ar": "مراكش",
+"Cc": "MA",
+"Lat": 31.6295,
+"Lng": -7.9811,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Fez",
+"Ar": "فاس",
+"Cc": "MA",
+"Lat": 34.0181,
+"Lng": -5.0078,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Tangier",
+"Ar": "طنجة",
+"Cc": "MA",
+"Lat": 35.7595,
+"Lng": -5.834,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Agadir",
+"Ar": "أكادير",
+"Cc": "MA",
+"Lat": 30.4278,
+"Lng": -9.5981,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Meknes",
+"Ar": "مكناس",
+"Cc": "MA",
+"Lat": 33.8935,
+"Lng": -5.5473,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Oujda",
+"Ar": "وجدة",
+"Cc": "MA",
+"Lat": 34.6814,
+"Lng": -1.9086,
+"Tz": "Africa/Casablanca"
+},
+{
+"En": "Nouakchott",
+"Ar": "نواكشوط",
+"Cc": "MR",
+"Lat": 18.0735,
+"Lng": -15.9582,
+"Tz": "Africa/Nouakchott"
+},
+{
+"En": "Nouadhibou",
+"Ar": "نواذيبو",
+"Cc": "MR",
+"Lat": 20.931,
+"Lng": -17.0347,
+"Tz": "Africa/Nouakchott"
+},
+{
+"En": "Istanbul",
+"Ar": "إسطنبول",
+"Cc": "TR",
+"Lat": 41.0082,
+"Lng": 28.9784,
+"Tz": "Europe/Istanbul"
+},
+{
+"En": "Ankara",
+"Ar": "أنقرة",
+"Cc": "TR",
+"Lat": 39.9334,
+"Lng": 32.8597,
+"Tz": "Europe/Istanbul",
+"Elev": 938
+},
+{
+"En": "Izmir",
+"Ar": "إزمير",
+"Cc": "TR",
+"Lat": 38.4237,
+"Lng": 27.1428,
+"Tz": "Europe/Istanbul"
+},
+{
+"En": "Bursa",
+"Ar": "بورصة",
+"Cc": "TR",
+"Lat": 40.1885,
+"Lng": 29.061,
+"Tz": "Europe/Istanbul"
+},
+{
+"En": "Konya",
+"Ar": "قونية",
+"Cc": "TR",
+"Lat": 37.8746,
+"Lng": 32.4932,
+"Tz": "Europe/Istanbul",
+"Elev": 1016
+},
+{
+"En": "Gaziantep",
+"Ar": "غازي عنتاب",
+"Cc": "TR",
+"Lat": 37.0662,
+"Lng": 37.3833,
+"Tz": "Europe/Istanbul"
+},
+{
+"En": "Tehran",
+"Ar": "طهران",
+"Cc": "IR",
+"Lat": 35.6892,
+"Lng": 51.389,
+"Tz": "Asia/Tehran",
+"Elev": 1190
+},
+{
+"En": "Mashhad",
+"Ar": "مشهد",
+"Cc": "IR",
+"Lat": 36.2605,
+"Lng": 59.6168,
+"Tz": "Asia/Tehran"
+},
+{
+"En": "Isfahan",
+"Ar": "أصفهان",
+"Cc": "IR",
+"Lat": 32.6546,
+"Lng": 51.668,
+"Tz": "Asia/Tehran"
+},
+{
+"En": "Karachi",
+"Ar": "كراتشي",
+"Cc": "PK",
+"Lat": 24.8607,
+"Lng": 67.0011,
+"Tz": "Asia/Karachi"
+},
+{
+"En": "Lahore",
+"Ar": "لاهور",
+"Cc": "PK",
+"Lat": 31.5204,
+"Lng": 74.3587,
+"Tz": "Asia/Karachi"
+},
+{
+"En": "Islamabad",
+"Ar": "إسلام آباد",
+"Cc": "PK",
+"Lat": 33.6844,
+"Lng": 73.0479,
+"Tz": "Asia/Karachi"
+},
+{
+"En": "Peshawar",
+"Ar": "بيشاور",
+"Cc": "PK",
+"Lat": 34.0151,
+"Lng": 71.5249,
+"Tz": "Asia/Karachi"
+},
+{
+"En": "Kabul",
+"Ar": "كابل",
+"Cc": "AF",
+"Lat": 34.5553,
+"Lng": 69.2075,
+"Tz": "Asia/Kabul",
+"Elev": 1790
+},
+{
+"En": "New Delhi",
+"Ar": "نيودلهي",
+"Cc": "IN",
+"Lat": 28.6139,
+"Lng": 77.209,
+"Tz": "Asia/Kolkata"
+},
+{
+"En": "Mumbai",
+"Ar": "مومباي",
+"Cc": "IN",
+"Lat": 19.076,
+"Lng": 72.8777,
+"Tz": "Asia/Kolkata"
+},
+{
+"En": "Hyderabad",
+"Ar": "حيدر آباد",
+"Cc": "IN",
+"Lat": 17.385,
+"Lng": 78.4867,
+"Tz": "Asia/Kolkata"
+},
+{
+"En": "Kolkata",
+"Ar": "كلكتا",
+"Cc": "IN",
+"Lat": 22.5726,
+"Lng": 88.3639,
+"Tz": "Asia/Kolkata"
+},
+{
+"En": "Dhaka",
+"Ar": "دكا",
+"Cc": "BD",
+"Lat": 23.8103,
+"Lng": 90.4125,
+"Tz": "Asia/Dhaka"
+},
+{
+"En": "Chittagong",
+"Ar": "شيتاغونغ",
+"Cc": "BD",
+"Lat": 22.3569,
+"Lng": 91.7832,
+"Tz": "Asia/Dhaka"
+},
+{
+"En": "Colombo",
+"Ar": "كولومبو",
+"Cc": "LK",
+"Lat": 6.9271,
+"Lng": 79.8612,
+"Tz": "Asia/Colombo"
+},
+{
+"En": "Male",
+"Ar": "ماليه",
+"Cc": "MV",
+"Lat": 4.1755,
+"Lng": 73.5093,
+"Tz": "Indian/Maldives"
+},
+{
+"En": "Jakarta",
+"Ar": "جاكرتا",
+"Cc": "ID",
+"Lat": -6.2088,
+"Lng": 106.8456,
+"Tz": "Asia/Jakarta"
+},
+{
+"En": "Surabaya",
+"Ar": "سورابايا",
+"Cc": "ID",
+"Lat": -7.2575,
+"Lng": 112.7521,
+"Tz": "Asia/Jakarta"
+},
+{
+"En": "Bandung",
+"Ar": "باندونغ",
+"Cc": "ID",
+"Lat": -6.9175,
+"Lng": 107.6191,
+"Tz": "Asia/Jakarta"
+},
+{
+"En": "Kuala Lumpur",
+"Ar": "كوالالمبور",
+"Cc": "MY",
+"Lat": 3.139,
+"Lng": 101.6869,
+"Tz": "Asia/Kuala_Lumpur"
+},
+{
+"En": "Penang (George Town)",
+"Ar": "بينانغ",
+"Cc": "MY",
+"Lat": 5.4141,
+"Lng": 100.3288,
+"Tz": "Asia/Kuala_Lumpur"
+},
+{
+"En": "Singapore",
+"Ar": "سنغافورة",
+"Cc": "SG",
+"Lat": 1.3521,
+"Lng": 103.8198,
+"Tz": "Asia/Singapore"
+},
+{
+"En": "Bandar Seri Begawan",
+"Ar": "بندر سري بكاوان",
+"Cc": "BN",
+"Lat": 4.9031,
+"Lng": 114.9398,
+"Tz": "Asia/Brunei"
+},
+{
+"En": "Tashkent",
+"Ar": "طشقند",
+"Cc": "UZ",
+"Lat": 41.2995,
+"Lng": 69.2401,
+"Tz": "Asia/Tashkent"
+},
+{
+"En": "Samarkand",
+"Ar": "سمرقند",
+"Cc": "UZ",
+"Lat": 39.627,
+"Lng": 66.975,
+"Tz": "Asia/Samarkand"
+},
+{
+"En": "Almaty",
+"Ar": "ألماتي",
+"Cc": "KZ",
+"Lat": 43.222,
+"Lng": 76.8512,
+"Tz": "Asia/Almaty"
+},
+{
+"En": "Astana",
+"Ar": "أستانا",
+"Cc": "KZ",
+"Lat": 51.1694,
+"Lng": 71.4491,
+"Tz": "Asia/Almaty"
+},
+{
+"En": "Baku",
+"Ar": "باكو",
+"Cc": "AZ",
+"Lat": 40.4093,
+"Lng": 49.8671,
+"Tz": "Asia/Baku"
+},
+{
+"En": "Sarajevo",
+"Ar": "سراييفو",
+"Cc": "BA",
+"Lat": 43.8563,
+"Lng": 18.4131,
+"Tz": "Europe/Sarajevo"
+},
+{
+"En": "Tirana",
+"Ar": "تيرانا",
+"Cc": "AL",
+"Lat": 41.3275,
+"Lng": 19.8187,
+"Tz": "Europe/Tirane"
+},
+{
+"En": "Pristina",
+"Ar": "بريشتينا",
+"Cc": "XK",
+"Lat": 42.6629,
+"Lng": 21.1655,
+"Tz": "Europe/Belgrade"
+},
+{
+"En": "Nicosia",
+"Ar": "نيقوسيا",
+"Cc": "CY",
+"Lat": 35.1856,
+"Lng": 33.3823,
+"Tz": "Asia/Nicosia"
+},
+{
+"En": "Dakar",
+"Ar": "داكار",
+"Cc": "SN",
+"Lat": 14.7167,
+"Lng": -17.4677,
+"Tz": "Africa/Dakar"
+},
+{
+"En": "Bamako",
+"Ar": "باماكو",
+"Cc": "ML",
+"Lat": 12.6392,
+"Lng": -8.0029,
+"Tz": "Africa/Bamako"
+},
+{
+"En": "Niamey",
+"Ar": "نيامي",
+"Cc": "NE",
+"Lat": 13.5116,
+"Lng": 2.1254,
+"Tz": "Africa/Niamey"
+},
+{
+"En": "N'Djamena",
+"Ar": "انجامينا",
+"Cc": "TD",
+"Lat": 12.1348,
+"Lng": 15.0557,
+"Tz": "Africa/Ndjamena"
+},
+{
+"En": "Lagos",
+"Ar": "لاغوس",
+"Cc": "NG",
+"Lat": 6.5244,
+"Lng": 3.3792,
+"Tz": "Africa/Lagos"
+},
+{
+"En": "Abuja",
+"Ar": "أبوجا",
+"Cc": "NG",
+"Lat": 9.0765,
+"Lng": 7.3986,
+"Tz": "Africa/Lagos"
+},
+{
+"En": "Kano",
+"Ar": "كانو",
+"Cc": "NG",
+"Lat": 12.0022,
+"Lng": 8.592,
+"Tz": "Africa/Lagos"
+},
+{
+"En": "Addis Ababa",
+"Ar": "أديس أبابا",
+"Cc": "ET",
+"Lat": 9.03,
+"Lng": 38.74,
+"Tz": "Africa/Addis_Ababa",
+"Elev": 2355
+},
+{
+"En": "Nairobi",
+"Ar": "نيروبي",
+"Cc": "KE",
+"Lat": -1.2921,
+"Lng": 36.8219,
+"Tz": "Africa/Nairobi",
+"Elev": 1795
+},
+{
+"En": "Mombasa",
+"Ar": "مومباسا",
+"Cc": "KE",
+"Lat": -4.0435,
+"Lng": 39.6682,
+"Tz": "Africa/Nairobi"
+},
+{
+"En": "Dar es Salaam",
+"Ar": "دار السلام",
+"Cc": "TZ",
+"Lat": -6.7924,
+"Lng": 39.2083,
+"Tz": "Africa/Dar_es_Salaam"
+},
+{
+"En": "Zanzibar",
+"Ar": "زنجبار",
+"Cc": "TZ",
+"Lat": -6.1659,
+"Lng": 39.2026,
+"Tz": "Africa/Dar_es_Salaam"
+},
+{
+"En": "Johannesburg",
+"Ar": "جوهانسبرغ",
+"Cc": "ZA",
+"Lat": -26.2041,
+"Lng": 28.0473,
+"Tz": "Africa/Johannesburg",
+"Elev": 1753
+},
+{
+"En": "Cape Town",
+"Ar": "كيب تاون",
+"Cc": "ZA",
+"Lat": -33.9249,
+"Lng": 18.4241,
+"Tz": "Africa/Johannesburg"
+},
+{
+"En": "Durban",
+"Ar": "ديربان",
+"Cc": "ZA",
+"Lat": -29.8587,
+"Lng": 31.0218,
+"Tz": "Africa/Johannesburg"
+},
+{
+"En": "London",
+"Ar": "لندن",
+"Cc": "GB",
+"Lat": 51.5072,
+"Lng": -0.1276,
+"Tz": "Europe/London"
+},
+{
+"En": "Birmingham",
+"Ar": "برمنغهام",
+"Cc": "GB",
+"Lat": 52.4862,
+"Lng": -1.8904,
+"Tz": "Europe/London"
+},
+{
+"En": "Manchester",
+"Ar": "مانشستر",
+"Cc": "GB",
+"Lat": 53.4808,
+"Lng": -2.2426,
+"Tz": "Europe/London"
+},
+{
+"En": "Glasgow",
+"Ar": "غلاسكو",
+"Cc": "GB",
+"Lat": 55.8642,
+"Lng": -4.2518,
+"Tz": "Europe/London"
+},
+{
+"En": "Dublin",
+"Ar": "دبلن",
+"Cc": "IE",
+"Lat": 53.3498,
+"Lng": -6.2603,
+"Tz": "Europe/Dublin"
+},
+{
+"En": "Paris",
+"Ar": "باريس",
+"Cc": "FR",
+"Lat": 48.8566,
+"Lng": 2.3522,
+"Tz": "Europe/Paris"
+},
+{
+"En": "Marseille",
+"Ar": "مرسيليا",
+"Cc": "FR",
+"Lat": 43.2965,
+"Lng": 5.3698,
+"Tz": "Europe/Paris"
+},
+{
+"En": "Lyon",
+"Ar": "ليون",
+"Cc": "FR",
+"Lat": 45.764,
+"Lng": 4.8357,
+"Tz": "Europe/Paris"
+},
+{
+"En": "Berlin",
+"Ar": "برلين",
+"Cc": "DE",
+"Lat": 52.52,
+"Lng": 13.405,
+"Tz": "Europe/Berlin"
+},
+{
+"En": "Hamburg",
+"Ar": "هامبورغ",
+"Cc": "DE",
+"Lat": 53.5511,
+"Lng": 9.9937,
+"Tz": "Europe/Berlin"
+},
+{
+"En": "Munich",
+"Ar": "ميونخ",
+"Cc": "DE",
+"Lat": 48.1351,
+"Lng": 11.582,
+"Tz": "Europe/Berlin"
+},
+{
+"En": "Frankfurt",
+"Ar": "فرانكفورت",
+"Cc": "DE",
+"Lat": 50.1109,
+"Lng": 8.6821,
+"Tz": "Europe/Berlin"
+},
+{
+"En": "Cologne",
+"Ar": "كولونيا",
+"Cc": "DE",
+"Lat": 50.9375,
+"Lng": 6.9603,
+"Tz": "Europe/Berlin"
+},
+{
+"En": "Amsterdam",
+"Ar": "أمستردام",
+"Cc": "NL",
+"Lat": 52.3676,
+"Lng": 4.9041,
+"Tz": "Europe/Amsterdam"
+},
+{
+"En": "Rotterdam",
+"Ar": "روتردام",
+"Cc": "NL",
+"Lat": 51.9244,
+"Lng": 4.4777,
+"Tz": "Europe/Amsterdam"
+},
+{
+"En": "Brussels",
+"Ar": "بروكسل",
+"Cc": "BE",
+"Lat": 50.8503,
+"Lng": 4.3517,
+"Tz": "Europe/Brussels"
+},
+{
+"En": "Madrid",
+"Ar": "مدريد",
+"Cc": "ES",
+"Lat": 40.4168,
+"Lng": -3.7038,
+"Tz": "Europe/Madrid",
+"Elev": 657
+},
+{
+"En": "Barcelona",
+"Ar": "برشلونة",
+"Cc": "ES",
+"Lat": 41.3874,
+"Lng": 2.1686,
+"Tz": "Europe/Madrid"
+},
+{
+"En": "Granada",
+"Ar": "غرناطة",
+"Cc": "ES",
+"Lat": 37.1773,
+"Lng": -3.5986,
+"Tz": "Europe/Madrid"
+},
+{
+"En": "Lisbon",
+"Ar": "لشبونة",
+"Cc": "PT",
+"Lat": 38.7223,
+"Lng": -9.1393,
+"Tz": "Europe/Lisbon"
+},
+{
+"En": "Rome",
+"Ar": "روما",
+"Cc": "IT",
+"Lat": 41.9028,
+"Lng": 12.4964,
+"Tz": "Europe/Rome"
+},
+{
+"En": "Milan",
+"Ar": "ميلانو",
+"Cc": "IT",
+"Lat": 45.4642,
+"Lng": 9.19,
+"Tz": "Europe/Rome"
+},
+{
+"En": "Zurich",
+"Ar": "زيورخ",
+"Cc": "CH",
+"Lat": 47.3769,
+"Lng": 8.5417,
+"Tz": "Europe/Zurich"
+},
+{
+"En": "Geneva",
+"Ar": "جنيف",
+"Cc": "CH",
+"Lat": 46.2044,
+"Lng": 6.1432,
+"Tz": "Europe/Zurich"
+},
+{
+"En": "Vienna",
+"Ar": "فيينا",
+"Cc": "AT",
+"Lat": 48.2082,
+"Lng": 16.3738,
+"Tz": "Europe/Vienna"
+},
+{
+"En": "Stockholm",
+"Ar": "ستوكهولم",
+"Cc": "SE",
+"Lat": 59.3293,
+"Lng": 18.0686,
+"Tz": "Europe/Stockholm"
+},
+{
+"En": "Malmo",
+"Ar": "مالمو",
+"Cc": "SE",
+"Lat": 55.605,
+"Lng": 13.0038,
+"Tz": "Europe/Stockholm"
+},
+{
+"En": "Oslo",
+"Ar": "أوسلو",
+"Cc": "NO",
+"Lat": 59.9139,
+"Lng": 10.7522,
+"Tz": "Europe/Oslo"
+},
+{
+"En": "Copenhagen",
+"Ar": "كوبنهاغن",
+"Cc": "DK",
+"Lat": 55.6761,
+"Lng": 12.5683,
+"Tz": "Europe/Copenhagen"
+},
+{
+"En": "Helsinki",
+"Ar": "هلسنكي",
+"Cc": "FI",
+"Lat": 60.1699,
+"Lng": 24.9384,
+"Tz": "Europe/Helsinki"
+},
+{
+"En": "Warsaw",
+"Ar": "وارسو",
+"Cc": "PL",
+"Lat": 52.2297,
+"Lng": 21.0122,
+"Tz": "Europe/Warsaw"
+},
+{
+"En": "Athens",
+"Ar": "أثينا",
+"Cc": "GR",
+"Lat": 37.9838,
+"Lng": 23.7275,
+"Tz": "Europe/Athens"
+},
+{
+"En": "Moscow",
+"Ar": "موسكو",
+"Cc": "RU",
+"Lat": 55.7558,
+"Lng": 37.6173,
+"Tz": "Europe/Moscow"
+},
+{
+"En": "Kazan",
+"Ar": "قازان",
+"Cc": "RU",
+"Lat": 55.7887,
+"Lng": 49.1221,
+"Tz": "Europe/Moscow"
+},
+{
+"En": "Grozny",
+"Ar": "غروزني",
+"Cc": "RU",
+"Lat": 43.3178,
+"Lng": 45.6949,
+"Tz": "Europe/Moscow"
+},
+{
+"En": "Kyiv",
+"Ar": "كييف",
+"Cc": "UA",
+"Lat": 50.4501,
+"Lng": 30.5234,
+"Tz": "Europe/Kyiv"
+},
+{
+"En": "New York",
+"Ar": "نيويورك",
+"Cc": "US",
+"Lat": 40.7128,
+"Lng": -74.006,
+"Tz": "America/New_York"
+},
+{
+"En": "Washington, D.C.",
+"Ar": "واشنطن",
+"Cc": "US",
+"Lat": 38.9072,
+"Lng": -77.0369,
+"Tz": "America/New_York"
+},
+{
+"En": "Chicago",
+"Ar": "شيكاغو",
+"Cc": "US",
+"Lat": 41.8781,
+"Lng": -87.6298,
+"Tz": "America/Chicago"
+},
+{
+"En": "Houston",
+"Ar": "هيوستن",
+"Cc": "US",
+"Lat": 29.7604,
+"Lng": -95.3698,
+"Tz": "America/Chicago"
+},
+{
+"En": "Dallas",
+"Ar": "دالاس",
+"Cc": "US",
+"Lat": 32.7767,
+"Lng": -96.797,
+"Tz": "America/Chicago"
+},
+{
+"En": "Dearborn",
+"Ar": "ديربورن",
+"Cc": "US",
+"Lat": 42.3223,
+"Lng": -83.1763,
+"Tz": "America/Detroit"
+},
+{
+"En": "Los Angeles",
+"Ar": "لوس أنجلوس",
+"Cc": "US",
+"Lat": 34.0522,
+"Lng": -118.2437,
+"Tz": "America/Los_Angeles"
+},
+{
+"En": "San Francisco",
+"Ar": "سان فرانسيسكو",
+"Cc": "US",
+"Lat": 37.7749,
+"Lng": -122.4194,
+"Tz": "America/Los_Angeles"
+},
+{
+"En": "Seattle",
+"Ar": "سياتل",
+"Cc": "US",
+"Lat": 47.6062,
+"Lng": -122.3321,
+"Tz": "America/Los_Angeles"
+},
+{
+"En": "Miami",
+"Ar": "ميامي",
+"Cc": "US",
+"Lat": 25.7617,
+"Lng": -80.1918,
+"Tz": "America/New_York"
+},
+{
+"En": "Atlanta",
+"Ar": "أتلانتا",
+"Cc": "US",
+"Lat": 33.749,
+"Lng": -84.388,
+"Tz": "America/New_York"
+},
+{
+"En": "Phoenix",
+"Ar": "فينيكس",
+"Cc": "US",
+"Lat": 33.4484,
+"Lng": -112.074,
+"Tz": "America/Phoenix"
+},
+{
+"En": "Denver",
+"Ar": "دنفر",
+"Cc": "US",
+"Lat": 39.7392,
+"Lng": -104.9903,
+"Tz": "America/Denver",
+"Elev": 1609
+},
+{
+"En": "Toronto",
+"Ar": "تورونتو",
+"Cc": "CA",
+"Lat": 43.6532,
+"Lng": -79.3832,
+"Tz": "America/Toronto"
+},
+{
+"En": "Montreal",
+"Ar": "مونتريال",
+"Cc": "CA",
+"Lat": 45.5017,
+"Lng": -73.5673,
+"Tz": "America/Toronto"
+},
+{
+"En": "Ottawa",
+"Ar": "أوتاوا",
+"Cc": "CA",
+"Lat": 45.4215,
+"Lng": -75.6972,
+"Tz": "America/Toronto"
+},
+{
+"En": "Calgary",
+"Ar": "كالغاري",
+"Cc": "CA",
+"Lat": 51.0447,
+"Lng": -114.0719,
+"Tz": "America/Edmonton",
+"Elev": 1045
+},
+{
+"En": "Vancouver",
+"Ar": "فانكوفر",
+"Cc": "CA",
+"Lat": 49.2827,
+"Lng": -123.1207,
+"Tz": "America/Vancouver"
+},
+{
+"En": "Mexico City",
+"Ar": "مكسيكو سيتي",
+"Cc": "MX",
+"Lat": 19.4326,
+"Lng": -99.1332,
+"Tz": "America/Mexico_City",
+"Elev": 2240
+},
+{
+"En": "Sao Paulo",
+"Ar": "ساو باولو",
+"Cc": "BR",
+"Lat": -23.5505,
+"Lng": -46.6333,
+"Tz": "America/Sao_Paulo",
+"Elev": 760
+},
+{
+"En": "Rio de Janeiro",
+"Ar": "ريو دي جانيرو",
+"Cc": "BR",
+"Lat": -22.9068,
+"Lng": -43.1729,
+"Tz": "America/Sao_Paulo"
+},
+{
+"En": "Buenos Aires",
+"Ar": "بوينس آيرس",
+"Cc": "AR",
+"Lat": -34.6037,
+"Lng": -58.3816,
+"Tz": "America/Argentina/Buenos_Aires"
+},
+{
+"En": "Tokyo",
+"Ar": "طوكيو",
+"Cc": "JP",
+"Lat": 35.6762,
+"Lng": 139.6503,
+"Tz": "Asia/Tokyo"
+},
+{
+"En": "Beijing",
+"Ar": "بكين",
+"Cc": "CN",
+"Lat": 39.9042,
+"Lng": 116.4074,
+"Tz": "Asia/Shanghai"
+},
+{
+"En": "Shanghai",
+"Ar": "شنغهاي",
+"Cc": "CN",
+"Lat": 31.2304,
+"Lng": 121.4737,
+"Tz": "Asia/Shanghai"
+},
+{
+"En": "Urumqi",
+"Ar": "أورومتشي",
+"Cc": "CN",
+"Lat": 43.8256,
+"Lng": 87.6168,
+"Tz": "Asia/Shanghai"
+},
+{
+"En": "Seoul",
+"Ar": "سيول",
+"Cc": "KR",
+"Lat": 37.5665,
+"Lng": 126.978,
+"Tz": "Asia/Seoul"
+},
+{
+"En": "Bangkok",
+"Ar": "بانكوك",
+"Cc": "TH",
+"Lat": 13.7563,
+"Lng": 100.5018,
+"Tz": "Asia/Bangkok"
+},
+{
+"En": "Manila",
+"Ar": "مانيلا",
+"Cc": "PH",
+"Lat": 14.5995,
+"Lng": 120.9842,
+"Tz": "Asia/Manila"
+},
+{
+"En": "Sydney",
+"Ar": "سيدني",
+"Cc": "AU",
+"Lat": -33.8688,
+"Lng": 151.2093,
+"Tz": "Australia/Sydney"
+},
+{
+"En": "Melbourne",
+"Ar": "ملبورن",
+"Cc": "AU",
+"Lat": -37.8136,
+"Lng": 144.9631,
+"Tz": "Australia/Melbourne"
+},
+{
+"En": "Perth",
+"Ar": "بيرث",
+"Cc": "AU",
+"Lat": -31.9505,
+"Lng": 115.8605,
+"Tz": "Australia/Perth"
+},
+{
+"En": "Brisbane",
+"Ar": "بريزبن",
+"Cc": "AU",
+"Lat": -27.4698,
+"Lng": 153.0251,
+"Tz": "Australia/Brisbane"
+},
+{
+"En": "Auckland",
+"Ar": "أوكلاند",
+"Cc": "NZ",
+"Lat": -36.8485,
+"Lng": 174.7633,
+"Tz": "Pacific/Auckland"
+}
+]
+}
