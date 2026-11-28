@@ -55,6 +55,7 @@ flutter:
     - assets/data/companions.json
     - assets/data/tafsir_muyassar.json.gz
     - assets/data/asbab.json
+    - assets/data/fiqh.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
   fonts:
