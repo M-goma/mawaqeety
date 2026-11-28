@@ -1,0 +1,27 @@
+Sources of the tafsir and word-meaning files in this folder
+==========================================================
+
+The texts are copied unaltered (no wording is added, removed or changed); the build scripts only regroup them by
+ayah range and join the line breaks of the printed page. All rights in the texts remain with their authors and
+publishers; they are shown with attribution, free of charge, for non-commercial religious education.
+
+Dataset: spa5k/tafsir_api, tag v1.2.3 (MIT licence for the dataset/code, https://github.com/spa5k/tafsir_api),
+an export of the Quranic Universal Library (QUL) by Tarteel (https://qul.tarteel.ai/resources/tafsir).
+
+tafsir_muyassar.json.gz   التفسير الميسر — نخبة من العلماء، مجمع الملك فهد لطباعة المصحف الشريف
+                          QUL resource 38 (ar-tafsir-muyassar). Built by tools/build_tafsir.py.
+
+tafsir_saadi.json.gz      تيسير الكريم الرحمن في تفسير كلام المنان (تفسير السعدي) — الشيخ عبد الرحمن بن ناصر السعدي
+                          (ت ١٣٧٦هـ / 1956). QUL resource 308 (ar-tafsir-as-saadi). Built by tools/build_tafsirs.py.
+                          Sections follow the book's own markers «{n}» / «{n ـ m}».
+                          Spot-checked against islamweb.net's edition (المكتبة الإسلامية، كتاب رقم 209):
+                          ~99% of the words match in order; the rest are known variants between printed editions
+                          (e.g. «اؤتمن/ائتمن», «النبي/الرسول»).
+
+tafsir_mukhtasar.json.gz  المختصر في تفسير القرآن الكريم — إصدار مركز تفسير للدراسات القرآنية (الرياض)
+                          QUL resource 251 (ar-tafsir-al-mukhtasar). Built by tools/build_tafsirs.py.
+                          Checked against QuranEnc's «arabic_mokhtasar» edition: identical for all 6236 ayat.
+
+gharib_muyassar.json.gz   الميسر في غريب القرآن الكريم — مجمع الملك فهد لطباعة المصحف الشريف
+                          QUL resource 519 (al-muyassar-fi-al-gharib). Built by tools/build_tafsirs.py.
+                          Shown in the ayah sheet as «معاني الكلمات».

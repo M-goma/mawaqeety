@@ -60,6 +60,7 @@ class Settings {
   String palette = 'emerald';
   double quranFontSize = 26;
   String reciterId = 'Alafasy_128kbps';
+  String tafsirId = 'muyassar'; // the ayah sheet's tafsir: Tafsir.books (muyassar | saadi | mukhtasar)
   bool continueNextSurah = true;
   String narrationVoice = 'male'; // 'male' | 'female'
   // Per-gender voice tuning (device voice name, pitch, speed). Empty name = automatic.
@@ -120,7 +121,7 @@ class Settings {
         'adjust': {for (final e in adjust.entries) e.key.name: e.value},
         'notify': {for (final e in notify.entries) e.key.name: e.value},
         'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanFlip': adhanFlip, 'adhanPower': adhanPower, 'adhanSilent': adhanSilent, 'whiteDaysReminder': whiteDaysReminder, 'flipStopsAudio': flipStopsAudio, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
-        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
+        'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'tafsirId': tafsirId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
         'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint, 'wirdGoal': wirdGoal, 'prayerCheck': prayerCheck, 'fridayKahf': fridayKahf, 'fridayHour': fridayHour, 'kahfDay': kahfDay, 'kahfPages': kahfPages, 'hadithFull': hadithFull, 'iconSize': iconSize, 'hadithMarks': hadithMarks, 'tasbeehPhrase': tasbeehPhrase, 'tasbeehTarget': tasbeehTarget, 'tasbeehCustom': tasbeehCustom, 'tasbeehCount': tasbeehCount, 'tasbeehStep': tasbeehStep,
@@ -164,6 +165,7 @@ class Settings {
       r.palette = j['palette'] ?? 'emerald';
       r.quranFontSize = (j['quranFontSize'] ?? 26).toDouble();
       r.reciterId = j['reciterId'] ?? r.reciterId;
+      r.tafsirId = j['tafsirId'] ?? r.tafsirId;
       r.continueNextSurah = j['continueNextSurah'] ?? true;
       r.narrationVoice = j['narrationVoice'] ?? 'male';
       r.voiceMale = j['voiceMale'] ?? '';

@@ -55,6 +55,9 @@ flutter:
     - assets/data/companions.json
     - assets/data/ghazawat.json
     - assets/data/tafsir_muyassar.json.gz
+    - assets/data/tafsir_saadi.json.gz
+    - assets/data/tafsir_mukhtasar.json.gz
+    - assets/data/gharib_muyassar.json.gz
     - assets/data/asbab.json
     - assets/data/fiqh.json
     - assets/data/arbaeen.json
