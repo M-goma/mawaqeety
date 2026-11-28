@@ -49,7 +49,7 @@ public class QuranTests
     [Fact]
     public void Recitation_urls_and_basmala_order()
     {
-        Assert.Equal("https://everyayah.com/data/Alafasy_128kbps/002255.mp3", Reciters.Url("Alafasy_128kbps", 2, 255));
+        Assert.Equal("https://everyayah.com/data/Minshawy_Murattal_128kbps/002255.mp3", Reciters.Url("Minshawy_Murattal_128kbps", 2, 255));
         var seq = Reciters.Sequence(2, 1, 3);
         Assert.True(seq[0].IsBasmala);
         Assert.Equal((2, 1, false), seq[1]);

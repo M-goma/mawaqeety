@@ -15,8 +15,8 @@ public static partial class AdhanCatalog
 {
     public const string BaseUrl = "https://raw.githubusercontent.com/Kiwifu/adhan-mp3/main/";
 
-    public const string DefaultId = "alafasy";
-    public const string DefaultFajrId = "alafasy-fajr";
+    public const string DefaultId = "minshawi";
+    public const string DefaultFajrId = "cairo-fajr";
 
     // Built lazily: static initializer order across partial files is not guaranteed.
     private static Dictionary<string, AdhanVoice>? _byId;

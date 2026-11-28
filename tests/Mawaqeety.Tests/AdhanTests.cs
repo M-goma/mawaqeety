@@ -62,10 +62,21 @@ public class AdhanTests
     }
 
     [Fact]
-    public void Url_encoding_matches_verified_raw_github_url()
+    public void Url_encoding_escapes_the_arabic_file_name()
     {
-        // This exact URL was verified to return a valid MP3 (ID3 header) from raw.githubusercontent.com.
-        Assert.Equal("https://raw.githubusercontent.com/Kiwifu/adhan-mp3/main/Mishary_Rashid_Alafasy_1_-_Kuwait_%28%D9%85%D8%B4%D8%A7%D8%B1%D9%8A_%D8%B1%D8%A7%D8%B4%D8%AF_%D8%A7%D9%84%D8%B9%D9%81%D8%A7%D8%B3%D9%8A_-_%D8%A7%D9%84%D9%83%D9%88%D9%8A%D8%AA%29.mp3", AdhanCatalog.Find("alafasy")!.Url);
+        var url = AdhanCatalog.Find("minshawi")!.Url;
+        Assert.StartsWith(AdhanCatalog.BaseUrl + "Mohamed_Siddiq_El-Minshawi_-_Egypt_1_%28", url);
+        Assert.EndsWith("%29.mp3", url);
+    }
+
+    [Fact]
+    public void Alafasy_was_removed_and_old_settings_move_to_the_defaults()
+    {
+        Assert.DoesNotContain(AdhanCatalog.All, v => v.Id.Contains("afasy") || v.Id.Contains("mishary"));
+        var s = Mawaqeety.Core.SettingsSerializer.Deserialize("{\"AdhanId\":\"alafasy\",\"FajrAdhanId\":\"alafasy-fajr\",\"ReciterId\":\"Alafasy_128kbps\"}");
+        Assert.Equal(AdhanCatalog.DefaultId, s.AdhanId);
+        Assert.Equal(AdhanCatalog.DefaultFajrId, s.FajrAdhanId);
+        Assert.Equal(Mawaqeety.Core.Content.Reciters.DefaultId, s.ReciterId);
     }
 
     [Fact]
@@ -75,8 +86,8 @@ public class AdhanTests
         Assert.Equal(AdhanCatalog.All.Count, AdhanCatalog.All.Select(v => v.NameAr).Distinct().Count());
         Assert.True(AdhanCatalog.ForFajr.First().IsFajr);
         // ids saved by v1.1 must still resolve
-        foreach (var id in new[] { "alafasy", "makkah-mala", "madinah", "aqsa", "abdulbasit", "refaat", "hussary", "minshawi",
-                     "banna", "mustafa-ismail", "qatami", "alafasy-fajr", "makkah-fajr", "madinah-fajr", "cairo-fajr" })
+        foreach (var id in new[] { "makkah-mala", "madinah", "aqsa", "abdulbasit", "refaat", "hussary", "minshawi",
+                     "banna", "mustafa-ismail", "qatami", "makkah-fajr", "madinah-fajr", "cairo-fajr" })
             Assert.NotNull(AdhanCatalog.Find(id));
     }
 }

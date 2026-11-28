@@ -54,14 +54,14 @@ class Settings {
   bool whiteDaysReminder = true; // reminder the evening before the white days (13–15 of each Hijri month)
   bool adhanSilent = true; // the adhan sounds even when the phone is on silent / vibrate
   bool flipStopsAudio = false; // turning the phone face down also pauses a recitation, story or the radio
-  String adhanId = 'alafasy';
-  String fajrAdhanId = 'alafasy-fajr';
+  String adhanId = 'minshawi';
+  String fajrAdhanId = 'cairo-fajr';
   int hijriAdjust = 0;
   bool use24h = false;
   ThemeChoice theme = ThemeChoice.dark;
   String palette = 'emerald';
   double quranFontSize = 26;
-  String reciterId = 'Alafasy_128kbps';
+  String reciterId = 'Minshawy_Murattal_128kbps';
   String tafsirId = 'muyassar'; // the ayah sheet's tafsir: Tafsir.books (muyassar | saadi | mukhtasar)
   bool continueNextSurah = true;
   String narrationVoice = 'male'; // 'male' | 'female'
@@ -168,6 +168,11 @@ class Settings {
       r.palette = j['palette'] ?? 'emerald';
       r.quranFontSize = (j['quranFontSize'] ?? 26).toDouble();
       r.reciterId = j['reciterId'] ?? r.reciterId;
+      // Alafasy was removed from the app (1.28): move anyone who chose him to the new defaults.
+      bool removed(String id) => RegExp('afasy|mishary', caseSensitive: false).hasMatch(id);
+      if (removed(r.adhanId)) r.adhanId = 'minshawi';
+      if (removed(r.fajrAdhanId)) r.fajrAdhanId = 'cairo-fajr';
+      if (removed(r.reciterId)) r.reciterId = 'Minshawy_Murattal_128kbps';
       r.tafsirId = j['tafsirId'] ?? r.tafsirId;
       r.continueNextSurah = j['continueNextSurah'] ?? true;
       r.narrationVoice = j['narrationVoice'] ?? 'male';

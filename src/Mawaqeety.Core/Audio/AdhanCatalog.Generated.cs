@@ -6,7 +6,6 @@ public static partial class AdhanCatalog
     /// <summary>213 recordings; the first 15 are the featured voices.</summary>
     public static readonly IReadOnlyList<AdhanVoice> All =
     [
-        new("alafasy", "مشاري راشد العفاسي - الكويت (1)", "Mishary Rashid Alafasy 1 - Kuwait", "Mishary_Rashid_Alafasy_1_-_Kuwait_(مشاري_راشد_العفاسي_-_الكويت).mp3", false),
         new("makkah-mala", "علي بن أحمد ملا - الحرم المكي (1)", "Ali Ibn Ahmad Mala 1 - Al Haram Al Maki", "Ali_Ibn_Ahmad_Mala_1_-_Al_Haram_Al_Maki_(علي_بن_أحمد_ملا_-_الحرم_المكي).mp3", false),
         new("madinah", "أذان الحرم المدني - المدينة المنورة (1)", "Adhan Al Haram Al Madani - Al Madinah 1", "Adhan_Al_Haram_Al_Madani_-_Al_Madinah_1_(أذان_الحرم_المدني_-_المدينة_المنورة).mp3", false),
         new("aqsa", "أذان المسجد الأقصى - القدس", "Adhan Al Aqsa - Jerusalem", "Adhan_Al_Aqsa_-_Jerusalem_(أذان_المسجد_الأقصى_-_القدس).mp3", false),
@@ -17,7 +16,6 @@ public static partial class AdhanCatalog
         new("banna", "محمود علي البنا - القاهرة", "Mahmoud Ali Al Banna - Cairo", "Mahmoud_Ali_Al_Banna_-_Cairo_(محمود_علي_البنا_-_القاهرة).mp3", false),
         new("mustafa-ismail", "مصطفى إسماعيل - مصر", "Mustafa Ismail - Egypt", "Mustafa_Ismail_-_Egypt_(مصطفى_إسماعيل_-_مصر).mp3", false),
         new("qatami", "ناصر القطامي - المملكة العربية السعودية", "Nasser Al Qatami 1 - Saudi Arabia", "Nasser_Al_Qatami_1_-_Saudi_Arabia_(ناصر_القطامي_-_المملكة_العربية_السعودية).mp3", false),
-        new("alafasy-fajr", "مشاري راشد العفاسي - فجر الكويت (1)", "Mishary Rashid Alafasy 3 - Fajr Kuwait", "Mishary_Rashid_Alafasy_3_-_Fajr_Kuwait_(مشاري_راشد_العفاسي_-_فجر_الكويت).mp3", true),
         new("makkah-fajr", "أذان الفجر الحرم المكي", "Adhan Fajr Al Haram Al Maki", "Adhan_Fajr_Al_Haram_Al_Maki_(أذان_الفجر_الحرم_المكي).mp3", true),
         new("madinah-fajr", "أذان الفجر الحرم المدني", "Adhan Fajr Al Haram Al Madani", "Adhan_Fajr_Al_Haram_Al_Madani_(أذان_الفجر_الحرم_المدني).mp3", true),
         new("cairo-fajr", "أذان الفجر القاهرة مصر", "Adhan Fajr Cairo Egypt", "Adhan_Fajr_Cairo_Egypt_(أذان_الفجر_القاهرة_مصر).mp3", true),
@@ -156,9 +154,6 @@ public static partial class AdhanCatalog
         new("majid-al-zamel", "ماجد الزامل", "Majid Al Zamel", "Majid_Al_Zamel_(ماجد_الزامل).mp3", false),
         new("mansur-al-zahrane", "منصور الزهراني (1)", "Mansur Al Zahrane", "Mansur_Al_Zahrane_(منصور_الزهراني).mp3", false),
         new("mansur-al-zahrane-hq", "منصور الزهراني (2)", "Mansur Al Zahrane - HQ", "Mansur_Al_Zahrane_-_HQ_(منصور_الزهراني).mp3", false),
-        new("mishary-al-afasy-hq", "مشاري العفاسي", "Mishary Al Afasy - HQ", "Mishary_Al_Afasy_-_HQ_(مشاري_العفاسي).mp3", false),
-        new("mishary-rashid-alafasy-2-kuwait", "مشاري راشد العفاسي - الكويت (2)", "Mishary Rashid Alafasy 2 - Kuwait", "Mishary_Rashid_Alafasy_2_-_Kuwait_(مشاري_راشد_العفاسي_-_الكويت).mp3", false),
-        new("mishary-rashid-alafasy-4-fajr-kuwait", "مشاري راشد العفاسي - فجر الكويت (2)", "Mishary Rashid Alafasy 4 - Fajr Kuwait", "Mishary_Rashid_Alafasy_4_-_Fajr_Kuwait_(مشاري_راشد_العفاسي_-_فجر_الكويت).mp3", true),
         new("mohamed-siddiq-el-minshawi-afghanistan", "محمد صديق المنشاوي - أفغانستان", "Mohamed Siddiq El-Minshawi - Afghanistan", "Mohamed_Siddiq_El-Minshawi_-_Afghanistan_(محمد_صديق_المنشاوي_-_أفغانستان).mp3", false),
         new("mohamed-siddiq-el-minshawi-egypt-2", "محمد صديق المنشاوي - مصر (2)", "Mohamed Siddiq El-Minshawi - Egypt 2", "Mohamed_Siddiq_El-Minshawi_-_Egypt_2_(محمد_صديق_المنشاوي_-_مصر).mp3", false),
         new("mohamed-tarek-reciting-azan", "محمد طارق", "Mohamed Tarek Reciting Azan", "Mohamed_Tarek_Reciting_Azan.mp3", false),

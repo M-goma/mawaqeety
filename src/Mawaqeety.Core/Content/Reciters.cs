@@ -10,7 +10,7 @@ public sealed record Reciter(string Id, string Name);
 /// </summary>
 public static class Reciters
 {
-    public const string DefaultId = "Alafasy_128kbps";
+    public const string DefaultId = "Minshawy_Murattal_128kbps";
     public const string BaseUrl = "https://everyayah.com/data/";
 
     private static readonly Lazy<IReadOnlyList<Reciter>> _all = new(() =>
