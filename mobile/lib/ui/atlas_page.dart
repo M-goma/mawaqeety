@@ -25,9 +25,10 @@ const battleColor = Color(0xFFB3261E);
 /// A marker: one place, possibly shared by several battles or Seerah events.
 class _Pin {
   final LatLng point;
-  final String label;
+  final Offset at; // on screen
   final List<int> items; // indexes into the tab's list
-  const _Pin(this.point, this.label, this.items);
+  bool showLabel = true;
+  _Pin(this.point, this.at, this.items);
 }
 
 /// أطلس قصص الأنبياء: the places of the stories on a map; a place opens its note, source and stories.
@@ -62,18 +63,29 @@ class _AtlasPageState extends State<AtlasPage> {
             (e, LatLng(g.byId(e.ghazwa!)!.lat, g.byId(e.ghazwa!)!.lng), g.byId(e.ghazwa!)!.place),
       ];
 
-  /// Groups points closer than [near] degrees into one marker.
-  static List<_Pin> _group(List<(LatLng, String)> pts, double near) {
+  /// Groups the points closer than [px] pixels at the current zoom into one marker, then hides the labels that
+  /// would overlap a label already placed (bigger groups first); those markers keep only their badge.
+  static List<_Pin> _cluster(MapCamera cam, List<LatLng> pts, String Function(_Pin) label, {double px = 40}) {
     final out = <_Pin>[];
     for (var i = 0; i < pts.length; i++) {
-      final at = out.indexWhere((p) {
-        final dy = p.point.latitude - pts[i].$1.latitude, dx = p.point.longitude - pts[i].$1.longitude;
-        return dx * dx + dy * dy < near * near;
-      });
+      final o = cam.latLngToScreenOffset(pts[i]);
+      final at = out.indexWhere((p) => (p.at - o).distance < px);
       if (at < 0) {
-        out.add(_Pin(pts[i].$1, pts[i].$2, [i]));
+        out.add(_Pin(pts[i], o, [i]));
       } else {
         out[at].items.add(i);
+      }
+    }
+    // Badges are always shown; a label must clear them and the labels placed before it.
+    final badges = {for (final p in out) p: Rect.fromCenter(center: p.at.translate(0, -15), width: 30, height: 30)};
+    final placed = <Rect>[];
+    for (final p in [...out]..sort((a, b) => b.items.length.compareTo(a.items.length))) {
+      final w = (label(p).length * 6.6 + 20).clamp(40, 150).toDouble();
+      final r = Rect.fromCenter(center: p.at.translate(0, -48), width: w, height: 24).inflate(3);
+      if (placed.any((q) => q.overlaps(r)) || badges.entries.any((e) => e.key != p && e.value.overlaps(r))) {
+        p.showLabel = false;
+      } else {
+        placed.add(r);
       }
     }
     return out;
@@ -188,11 +200,12 @@ class _AtlasPageState extends State<AtlasPage> {
                       urlTemplate: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
                       userAgentPackageName: 'com.mawaqeety.app')
                   : TileLayer(urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png', userAgentPackageName: 'com.mawaqeety.app'),
-              MarkerLayer(markers: switch (_tab) {
-                AtlasTab.prophets => _prophetMarkers(context),
-                AtlasTab.battles => _battleMarkers(context, g),
-                AtlasTab.seerah => _seerahMarkers(context, g, s),
-              }),
+              // Battles and Seerah places are grouped by their distance on screen, so the groups follow the zoom.
+              switch (_tab) {
+                AtlasTab.prophets => MarkerLayer(markers: _prophetMarkers(context)),
+                AtlasTab.battles => Builder(builder: (c) => MarkerLayer(markers: _battleMarkers(context, MapCamera.of(c), g))),
+                AtlasTab.seerah => Builder(builder: (c) => MarkerLayer(markers: _seerahMarkers(context, MapCamera.of(c), g, s))),
+              },
               RichAttributionWidget(alignment: AttributionAlignment.bottomLeft, attributions: [
                 TextSourceAttribution(_satellite ? 'Esri, Maxar, Earthstar Geographics' : 'OpenStreetMap contributors',
                     onTap: () => launchUrl(Uri.parse(_satellite ? 'https://www.esri.com' : 'https://www.openstreetmap.org/copyright'))),
@@ -320,8 +333,10 @@ class _AtlasPageState extends State<AtlasPage> {
         child: Text(text, style: TextStyle(color: Colors.white, fontSize: big ? 15 : 12, fontWeight: FontWeight.w700, height: 1.1)),
       );
 
-  List<Marker> _battleMarkers(BuildContext context, GhazawatData g) {
-    final pins = _group([for (final b in g.list) (LatLng(b.lat, b.lng), b.name)], 0.3);
+  List<Marker> _battleMarkers(BuildContext context, MapCamera cam, GhazawatData g) {
+    String label(_Pin p) =>
+        p.items.length == 1 ? g.list[p.items.first].name : [for (final i in p.items) _short(g.list[i].name)].join('، ');
+    final pins = _cluster(cam, [for (final b in g.list) LatLng(b.lat, b.lng)], label);
     return [
       for (final pin in pins)
         Marker(
@@ -333,9 +348,8 @@ class _AtlasPageState extends State<AtlasPage> {
             onTap: () => pin.items.length == 1
                 ? showBattleSheet(context, g.list[pin.items.first])
                 : _pickBattle(context, [for (final i in pin.items) g.list[i]]),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              _label(pin.items.length == 1 ? pin.label : [for (final i in pin.items) _short(g.list[i].name)].join('، '),
-                  const Color(0xFF6B1410), AppColors.goldLight),
+            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+              if (pin.showLabel) _label(label(pin), const Color(0xFF6B1410), AppColors.goldLight),
               const SizedBox(height: 2),
               _badge(pin.items.length == 1 ? '⚔' : Arabic.digits(pin.items.length), battleColor,
                   big: pin.items.any((i) => g.list[i].id == widget.focusGhazwa)),
@@ -380,10 +394,12 @@ class _AtlasPageState extends State<AtlasPage> {
         ),
       );
 
-  List<Marker> _seerahMarkers(BuildContext context, GhazawatData g, SeerahData s) {
+  List<Marker> _seerahMarkers(BuildContext context, MapCamera cam, GhazawatData g, SeerahData s) {
     final places = _seerahPlaces(g, s);
-    // Nearby places share a marker (Makkah and its surroundings, Madinah and Quba…), named after the most frequent one.
-    final pins = _group([for (final x in places) (x.$2, x.$3)], 0.3);
+    // A group is named after its most frequent place (Makkah, Madinah…).
+    String label(_Pin p) =>
+        p.items.length == 1 ? places[p.items.first].$1.title : _mostFrequent([for (final i in p.items) places[i].$3]);
+    final pins = _cluster(cam, [for (final x in places) x.$2], label);
     return [
       for (final pin in pins)
         Marker(
@@ -395,9 +411,8 @@ class _AtlasPageState extends State<AtlasPage> {
             onTap: () => pin.items.length == 1
                 ? showSeerahEvent(context, places[pin.items.first].$1, ghazawat: g, fromMap: true)
                 : _pickEvent(context, [for (final i in pin.items) places[i].$1], g),
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              _label(pin.items.length == 1 ? places[pin.items.first].$1.title : _mostFrequent([for (final i in pin.items) places[i].$3]),
-                  AppColors.current.hero[1], AppColors.current.accentLight),
+            child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+              if (pin.showLabel) _label(label(pin), AppColors.current.hero[1], AppColors.current.accentLight),
               const SizedBox(height: 2),
               _badge(
                 Arabic.digits(pin.items.length),

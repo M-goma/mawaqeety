@@ -99,6 +99,24 @@ void main() {
     }
   });
 
+  test('ayat tied to an event carry the page that ties them', () {
+    // These pairings are stated in specific pages, which must be among the event's refs.
+    const pages = {
+      'birth': 'article/184969/', // أصحاب الفيل: وُلد ﷺ في ذلك العام
+      'nadwa': 'content/200/16923/', // ما نزل في تربص المشركين: الأنفال ٣٠
+      'qada': 'content/200/17461/', // ما نزل في عمرة القضاء: الفتح ٢٧
+      'abubakr_hajj': 'content/52/8400/', // فتح الباري: باب ﴿وأذان من الله ورسوله﴾
+      'thawr': 'content/200/16927/',
+      'jahr': 'content/200/16803/',
+    };
+    pages.forEach((id, page) {
+      final e = d.byId(id)!;
+      expect(e.ayah, isNotNull, reason: id);
+      expect(e.refs.any((r) => r.url.contains(page)), isTrue, reason: id);
+    });
+    expect(d.byId('wufud')!.ayah, isNull);
+  });
+
   test('disputed dates are flagged', () {
     for (final id in ['birth', 'wahy', 'isra', 'quba', 'mustaliq', 'wafat']) {
       expect(d.byId(id)!.disputed, isNotNull, reason: id);
