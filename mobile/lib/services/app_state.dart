@@ -125,9 +125,8 @@ class AppState extends ChangeNotifier {
         WidgetsBinding.instance.addPostFrameCallback((_) => openKahf());
         return;
       }
-      if (r.payload == 'friday_hour') return; // just opens the app
-      if (r.payload == DownloadNotifier.payload || (r.payload ?? '').startsWith('pt|')) return; // just opens the app
-      playAdhanForCurrent();
+      // Any other notification (the ongoing countdown, prayer-time and reminder notices) just opens the app:
+      // tapping it never starts the adhan.
     });
     downloadNotifier.onPrayerAction = logPrayerAction;
     downloadNotifier.init();
