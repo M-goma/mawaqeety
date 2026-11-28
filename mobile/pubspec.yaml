@@ -53,6 +53,7 @@ flutter:
     - assets/data/hadith_bukhari.json.gz
     - assets/data/hadith_muslim.json.gz
     - assets/data/companions.json
+    - assets/data/ghazawat.json
     - assets/data/tafsir_muyassar.json.gz
     - assets/data/asbab.json
     - assets/data/fiqh.json
