@@ -78,6 +78,34 @@ object AdhanAlarms {
         ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(KEY).apply()
     }
 
+    /** True when this phone lets the app ring at the exact minute (Android 12+ «المنبهات والتذكيرات»). */
+    fun canExact(ctx: Context): Boolean {
+        if (Build.VERSION.SDK_INT < 31) return true
+        return (ctx.getSystemService(Context.ALARM_SERVICE) as AlarmManager).canScheduleExactAlarms()
+    }
+
+    private const val FALLBACK_CHANNEL = "adhan_fallback_v1"
+
+    /** A plain notification with the default alarm-like sound, used when the adhan service cannot start. */
+    fun fallback(ctx: Context, o: JSONObject) {
+        val nm = ctx.getSystemService(Context.NOTIFICATION_SERVICE) as android.app.NotificationManager
+        if (Build.VERSION.SDK_INT >= 26 && nm.getNotificationChannel(FALLBACK_CHANNEL) == null) {
+            nm.createNotificationChannel(android.app.NotificationChannel(FALLBACK_CHANNEL, "تنبيه وقت الصلاة",
+                android.app.NotificationManager.IMPORTANCE_HIGH).apply { description = "يظهر إذا تعذّر تشغيل الأذان" })
+        }
+        val open = PendingIntent.getActivity(ctx, 0, ctx.packageManager.getLaunchIntentForPackage(ctx.packageName),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
+        val b = if (Build.VERSION.SDK_INT >= 26) Notification.Builder(ctx, FALLBACK_CHANNEL)
+            else @Suppress("DEPRECATION") Notification.Builder(ctx).setDefaults(Notification.DEFAULT_SOUND)
+        b.setSmallIcon(R.drawable.ic_stat_notify)
+            .setContentTitle(o.optString("title"))
+            .setContentText(o.optString("body"))
+            .setCategory(Notification.CATEGORY_ALARM)
+            .setContentIntent(open)
+            .setAutoCancel(true)
+        nm.notify(7299, b.build())
+    }
+
     /** True when [at] is still one of the planned adhans (it was not re-planned or turned off). */
     fun isPlanned(ctx: Context, at: Long): Boolean {
         val arr = JSONArray(ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, "[]"))
@@ -98,7 +126,8 @@ object AdhanAlarms {
 class AdhanReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
         when (intent.action) {
-            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED, "android.intent.action.QUICKBOOT_POWERON" -> AdhanAlarms.arm(ctx)
+            Intent.ACTION_BOOT_COMPLETED, Intent.ACTION_MY_PACKAGE_REPLACED, "android.intent.action.QUICKBOOT_POWERON",
+            "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" -> AdhanAlarms.arm(ctx)
             else -> {
                 val json = intent.getStringExtra(AdhanAlarms.EXTRA) ?: return
                 val at = JSONObject(json).getLong("at")
@@ -107,7 +136,13 @@ class AdhanReceiver : BroadcastReceiver() {
                 // and only if it is still planned (not re-planned or turned off meanwhile).
                 if (now < at - 60_000 || now - at > 10 * 60_000 || !AdhanAlarms.isPlanned(ctx, at)) return
                 val s = Intent(ctx, AdhanService::class.java).putExtra(AdhanAlarms.EXTRA, json)
-                if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(s) else ctx.startService(s)
+                try {
+                    if (Build.VERSION.SDK_INT >= 26) ctx.startForegroundService(s) else ctx.startService(s)
+                } catch (e: Exception) {
+                    // Android may refuse to start the adhan from the background (e.g. the alarm was not exact):
+                    // at least show the prayer notification with a sound, so the prayer is never silent.
+                    AdhanAlarms.fallback(ctx, JSONObject(json))
+                }
             }
         }
     }

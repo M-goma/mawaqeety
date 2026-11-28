@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../core/prayer_calculator.dart';
@@ -61,19 +63,21 @@ class PrayerPage extends StatelessWidget {
                       style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
                 ]),
               ),
-              // Adhan control
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(children: [
-                  Expanded(
+              // The adhan is turned on or off per prayer with its bell; here only a way to stop it while it plays,
+              // and a warning when Android would not let it ring on time.
+              if (app.adhan.isPlaying)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: () => app.adhan.isPlaying ? app.adhan.stop() : app.playAdhanForCurrent(),
-                      icon: Icon(app.adhan.isPlaying ? Icons.stop_circle_outlined : Icons.volume_up_outlined),
-                      label: Text(app.adhan.isPlaying ? 'إيقاف الأذان' : 'تشغيل الأذان'),
+                      onPressed: () => app.adhan.stop(),
+                      icon: const Icon(Icons.stop_circle_outlined),
+                      label: const Text('إيقاف الأذان'),
                     ),
                   ),
-                ]),
-              ),
+                ),
+              const ExactAlarmBanner(),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Row(children: [
@@ -470,4 +474,70 @@ class SunanPage extends StatelessWidget {
         appBar: AppBar(title: const Text('السنن والنوافل')),
         body: ListView(padding: const EdgeInsets.only(top: 4, bottom: 20), children: const [SunanCard()]),
       );
+}
+
+
+/// Shown when Android 12+ does not allow exact alarms: without it the adhan can come late or not at all.
+class ExactAlarmBanner extends StatefulWidget {
+  const ExactAlarmBanner({super.key});
+  @override
+  State<ExactAlarmBanner> createState() => _ExactAlarmBannerState();
+}
+
+class _ExactAlarmBannerState extends State<ExactAlarmBanner> with WidgetsBindingObserver {
+  bool _exact = true;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _check();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _check();
+  }
+
+  Future<void> _check() async {
+    final ok = await app.notifications.canExactAlarms();
+    if (!mounted) return;
+    if (ok && !_exact) unawaited(app.notifications.schedule(app)); // just allowed: plan the adhans again
+    setState(() => _exact = ok);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_exact || !app.settings.adhanEnabled) return const SizedBox.shrink();
+    return Card3D(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.alarm_off, color: Colors.orangeAccent),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('الأذان قد يتأخر أو لا يعمل', style: TextStyle(fontWeight: FontWeight.w700))),
+          ]),
+          const SizedBox(height: 6),
+          const Text('اسمح للتطبيق بـ«المنبهات والتذكيرات» ليؤذّن في وقت كل صلاة تمامًا، حتى والهاتف في وضع توفير الطاقة.',
+              style: TextStyle(fontSize: 13, height: 1.6)),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: TextButton.icon(
+              onPressed: app.notifications.requestExactAlarms,
+              icon: const Icon(Icons.settings),
+              label: const Text('السماح الآن'),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
 }

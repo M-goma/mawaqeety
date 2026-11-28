@@ -9,6 +9,7 @@ import android.hardware.SensorManager
 import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import android.content.Intent
+import android.os.Build
 import android.os.SystemClock
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
@@ -24,6 +25,19 @@ class MainActivity : AudioServiceActivity() {
                 "schedule" -> { AdhanAlarms.schedule(applicationContext, (call.arguments as? List<*>)?.filterIsInstance<Map<*, *>>() ?: emptyList()); result.success(null) }
                 "cancel" -> { AdhanAlarms.cancelAll(applicationContext); result.success(null) }
                 "notes" -> { NoteAlarms.schedule(applicationContext, (call.arguments as? List<*>)?.filterIsInstance<Map<*, *>>() ?: emptyList()); result.success(null) }
+                "canExact" -> result.success(AdhanAlarms.canExact(applicationContext))
+                "requestExact" -> {
+                    if (Build.VERSION.SDK_INT >= 31) {
+                        try {
+                            startActivity(Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                                android.net.Uri.parse("package:$packageName")))
+                        } catch (e: Exception) {
+                            startActivity(Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                                android.net.Uri.parse("package:$packageName")))
+                        }
+                    }
+                    result.success(null)
+                }
                 "stop" -> { startService(Intent(applicationContext, AdhanService::class.java).setAction(AdhanService.STOP)); result.success(null) }
                 else -> result.notImplemented()
             }

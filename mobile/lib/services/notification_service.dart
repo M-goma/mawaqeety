@@ -135,6 +135,24 @@ class NotificationService {
   /// Android: the full adhan plays at prayer time from a native service, even when the app is closed.
   bool _fullAdhan(AppState app) => defaultTargetPlatform == TargetPlatform.android && app.settings.adhanEnabled;
 
+  /// Android 12+: whether the adhan may ring at the exact minute («المنبهات والتذكيرات» permission).
+  /// Without it Android may delay the alarm or refuse to start the adhan.
+  Future<bool> canExactAlarms() async {
+    if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return true;
+    try {
+      return await _adhan.invokeMethod<bool>('canExact') ?? true;
+    } catch (_) {
+      return true;
+    }
+  }
+
+  /// Opens the system page where the user allows exact alarms for the app.
+  Future<void> requestExactAlarms() async {
+    try {
+      await _adhan.invokeMethod('requestExact');
+    } catch (_) {}
+  }
+
   Future<void> _scheduleFullAdhan(AppState app) async {
     if (defaultTargetPlatform != TargetPlatform.android) return;
     try {
@@ -146,7 +164,8 @@ class NotificationService {
       final nowUtc = DateTime.now().toUtc();
       final items = <Map<String, Object>>[];
       var id = 0;
-      for (var d = 0; d < 7; d++) {
+      // A month ahead, so the adhan keeps coming even if the app is not opened for weeks.
+      for (var d = 0; d < 30; d++) {
         final date = app.today.add(Duration(days: d));
         final times = app.day(date);
         for (final p in Prayer.values.where((p) => p.isObligatory && (s.notify[p] ?? false))) {
