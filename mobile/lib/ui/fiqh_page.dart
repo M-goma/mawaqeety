@@ -5,7 +5,7 @@ import '../core/arabic.dart';
 import '../data/fiqh.dart';
 import 'theme.dart';
 
-/// فقه العبادات المختصر — short Q&A quoted from fatwas of إسلام ويب، دار الإفتاء المصرية، الأزهر.
+/// فقه العبادات المختصر — short Q&A quoted from fatwas of إسلام ويب، دار الإفتاء المصرية، الأزهر والشيخ ابن عثيمين.
 class FiqhPage extends StatefulWidget {
   const FiqhPage({super.key});
   @override
@@ -82,6 +82,9 @@ class _FiqhPageState extends State<FiqhPage> {
           Text('${Arabic.digits(d.items.length)} مسألة في الطهارة والصلاة والصيام والزكاة والحج',
               textAlign: TextAlign.center,
               style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w700)),
+          const SizedBox(height: 4),
+          Text('من إسلام ويب ودار الإفتاء المصرية والأزهر وفتاوى الشيخ ابن عثيمين',
+              textAlign: TextAlign.center, style: TextStyle(color: AppColors.goldLight, fontSize: 12.5)),
           const SizedBox(height: 8),
           Text(d.note, textAlign: TextAlign.center, style: TextStyle(color: AppColors.heroText, fontSize: 13.5, height: 1.7)),
         ]),
@@ -122,6 +125,7 @@ class _FiqhPageState extends State<FiqhPage> {
 Color _sourceColor(String source) => switch (source) {
       'إسلام ويب' => AppColors.emerald,
       'دار الإفتاء المصرية' => AppColors.gold,
+      'ابن عثيمين' => const Color(0xFF8E5BB5),
       _ => const Color(0xFF4A86C8),
     };
 
