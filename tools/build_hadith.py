@@ -4,6 +4,12 @@ Source: github.com/fawazahmed0/hadith-api (editions ara-bukhari, ara-muslim).
 Output: mobile/assets/data/hadith_<id>.json.gz and src/Mawaqeety.Core/Resources/hadith_<id>.json.gz
   { "id", "name", "books": [[number, "name"], ...], "h": [[book, number, text, matnStart], ...] }
 matnStart: character offset where the companion's narration starts (the text without the chain), or -1.
+Muslim numbers are Muhammad Fuad Abdul-Baqi's (the common numbering; a repeated hadith keeps the number of its
+first occurrence, so the sequence is not monotonic). 148 rows of ara-muslim carry text but no "arabicnumber"; the
+source's own running number ("hadithnumber", e.g. 1354 for «اللهم باعد بيني وبين خطاياي», Abdul-Baqi 598) must not
+be used for them: tools/muslim_numbers.json gives their Abdul-Baqi number, each matched by its text to the
+islamweb.net library edition of Sahih Muslim (www.islamweb.net/ar/library/content/1/<page>) or, for a few chains
+islamweb splits differently, inferred from the rows around it (the "how" of each entry says which).
 Usage: python3 tools/build_hadith.py <ara-bukhari.json> <ara-muslim.json>
 """
 import gzip, json, os, sys
@@ -31,6 +37,9 @@ MUSLIM = ["المقدمة", "الإيمان", "الطهارة", "الحيض", "�
           "الذكر والدعاء والتوبة والاستغفار", "الرقاق", "التوبة", "صفات المنافقين وأحكامهم", "صفة القيامة والجنة والنار",
           "الجنة وصفة نعيمها وأهلها", "الفتن وأشراط الساعة", "الزهد والرقائق", "التفسير"]
 
+MUSLIM_FIX = {int(k): v for k, v in json.load(open(os.path.join(os.path.dirname(__file__), "muslim_numbers.json"),
+                                                  encoding="utf-8")).items()}
+
 for path, cid, name, names in ((sys.argv[1], "bukhari", "صحيح البخاري", BUKHARI), (sys.argv[2], "muslim", "صحيح مسلم", MUSLIM)):
     d = json.load(open(path, encoding="utf-8"))
     rows, counts = [], {}
@@ -45,7 +54,13 @@ for path, cid, name, names in ((sys.argv[1], "bukhari", "صحيح البخاري
         if not t:
             continue
         # Muslim: the common (Abdul-Baqi) number, e.g. 1907.01 -> 1907; Bukhari's numbers are already the common ones.
-        num = int(float(h.get("arabicnumber") or h["hadithnumber"])) if cid == "muslim" else int(float(h["hadithnumber"]))
+        if cid == "muslim":
+            if h.get("arabicnumber"):
+                num = int(float(h["arabicnumber"]))
+            else:
+                num = MUSLIM_FIX[h["hadithnumber"]]["n"]  # KeyError: a new unnumbered row to look up
+        else:
+            num = int(float(h["hadithnumber"]))
         rows.append([b, num, t, matn_start(t)])
         counts[b] = counts.get(b, 0) + 1
     books = [[b, names[b]] for b in sorted(counts)]

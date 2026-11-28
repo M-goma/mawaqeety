@@ -1,4 +1,5 @@
-"""Builds mobile/assets/data/duas.json and src/Mawaqeety.Core/Resources/duas.json (occasion duas from Hisn al-Muslim).
+"""Builds src/Mawaqeety.Core/Resources/duas.json (desktop: occasion duas from Hisn al-Muslim).
+The mobile app has the whole book instead: mobile/assets/data/hisn.json (tools/build_hisn.py).
 
 Text (fully vowelled): github.com/osamayy/azkar-db (azkar.json)
 Sources (footnotes of the book): github.com/rn0x/hisn_almuslim_json (hisn_almuslim.json)
@@ -86,7 +87,7 @@ for gid, gtitle, emoji, cats in GROUPS:
     out.append({"id": gid, "title": gtitle, "emoji": emoji, "sections": sections})
 
 meta = {"source": "حصن المسلم من أذكار الكتاب والسنة — د. سعيد بن علي بن وهف القحطاني", "groups": out}
-for path in ("mobile/assets/data/duas.json", "src/Mawaqeety.Core/Resources/duas.json"):
+for path in ("src/Mawaqeety.Core/Resources/duas.json",):
     with open(path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
 print(sum(len(s["items"]) for g in out for s in g["sections"]), "duas in", len(out), "groups")
