@@ -59,6 +59,7 @@ flutter:
     - assets/data/fiqh.json
     - assets/data/arbaeen.json
     - assets/data/quiz.json
+    - assets/data/seerah.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
   fonts:
