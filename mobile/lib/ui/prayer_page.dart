@@ -5,8 +5,8 @@ import '../core/arabic.dart';
 import '../main.dart';
 import '../services/tracker.dart';
 import 'format.dart';
+import 'calendar_page.dart';
 import 'monthly_page.dart';
-import 'qibla_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
 import 'theme.dart';
@@ -79,9 +79,9 @@ class PrayerPage extends StatelessWidget {
                 child: Row(children: [
                   Expanded(
                     child: OutlinedButton.icon(
-                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const QiblaPage())),
-                      icon: const Icon(Icons.explore_outlined),
-                      label: const Text('اتجاه القبلة'),
+                      onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CalendarPage())),
+                      icon: const Icon(Icons.event_outlined),
+                      label: const Text('التقويم الميلادي'),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -89,7 +89,7 @@ class PrayerPage extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MonthlyPage())),
                       icon: const Icon(Icons.calendar_month_outlined),
-                      label: const Text('التقويم الشهري'),
+                      label: const Text('مواقيت الشهر'),
                     ),
                   ),
                 ]),
