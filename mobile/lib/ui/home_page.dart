@@ -5,13 +5,9 @@ import '../data/hadith.dart';
 import '../main.dart';
 import 'format.dart';
 import 'hadith_page.dart';
-import 'companions_page.dart';
-import 'hisn_page.dart';
+import 'home_layout.dart';
 import 'planner_page.dart';
 import 'prayer_page.dart';
-import 'prophets_page.dart';
-import 'qibla_page.dart';
-import 'tasbeeh_page.dart';
 import 'radio_page.dart';
 import 'sabeel_page.dart';
 import 'theme.dart';
@@ -46,14 +42,24 @@ class HomePage extends StatelessWidget {
             );
           },
         ),
-        const NextPrayerHero(),
-        const RadioCard(),
-        const TodayHarvest(),
-        const PlannerHomeCard(),
-        const KahfCard(),
-        const _HadithOfDay(),
-        const _Sections(),
-        const _AskBar(),
+        // The sections the user chose, in their order (Settings › تخصيص الصفحة الرئيسية).
+        ListenableBuilder(
+          listenable: app,
+          builder: (context, _) => Column(children: [
+            for (final id in app.settings.homeSections)
+              switch (id) {
+                'prayer' => const NextPrayerHero(),
+                'radio' => const RadioCard(),
+                'harvest' => const TodayHarvest(),
+                'planner' => const PlannerHomeCard(),
+                'kahf' => const KahfCard(),
+                'hadith' => const _HadithOfDay(),
+                'shortcuts' => const _Sections(),
+                'ask' => const _AskBar(),
+                _ => const SizedBox.shrink(),
+              },
+          ]),
+        ),
       ]),
     );
   }
@@ -155,30 +161,26 @@ class _Sections extends StatelessWidget {
           ),
         );
     final items = [
-      tile('🐪', 'قصص الأنبياء', const ProphetsPage()),
-      tile('🌟', 'العشرة المبشرون', const CompanionsPage()),
-      tile('📜', 'الأحاديث', const HadithPage()),
-      tile('🤲', 'حصن المسلم', const HisnPage()),
-      tile('📿', 'السبحة', const TasbeehPage()),
-      tile('🧭', 'القبلة', const QiblaPage()),
+      for (final id in app.settings.homeShortcuts)
+        if (shortcutById(id) case final sc?) tile(sc.emoji, sc.label, sc.page()),
     ];
-    // Two rows of three.
+    if (items.isEmpty) return const SizedBox.shrink();
+    // Rows of three.
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(children: [
-        SizedBox(
-          height: 76,
-          child: Row(children: [
-            for (var i = 0; i < 3; i++) ...[if (i > 0) const SizedBox(width: 10), Expanded(child: items[i])],
-          ]),
-        ),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 76,
-          child: Row(children: [
-            for (var i = 3; i < 6; i++) ...[if (i > 3) const SizedBox(width: 10), Expanded(child: items[i])],
-          ]),
-        ),
+        for (var r = 0; r < items.length; r += 3) ...[
+          if (r > 0) const SizedBox(height: 8),
+          SizedBox(
+            height: 76,
+            child: Row(children: [
+              for (var i = r; i < r + 3; i++) ...[
+                if (i > r) const SizedBox(width: 10),
+                Expanded(child: i < items.length ? items[i] : const SizedBox.shrink()),
+              ],
+            ]),
+          ),
+        ],
       ]),
     );
   }

@@ -72,6 +72,11 @@ class Settings {
   bool ongoingCountdown = true;
   /// Home-screen widget style: 'clock' (clock + countdown badge), 'cell' (countdown in the prayer cell), 'countdown' (big countdown).
   String widgetStyle = 'clock';
+  /// Home tab: the sections shown, in order, and the shortcut tiles (ids from ui/home_layout.dart).
+  List<String> homeSections = List.of(defaultHomeSections);
+  List<String> homeShortcuts = List.of(defaultHomeShortcuts);
+  static const defaultHomeSections = ['prayer', 'radio', 'harvest', 'kahf', 'hadith', 'shortcuts', 'ask'];
+  static const defaultHomeShortcuts = ['prophets', 'companions', 'hadith', 'hisn', 'tasbeeh', 'qibla'];
   bool storyAutoplay = false; // play the next prophet story when one ends // Android: persistent notification with the time left to the next prayer
   Bookmark? lastRead;
   List<Bookmark> bookmarks = [];
@@ -125,7 +130,7 @@ class Settings {
         'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanMode': adhanMode, 'adhanFlip': adhanFlip, 'adhanPower': adhanPower, 'adhanSilent': adhanSilent, 'whiteDaysReminder': whiteDaysReminder, 'flipStopsAudio': flipStopsAudio, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'tafsirId': tafsirId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
-        'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
+        'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay, 'homeSections': homeSections, 'homeShortcuts': homeShortcuts,
         'mushafMode': mushafMode, 'mushafNight': mushafNight, 'mushafDim': mushafDim, 'mushafPage': mushafPage, 'mushafHint': mushafHint, 'wirdGoal': wirdGoal, 'prayerCheck': prayerCheck, 'fridayKahf': fridayKahf, 'fridayHour': fridayHour, 'kahfDay': kahfDay, 'kahfPages': kahfPages, 'hadithFull': hadithFull, 'iconSize': iconSize, 'hadithMarks': hadithMarks, 'tasbeehPhrase': tasbeehPhrase, 'tasbeehTarget': tasbeehTarget, 'tasbeehCustom': tasbeehCustom, 'tasbeehCount': tasbeehCount, 'tasbeehStep': tasbeehStep,
         'khatmaDays': khatmaDays, 'khatmaStart': khatmaStart, 'khatmaPage': khatmaPage, 'khatmaDone': khatmaDone, 'khatmaReminder': khatmaReminder,
         'quranDay': quranDay, 'quranPages': quranPages, 'occasionsReminder': occasionsReminder, 'monThuReminder': monThuReminder,
@@ -185,6 +190,8 @@ class Settings {
       r.ongoingCountdown = j['ongoingCountdown'] ?? true;
       r.widgetStyle = j['widgetStyle'] ?? 'clock';
       r.storyAutoplay = j['storyAutoplay'] ?? false;
+      if (j['homeSections'] is List) r.homeSections = (j['homeSections'] as List).whereType<String>().toList();
+      if (j['homeShortcuts'] is List) r.homeShortcuts = (j['homeShortcuts'] as List).whereType<String>().toList();
       r.mushafMode = j['mushafMode'] ?? 'auto';
       r.mushafNight = j['mushafNight'] ?? 'navy';
       r.mushafDim = (j['mushafDim'] ?? 0).toDouble();

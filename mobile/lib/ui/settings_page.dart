@@ -11,6 +11,7 @@ import '../core/prayer_calculator.dart';
 import '../core/settings.dart';
 import '../main.dart';
 import 'quran_pages.dart' show ReciterTile;
+import 'home_layout.dart';
 import 'theme.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -231,6 +232,13 @@ class SettingsPage extends StatelessWidget {
             const _Header('المظهر', Icons.palette_outlined),
             Card3D(
               child: Column(children: [
+                ListTile(
+                  leading: const Icon(Icons.dashboard_customize_outlined),
+                  title: const Text('تخصيص الصفحة الرئيسية'),
+                  subtitle: const Text('اختر الأقسام والاختصارات ورتّبها كما تحب', style: TextStyle(fontSize: 12)),
+                  trailing: const Icon(Icons.chevron_left),
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HomeCustomizePage())),
+                ),
                 _Dropdown<ThemeChoice>(
                   label: 'الوضع',
                   value: s.theme,
