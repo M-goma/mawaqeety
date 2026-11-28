@@ -148,13 +148,22 @@ class SabeelLibrary {
     const LibrarySource('features', 'ميزات التطبيق', _features),
   ];
 
-  /// Data assets that are not «content» to quote: the Quran text and tafsir (searched by [Sabeel] itself),
-  /// the two Sahihs (searched by [Sabeel]), the quiz (made from the sections above) and app data.
+  /// The tafsirs and word meanings of the ayah sheet ([Tafsir.books], [WordMeanings.asset]). They are not indexed as
+  /// entries: [Sabeel] searches التفسير الميسر itself and quotes the user's chosen tafsir with each ayah it answers,
+  /// and the «tafsir» feature below points to them. `sabeel_library_test` checks this set against [Tafsir.books].
+  static const tafsirAssets = {
+    'assets/data/tafsir_muyassar.json.gz', 'assets/data/tafsir_saadi.json.gz', 'assets/data/tafsir_mukhtasar.json.gz',
+    'assets/data/gharib_muyassar.json.gz',
+  };
+
+  /// Data assets that are not «content» to quote: the Quran text and tafsirs ([tafsirAssets], quoted by [Sabeel]
+  /// with each ayah), the two Sahihs (searched by [Sabeel]), the quiz (made from the sections above) and app data.
   static const notContent = {
+    ...tafsirAssets,
     'assets/data/quran.json', 'assets/data/mushaf.json', 'assets/data/mushaf_ayahs.json',
-    'assets/data/tafsir_muyassar.json.gz', 'assets/data/hadith_bukhari.json.gz', 'assets/data/hadith_muslim.json.gz',
+    'assets/data/hadith_bukhari.json.gz', 'assets/data/hadith_muslim.json.gz',
     'assets/data/quiz.json', 'assets/data/cities.json', 'assets/data/reciters.json', 'assets/data/adhan_voices.json',
-    'assets/data/story_audio.json', 'assets/data/QURAN_TEXT_LICENSE.txt',
+    'assets/data/story_audio.json', 'assets/data/QURAN_TEXT_LICENSE.txt', 'assets/data/TAFSIR_SOURCES.txt',
   };
 
   static Set<String> get coveredAssets => {for (final s in sources) ...s.assets};
@@ -507,8 +516,10 @@ Future<List<LibraryEntry>> _features(Repository repo) async {
         'مناسبات اسلاميه صيام السنن صيام التطوع', () => const OccasionsPage()),
     f('hifz', 'مساعد الحفظ', 'كرّر المقطع بصوت القارئ، واختبر حفظك بإخفاء الكلمات، وراجِع في موعدك.',
         'حفظ القران احفظ تحفيظ مراجعه الحفظ تثبيت الحفظ', () => const HifzPage()),
-    f('tafsir', 'التفسير الميسر', 'اضغط على أي آية في المصحف لترى تفسيرها، أو اسأل سبيل عن آية.',
-        'تفسير القران تفسير ايه معنى الايه', () => const QuranIndexPage()),
+    f('tafsir', 'التفسير ومعاني الكلمات',
+        'اضغط مطولًا على أي آية في المصحف لترى تفسيرها: الميسر أو السعدي أو المختصر، ومعاني كلماتها من «الميسر في غريب القرآن»، أو اسأل سبيل عن آية.',
+        'تفسير القران تفسير ايه معنى الايه التفسير الميسر تفسير السعدي المختصر في التفسير معاني الكلمات معنى كلمه غريب القران',
+        () => const QuranIndexPage()),
     f('mushaf', 'المصحف', 'قراءة القرآن الكريم بالرسم العثماني والاستماع إلى التلاوة.', 'المصحف قراءه القران تلاوه سور القران',
         () => const QuranIndexPage()),
     f('khatma', 'ورد القرآن والختمة', 'خطة ختمة ووردك اليومي من القرآن.', 'ختمه ختم القران ورد يومي', () => const KhatmaPage()),

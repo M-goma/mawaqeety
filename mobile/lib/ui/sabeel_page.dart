@@ -190,7 +190,20 @@ class _AyahCard extends StatelessWidget {
           SelectableText('${a.text} ﴿${Arabic.digits(a.ayah)}﴾',
               style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 20, height: 2.1)),
           const Divider(height: 14),
-          SelectableText(a.tafsir, style: const TextStyle(fontSize: 14.5, height: 1.8)),
+          // The user's chosen tafsir (ayah sheet); «سبيل» itself searches التفسير الميسر.
+          FutureBuilder<Tafsir>(
+            future: Tafsir.load(app.settings.tafsirId),
+            builder: (c, snap) {
+              // Fall back to التفسير الميسر when the chosen book has nothing on this ayah.
+              final text = snap.data?.of(a.surah.number, a.ayah) ?? '';
+              final t = text.isEmpty ? null : snap.data;
+              return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                Text(t?.name ?? 'التفسير الميسر',
+                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.gold)),
+                SelectableText(t == null ? a.tafsir : text, style: const TextStyle(fontSize: 14.5, height: 1.8)),
+              ]);
+            },
+          ),
           Row(children: [
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -212,10 +225,14 @@ class _AyahCard extends StatelessWidget {
             IconButton(
               tooltip: 'نسخ',
               icon: const Icon(Icons.copy_rounded, size: 20),
-              onPressed: () {
-                Clipboard.setData(ClipboardData(
-                    text: '﴿${a.text}﴾ [${a.surah.name}: ${a.ayah}]\n\nالتفسير الميسر: ${a.tafsir}'));
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('نُسخت الآية وتفسيرها')));
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                var t = await Tafsir.load(app.settings.tafsirId).then<Tafsir?>((t) => t, onError: (_) => null);
+                if (t != null && t.of(a.surah.number, a.ayah).isEmpty) t = null;
+                await Clipboard.setData(ClipboardData(
+                    text: '﴿${a.text}﴾ [${a.surah.name}: ${a.ayah}]\n\n'
+                        '${t?.name ?? 'التفسير الميسر'}: ${t?.of(a.surah.number, a.ayah) ?? a.tafsir}'));
+                messenger.showSnackBar(const SnackBar(content: Text('نُسخت الآية وتفسيرها')));
               },
             ),
           ]),

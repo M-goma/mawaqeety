@@ -1,36 +1,11 @@
-import 'dart:convert';
-
-import 'package:archive/archive.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 import '../core/arabic.dart';
 import 'hadith.dart';
 import 'repository.dart';
 import 'sabeel_library.dart';
+import 'tafsir.dart';
 
-/// التفسير الميسر (مجمع الملك فهد), one text per ayah (assets/data/tafsir_muyassar.json.gz,
-/// built by tools/build_tafsir.py).
-/// Loaded once and shared (the Mushaf's ayah sheet, «سبيل»): [load] always returns the same instance.
-class Tafsir {
-  static Future<Tafsir>? _loading;
-  final String name, source;
-  final List<List<String>> t;
-  late final List<List<String>> norm = [for (final s in t) [for (final a in s) Arabic.normalize(a)]];
-  Tafsir(this.name, this.source, this.t);
-
-  static Future<Tafsir> load() => _loading ??= _load().catchError((Object e) {
-        _loading = null; // let a later call try again
-        throw e;
-      });
-
-  static Future<Tafsir> _load() async {
-    final bytes = (await rootBundle.load('assets/data/tafsir_muyassar.json.gz')).buffer.asUint8List();
-    final j = jsonDecode(utf8.decode(const GZipDecoder().decodeBytes(bytes))) as Map<String, dynamic>;
-    return Tafsir(j['name'], j['src'], [for (final s in j['t'] as List) (s as List).cast<String>()]);
-  }
-
-  String of(int surah, int ayah) => t[surah - 1][ayah - 1];
-}
+export 'tafsir.dart';
 
 /// One ayah in an answer, with its tafsir.
 class SabeelAyah {
