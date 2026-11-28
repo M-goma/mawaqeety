@@ -6,7 +6,7 @@ import '../main.dart';
 import 'format.dart';
 import 'hadith_page.dart';
 import 'companions_page.dart';
-import 'duas_page.dart';
+import 'hisn_page.dart';
 import 'prayer_page.dart';
 import 'prophets_page.dart';
 import 'qibla_page.dart';
@@ -156,7 +156,7 @@ class _Sections extends StatelessWidget {
       tile('🐪', 'قصص الأنبياء', const ProphetsPage()),
       tile('🌟', 'العشرة المبشرون', const CompanionsPage()),
       tile('📜', 'الأحاديث', const HadithPage()),
-      tile('🤲', 'أدعية المناسبات', const DuasPage()),
+      tile('🤲', 'حصن المسلم', const HisnPage()),
       tile('📿', 'السبحة', const TasbeehPage()),
       tile('🧭', 'القبلة', const QiblaPage()),
     ];

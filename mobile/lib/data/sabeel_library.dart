@@ -7,9 +7,9 @@ import '../data/asbab.dart';
 import '../data/asma.dart';
 import '../data/atlas.dart';
 import '../data/companions_islam.dart';
-import '../data/duas.dart';
 import '../data/fiqh.dart';
 import '../data/ghazawat.dart';
+import '../data/hisn.dart';
 import '../data/hajj.dart';
 import '../data/nasab.dart';
 import '../data/occasions.dart';
@@ -25,11 +25,11 @@ import '../ui/calendar_page.dart';
 import '../ui/companions_islam_page.dart';
 import '../ui/companions_page.dart';
 import '../ui/downloads_page.dart';
-import '../ui/duas_page.dart';
 import '../ui/ghazawat_page.dart';
 import '../ui/hajj_page.dart';
 import '../ui/hadith_page.dart';
 import '../ui/hifz_page.dart';
+import '../ui/hisn_page.dart';
 import '../ui/khatma_page.dart';
 import '../ui/monthly_page.dart';
 import '../ui/nasab_page.dart';
@@ -141,7 +141,7 @@ class SabeelLibrary {
     const LibrarySource('asbab', 'أسباب النزول', _asbab, assets: ['assets/data/asbab.json']),
     const LibrarySource('asma', 'أسماء الله الحسنى', _asma),
     const LibrarySource('occasions', 'المناسبات والصيام', _occasions),
-    const LibrarySource('duas', 'أدعية المناسبات', _duas, assets: ['assets/data/duas.json']),
+    const LibrarySource('hisn', 'حصن المسلم', _hisn, assets: ['assets/data/hisn.json']),
     const LibrarySource('adhkar', 'أذكار الصباح والمساء', _adhkar),
     const LibrarySource('atlas', 'أطلس قصص الأنبياء', _atlas),
     const LibrarySource('hajj', 'دليل الحج والعمرة', _hajj, assets: ['assets/data/hajj.json']),
@@ -424,21 +424,32 @@ Future<List<LibraryEntry>> _occasions(Repository repo) async => [
       ),
     ];
 
-Future<List<LibraryEntry>> _duas(Repository repo) async {
-  await Duas.load();
+Future<List<LibraryEntry>> _hisn(Repository repo) async {
+  await Hisn.load();
+  void Function(BuildContext) open(HisnChapter c, [HisnDhikr? d]) =>
+      (ctx) => _push(ctx, c.link == 'adhkar' ? const AdhkarPage() : HisnChapterPage(chapter: c, focus: d));
   return [
-    for (final g in Duas.groups)
-      for (final (i, s) in g.sections.indexed)
+    for (final c in Hisn.chapters) ...[
+      LibraryEntry(
+        id: 'hisn:${c.number}',
+        section: 'حصن المسلم',
+        title: c.title,
+        snippet: c.items.isEmpty ? 'أذكار الصباح والمساء في تبويب «الأذكار».' : c.items.first.text,
+        keywords: 'دعاء ادعيه ذكر اذكار حصن المسلم',
+        source: c.items.isEmpty ? Hisn.bookSource : c.items.first.source,
+        open: open(c),
+      ),
+      for (final (i, d) in c.items.indexed)
         LibraryEntry(
-          id: 'duas:${g.id}:$i',
-          section: 'أدعية المناسبات',
-          title: s.title == g.title ? 'دعاء ${g.title}' : '${g.title}: ${s.title}',
-          snippet: s.items.isEmpty ? '' : s.items.first.text,
-          text: s.items.map((d) => '${d.text} ${d.virtue}').join(' '),
-          keywords: 'دعاء ادعيه ذكر ${g.title}',
-          source: s.items.isEmpty || s.items.first.source.isEmpty ? Duas.bookSource : s.items.first.source,
-          open: (c) => _push(c, DuaGroupPage(group: g)),
+          id: 'hisn:${c.number}:${d.number ?? i}',
+          section: 'حصن المسلم',
+          title: '${c.title}${c.items.length > 1 ? ' (${Arabic.digits(i + 1)})' : ''}',
+          snippet: d.text,
+          text: d.virtue,
+          source: d.source,
+          open: open(c, d),
         ),
+    ],
   ];
 }
 
@@ -511,8 +522,8 @@ Future<List<LibraryEntry>> _features(Repository repo) async {
     f('qibla', 'اتجاه القبلة', 'البوصلة والخريطة لمعرفة اتجاه القبلة.', 'القبله اتجاه الكعبه بوصله', () => const QiblaPage()),
     f('tasbeeh', 'السبحة', 'سبحة إلكترونية ووردك اليومي من التسبيح.', 'سبحه تسبيح عداد', () => const TasbeehPage()),
     f('adhkar', 'الأذكار', 'أذكار الصباح والمساء من حصن المسلم.', 'اذكار الصباح المساء', () => const AdhkarPage()),
-    f('duas', 'أدعية المناسبات', 'أدعية النوم والسفر والطعام والكرب وغيرها من حصن المسلم.', 'ادعيه دعاء حصن المسلم',
-        () => const DuasPage()),
+    f('hisn', 'حصن المسلم', 'أبواب حصن المسلم كاملة: الاستيقاظ والصلاة والنوم والسفر والطعام والكرب وغيرها، بتخريجها.',
+        'ادعيه دعاء حصن المسلم ادعيه المناسبات', () => const HisnPage()),
     f('hadith', 'الأحاديث الصحيحة', 'تصفّح صحيح البخاري وصحيح مسلم وابحث فيهما.', 'صحيح البخاري صحيح مسلم احاديث بحث',
         () => const HadithPage()),
     f('radio', 'الإذاعة', 'إذاعة القرآن الكريم مباشرة.', 'اذاعه راديو القران', () => const RadioPage()),

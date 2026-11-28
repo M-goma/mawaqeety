@@ -67,6 +67,10 @@ void main() {
     expect(top('صيام عرفة'), contains('occasions:arafah'));
     expect(top('قصة يوسف'), contains('prophets:yusuf'));
     expect(top('إنما الأعمال بالنيات'), contains('arbaeen:1'));
+    // حصن المسلم: chapters and single adhkar.
+    expect(top('دعاء السفر'), contains('hisn:96'));
+    expect(top('دعاء الاستخارة'), contains('hisn:26'));
+    expect(top('دعاء دخول المسجد').where((id) => id.startsWith('hisn:13')), isNotEmpty);
     expect(lib.search('xyzxyz').entries, isEmpty);
   });
 

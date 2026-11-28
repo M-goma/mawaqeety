@@ -49,7 +49,7 @@ flutter:
     - assets/data/adhan_voices.json
     - assets/data/reciters.json
     - assets/data/story_audio.json
-    - assets/data/duas.json
+    - assets/data/hisn.json
     - assets/data/hadith_bukhari.json.gz
     - assets/data/hadith_muslim.json.gz
     - assets/data/companions.json
