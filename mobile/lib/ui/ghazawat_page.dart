@@ -11,6 +11,7 @@ import '../core/settings.dart';
 import '../data/ghazawat.dart';
 import '../data/hadith.dart';
 import '../main.dart';
+import 'atlas_page.dart';
 import 'hadith_page.dart';
 import 'mushaf_page.dart';
 import 'theme.dart';
@@ -94,7 +95,16 @@ class GhazawatPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('غزوات النبي ﷺ')),
+      appBar: AppBar(
+        title: const Text('غزوات النبي ﷺ'),
+        actions: [
+          IconButton(
+            tooltip: 'على الأطلس',
+            icon: const Icon(Icons.map_outlined),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AtlasPage(tab: AtlasTab.battles))),
+          ),
+        ],
+      ),
       body: FutureBuilder(
         future: GhazawatData.load(),
         builder: (context, snap) {
@@ -368,7 +378,17 @@ class _GhazwaPageState extends State<GhazwaPage> {
     final g = widget.g;
     final hint = Theme.of(context).hintColor;
     return Scaffold(
-      appBar: AppBar(title: Text(g.name)),
+      appBar: AppBar(
+        title: Text(g.name),
+        actions: [
+          IconButton(
+            tooltip: 'على الأطلس',
+            icon: const Icon(Icons.map_outlined),
+            onPressed: () => Navigator.push(
+                context, MaterialPageRoute(builder: (_) => AtlasPage(tab: AtlasTab.battles, focusGhazwa: g.id))),
+          ),
+        ],
+      ),
       body: ListView(padding: const EdgeInsets.fromLTRB(0, 6, 0, 28), children: [
         Container(
           margin: const EdgeInsets.fromLTRB(16, 4, 16, 8),

@@ -10,6 +10,7 @@ import 'ghazawat_page.dart';
 import 'nasab_page.dart';
 import 'occasions_page.dart';
 import 'ramadan_page.dart';
+import 'seerah_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
 import 'theme.dart';
@@ -71,6 +72,7 @@ class MorePage extends StatelessWidget {
           item('⚖️', 'فقه العبادات', 'من فتاوى إسلام ويب والأزهر ودار الإفتاء', const FiqhPage()),
           item('📖', 'أسباب النزول', 'الصحيحة من البخاري ومسلم، والمكي والمدني', const AsbabPage()),
           item('⚔️', 'غزوات النبي ﷺ', 'بدر وأحد والخندق وفتح مكة…', const GhazawatPage()),
+          item('🕌', 'السيرة النبوية', 'من المولد إلى الوفاة على خط زمني', const SeerahPage()),
           item('🌳', 'النسب الشريف', 'نسب النبي ﷺ وملتقى أنساب العشرة', const NasabPage()),
           item('🤝', 'كيف أسلم الصحابة', 'قصة إسلام العشرة المبشرين', const CompanionsIslamPage()),
           item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),

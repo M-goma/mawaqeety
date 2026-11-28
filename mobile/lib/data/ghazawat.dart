@@ -36,6 +36,8 @@ class Ghazwa {
   final String id, name, kind, date, place, muslims, enemy, result, summary;
   final int year;
   final double lat, lng;
+  /// The place is known only approximately (e.g. the valley of Hunayn).
+  final bool approx;
   final List<GhazwaSection> sections;
   final List<GhazwaAyat> ayat;
   final List<GhazwaHadith> hadith;
@@ -45,7 +47,7 @@ class Ghazwa {
     required this.id, required this.name, required this.kind, required this.year, required this.date,
     required this.place, required this.lat, required this.lng, required this.muslims, required this.enemy,
     required this.result, required this.summary, required this.sections, required this.ayat,
-    required this.hadith, required this.lessons, required this.refs,
+    required this.hadith, required this.lessons, required this.refs, this.approx = false,
   });
 
   /// صلح الحديبية is listed with the battles but is not one.
@@ -53,7 +55,7 @@ class Ghazwa {
 
   factory Ghazwa.fromJson(Map<String, dynamic> j) => Ghazwa(
         id: j['id'], name: j['name'], kind: j['kind'] ?? 'ghazwa', year: j['year'], date: j['date'],
-        place: j['place'], lat: (j['lat'] as num).toDouble(), lng: (j['lng'] as num).toDouble(),
+        place: j['place'], lat: (j['lat'] as num).toDouble(), lng: (j['lng'] as num).toDouble(), approx: j['approx'] ?? false,
         muslims: j['muslims'] ?? '', enemy: j['enemy'] ?? '', result: j['result'] ?? '', summary: j['summary'] ?? '',
         sections: [for (final s in j['sections'] as List) GhazwaSection(s['h'], s['p'])],
         ayat: [
