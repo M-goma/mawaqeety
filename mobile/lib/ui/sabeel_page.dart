@@ -194,11 +194,13 @@ class _AyahCard extends StatelessWidget {
           FutureBuilder<Tafsir>(
             future: Tafsir.load(app.settings.tafsirId),
             builder: (c, snap) {
-              final t = snap.data;
+              // Fall back to التفسير الميسر when the chosen book has nothing on this ayah.
+              final text = snap.data?.of(a.surah.number, a.ayah) ?? '';
+              final t = text.isEmpty ? null : snap.data;
               return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
                 Text(t?.name ?? 'التفسير الميسر',
                     style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.gold)),
-                SelectableText(t?.of(a.surah.number, a.ayah) ?? a.tafsir, style: const TextStyle(fontSize: 14.5, height: 1.8)),
+                SelectableText(t == null ? a.tafsir : text, style: const TextStyle(fontSize: 14.5, height: 1.8)),
               ]);
             },
           ),
@@ -225,7 +227,8 @@ class _AyahCard extends StatelessWidget {
               icon: const Icon(Icons.copy_rounded, size: 20),
               onPressed: () async {
                 final messenger = ScaffoldMessenger.of(context);
-                final t = await Tafsir.load(app.settings.tafsirId).then<Tafsir?>((t) => t, onError: (_) => null);
+                var t = await Tafsir.load(app.settings.tafsirId).then<Tafsir?>((t) => t, onError: (_) => null);
+                if (t != null && t.of(a.surah.number, a.ayah).isEmpty) t = null;
                 await Clipboard.setData(ClipboardData(
                     text: '﴿${a.text}﴾ [${a.surah.name}: ${a.ayah}]\n\n'
                         '${t?.name ?? 'التفسير الميسر'}: ${t?.of(a.surah.number, a.ayah) ?? a.tafsir}'));

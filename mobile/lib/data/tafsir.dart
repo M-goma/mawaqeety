@@ -15,14 +15,17 @@ class TafsirBook {
 class TafsirSection {
   final int from, to;
   final String text;
-  const TafsirSection(this.from, this.to, this.text);
+  /// The page the text was taken from, when the data records it (تفسير السعدي: islamweb.net).
+  final String? url;
+  const TafsirSection(this.from, this.to, this.text, [this.url]);
   bool get grouped => to > from;
 }
 
 /// A bundled tafsir, loaded lazily and once per book ([load] always returns the same instance for an id).
 /// - التفسير الميسر (مجمع الملك فهد): one text per ayah (assets/data/tafsir_muyassar.json.gz, tools/build_tafsir.py);
-/// - تفسير السعدي and المختصر في تفسير القرآن الكريم: sections of one or more ayat, as the books group them
-///   (tools/build_tafsirs.py; sources in assets/data/TAFSIR_SOURCES.txt).
+/// - تفسير السعدي (islamweb.net, tools/build_tafsir_saadi.py) and المختصر في تفسير القرآن الكريم
+///   (tools/build_tafsirs.py): sections of one or more ayat, as the books group them. Sources in
+///   assets/data/TAFSIR_SOURCES.txt.
 class Tafsir {
   static const muyassar = TafsirBook('muyassar', 'الميسر', 'assets/data/tafsir_muyassar.json.gz');
   static const books = [
@@ -37,19 +40,28 @@ class Tafsir {
   final TafsirBook book;
   /// Display name («التفسير الميسر», «تفسير السعدي»…), the publisher/author line, and the dataset it came from.
   final String name, source, via;
-  /// Per surah, the sections in order; they cover every ayah once.
+  /// Per surah, the sections in order; each ayah is in at most one. An ayah the source does not explain has none
+  /// (تفسير السعدي on islamweb: 6:105–107).
   final List<List<TafsirSection>> sections;
-  /// Per surah and ayah, the index of its section in [sections].
+  /// Per surah and ayah, the index of its section in [sections], or -1.
   final List<List<int>> _index;
   late final List<List<String>> t = [
-    for (var s = 0; s < sections.length; s++) [for (final i in _index[s]) sections[s][i].text]
+    for (var s = 0; s < sections.length; s++) [for (final i in _index[s]) i < 0 ? '' : sections[s][i].text]
   ];
   late final List<List<String>> norm = [for (final s in t) [for (final a in s) Arabic.normalize(a)]];
 
   Tafsir(this.book, this.name, this.source, this.via, this.sections)
-      : _index = [
-          for (final secs in sections) [for (var i = 0; i < secs.length; i++) for (var a = secs[i].from; a <= secs[i].to; a++) i]
-        ];
+      : _index = [for (final secs in sections) _indexOf(secs)];
+
+  static List<int> _indexOf(List<TafsirSection> secs) {
+    final index = List.filled(secs.isEmpty ? 0 : secs.last.to, -1);
+    for (var i = 0; i < secs.length; i++) {
+      for (var a = secs[i].from; a <= secs[i].to; a++) {
+        index[a - 1] = i;
+      }
+    }
+    return index;
+  }
 
   /// The tafsir «سبيل» searches: always التفسير الميسر.
   static Future<Tafsir> load([String id = 'muyassar']) {
@@ -69,9 +81,15 @@ class Tafsir {
     final j = jsonDecode(json) as Map<String, dynamic>;
     final List<List<TafsirSection>> secs;
     if (j['s'] case final List s) {
+      // Optional 4th field: the source page ids (تفسير السعدي: islamweb pages); the first one fills j['url'] ('…/{}').
+      final url = j['url'] as String?;
+      String? page(List x) => url != null && x.length > 3 ? url.replaceFirst('{}', '${(x[3] as List).first}') : null;
       secs = [
         for (final surah in s)
-          [for (final x in surah as List) TafsirSection(x[0] as int, x[1] as int, x[2] as String)]
+          [
+            for (final x in surah as List)
+              TafsirSection(x[0] as int, x[1] as int, x[2] as String, page(x as List))
+          ]
       ];
     } else {
       secs = [
@@ -82,8 +100,15 @@ class Tafsir {
     return Tafsir(book, j['name'] as String, j['src'] as String, (j['via'] ?? '') as String, secs);
   }
 
-  TafsirSection sectionOf(int surah, int ayah) => sections[surah - 1][_index[surah - 1][ayah - 1]];
-  String of(int surah, int ayah) => sectionOf(surah, ayah).text;
+  /// The section that explains the ayah, or null when the source has none for it.
+  TafsirSection? sectionOf(int surah, int ayah) {
+    final index = _index[surah - 1];
+    final i = ayah <= index.length ? index[ayah - 1] : -1;
+    return i < 0 ? null : sections[surah - 1][i];
+  }
+
+  /// The ayah's tafsir text ('' when the source has none for it).
+  String of(int surah, int ayah) => sectionOf(surah, ayah)?.text ?? '';
 }
 
 /// One explained word or phrase of an ayah: [word] is the 0-based index of its first word in the ayah

@@ -17,48 +17,69 @@ void main() {
     await repo.load();
   });
 
+  /// Ayat a source lists without any commentary: islamweb's تفسير السعدي gives none for 6:105–107 (page 425).
+  const unexplained = {'saadi': {(6, 105), (6, 106), (6, 107)}};
+
   test('every tafsir covers all 6236 ayat once, surah by surah, with text', () async {
     for (final b in Tafsir.books) {
       final t = await Tafsir.load(b.id);
+      final none = unexplained[b.id] ?? const {};
       expect(t.book.id, b.id);
       expect(t.name, isNotEmpty);
       expect(t.source, isNotEmpty);
       expect(t.sections.length, 114, reason: b.id);
       var ayat = 0;
       for (final s in repo.surahs) {
-        final secs = t.sections[s.number - 1];
         var next = 1;
-        for (final sec in secs) {
+        for (final sec in t.sections[s.number - 1]) {
+          while (next < sec.from && none.contains((s.number, next))) {
+            next++;
+          }
           expect(sec.from, next, reason: '${b.id} ${s.number}:${sec.from}');
           expect(sec.to, greaterThanOrEqualTo(sec.from));
           expect(sec.text.trim(), isNotEmpty, reason: '${b.id} ${s.number}:${sec.from}');
           next = sec.to + 1;
         }
         expect(next - 1, s.verses.length, reason: '${b.id} surah ${s.number}');
-        expect(t.t[s.number - 1].length, s.verses.length);
         for (var a = 1; a <= s.verses.length; a++) {
           final sec = t.sectionOf(s.number, a);
-          expect(a, inInclusiveRange(sec.from, sec.to));
+          if (none.contains((s.number, a))) {
+            expect(sec, isNull);
+            expect(t.of(s.number, a), isEmpty);
+          } else {
+            expect(a, inInclusiveRange(sec!.from, sec.to), reason: '${b.id} ${s.number}:$a');
+            ayat++;
+          }
         }
-        ayat += s.verses.length;
       }
-      expect(ayat, 6236);
+      expect(ayat + none.length, 6236);
       // Each tafsir is loaded once and shared.
       expect(identical(await Tafsir.load(b.id), t), isTrue);
     }
   });
 
   test('spot checks: the right book at the right ayah', () async {
+    // تفسير السعدي is islamweb's edition (book 209), word for word; every section links to its page.
     final saadi = await Tafsir.load('saadi');
     expect(saadi.name, 'تفسير السعدي');
-    expect(saadi.of(2, 255), contains('أعظم آيات القرآن'));
-    expect(saadi.of(2, 106), startsWith('النسخ هو النقل'));
-    // The book explains 2:8–9 together.
-    final s8 = saadi.sectionOf(2, 9);
+    expect(saadi.via, contains('islamweb'));
+    // The book explains 2:8–9 together, on islamweb's page 4.
+    final s8 = saadi.sectionOf(2, 9)!;
     expect((s8.from, s8.to), (8, 9));
+    expect(s8.url, 'https://www.islamweb.net/ar/library/content/209/4');
+    expect(s8.text, startsWith('واعلم أن النفاق هو: إظهار الخير وإبطان الشر، ويدخل في هذا التعريف النفاق الاعتقادي، والنفاق العملي، كالذي ذكر'));
+    expect(saadi.of(2, 106), startsWith('النسخ: هو النقل، فحقيقة النسخ نقل المكلفين من حكم مشروع، إلى حكم آخر، أو إلى إسقاطه،'));
+    expect(saadi.sectionOf(2, 106)!.url, 'https://www.islamweb.net/ar/library/content/209/46');
+    for (final secs in saadi.sections) {
+      for (final sec in secs) {
+        expect(sec.url, matches(RegExp(r'^https://www\.islamweb\.net/ar/library/content/209/\d+$')));
+        // No leftover page markup (links, tooltips, entities).
+        expect(sec.text, isNot(matches(RegExp(r'nindex|WIDTH|[<>]|&[a-z]+;|[A-Za-z]{3,}'))));
+      }
+    }
     final mukhtasar = await Tafsir.load('mukhtasar');
     expect(mukhtasar.of(1, 1), startsWith('باسم الله أبدأ قراءة القرآن'));
-    expect((mukhtasar.sectionOf(2, 4).from, mukhtasar.sectionOf(2, 4).to), (3, 4));
+    expect((mukhtasar.sectionOf(2, 4)!.from, mukhtasar.sectionOf(2, 4)!.to), (3, 4));
     expect((await Tafsir.load()).book.id, 'muyassar');
     expect(Tafsir.byId('unknown').id, 'muyassar');
   });
@@ -84,13 +105,16 @@ void main() {
         }
       }
     }
-    expect(entries, greaterThan(11000));
+    expect(entries, greaterThan(10500));
     expect(placed / entries, greaterThan(0.99));
     final f = w.of(1, 2);
     expect(Arabic.normalize(f.first.meaning), contains(Arabic.normalize('الثناء على الله بصفاته')));
     expect((f.first.word, f.first.count), (0, 1)); // «ٱلۡحَمۡدُ»: the ayah's first word
     expect(f.first.covers(0), isTrue);
     expect(f.first.covers(1), isFalse);
+    // Only meanings both copies agree on: the two differ on «كفروا» in 2:6, so it is left out.
+    expect(w.of(2, 6).map((m) => Arabic.normalize(m.phrase)), isNot(contains(Arabic.normalize('كَفَرُواْ'))));
+    expect(w.of(2, 6), isNotEmpty);
   });
 
   test('every tafsir asset is attributed and known to «سبيل»', () {

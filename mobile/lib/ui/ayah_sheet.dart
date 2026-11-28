@@ -95,7 +95,7 @@ class AyahSheet extends StatelessWidget {
             final messenger = ScaffoldMessenger.of(context);
             final t = await Tafsir.load(app.settings.tafsirId).then<Tafsir?>((t) => t, onError: (_) => null);
             await Clipboard.setData(ClipboardData(
-                text: '﴿$text﴾ [${s.name}: $ayah]${t == null ? '' : '\n\n${t.name}: ${t.of(surah, ayah)}'}'));
+                text: '﴿$text﴾ [${s.name}: $ayah]${t == null || t.of(surah, ayah).isEmpty ? '' : '\n\n${t.name}: ${t.of(surah, ayah)}'}'));
             messenger.showSnackBar(const SnackBar(content: Text('نُسخت الآية وتفسيرها')));
           }),
           action(Icons.share_outlined, 'مشاركة', () => shareAsImage(context, text: '﴿$text﴾', ref: ref)),
@@ -246,16 +246,22 @@ class _TafsirCardState extends State<TafsirCard> {
               final sec = t.sectionOf(widget.surah, widget.ayah);
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(t.name, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14, color: AppColors.emerald)),
-                if (sec.grouped)
+                if (sec != null && sec.grouped)
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: Text('تفسير الآيات ${Arabic.digits(sec.from)}–${Arabic.digits(sec.to)} معًا',
                         style: TextStyle(fontSize: 12.5, color: theme.hintColor)),
                   ),
                 const SizedBox(height: 6),
-                SelectableText(sec.text, style: const TextStyle(fontSize: 15, height: 1.9)),
+                if (sec != null)
+                  SelectableText(sec.text, style: const TextStyle(fontSize: 15, height: 1.9))
+                else
+                  Text('لا يوجد في هذا المصدر كلام على هذه الآية.', style: TextStyle(fontSize: 14, color: theme.hintColor)),
                 const SizedBox(height: 8),
                 Text('المصدر: ${t.source}', style: TextStyle(fontSize: 11.5, color: theme.hintColor)),
+                if (sec?.url != null)
+                  SelectableText(sec!.url!.replaceFirst('https://www.', ''),
+                      textDirection: TextDirection.ltr, style: TextStyle(fontSize: 11, color: theme.hintColor)),
               ]);
             },
           ),
@@ -305,7 +311,8 @@ class WordMeaningsCard extends StatelessWidget {
                   ),
                 ),
               const SizedBox(height: 6),
-              Text('المصدر: ${w!.name} — ${w.source}', style: TextStyle(fontSize: 11.5, color: theme.hintColor)),
+              Text('المصدر: ${w!.name} — ${w.source}. يُعرض ما اتفقت عليه نسختان منه فقط.',
+                  style: TextStyle(fontSize: 11.5, color: theme.hintColor)),
             ]),
           ),
         );
