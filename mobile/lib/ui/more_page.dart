@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'arbaeen_page.dart';
+import 'asbab_page.dart';
 import 'asma_page.dart';
+import 'companions_islam_page.dart';
+import 'fiqh_page.dart';
+import 'ghazawat_page.dart';
+import 'nasab_page.dart';
 import 'occasions_page.dart';
 import 'ramadan_page.dart';
 import 'settings_page.dart';
@@ -61,6 +67,12 @@ class MorePage extends StatelessWidget {
           item('🌙', 'رمضان', 'الصيام والتراويح والتهجد', const RamadanPage()),
           item('🤍', 'الأيام البيض', '١٣ و١٤ و١٥ من كل شهر', const WhiteDaysPage()),
           item('🗓️', 'المناسبات والصيام', 'عرفة وعاشوراء والعيدان والاثنين والخميس', const OccasionsPage()),
+          item('📜', 'الأربعون النووية', 'جوامع الكلم مع فوائدها وتتبّع حفظك', const ArbaeenPage()),
+          item('⚖️', 'فقه العبادات', 'من فتاوى إسلام ويب والأزهر ودار الإفتاء', const FiqhPage()),
+          item('📖', 'أسباب النزول', 'الصحيحة من البخاري ومسلم، والمكي والمدني', const AsbabPage()),
+          item('⚔️', 'غزوات النبي ﷺ', 'بدر وأحد والخندق وفتح مكة…', const GhazawatPage()),
+          item('🌳', 'النسب الشريف', 'نسب النبي ﷺ وملتقى أنساب العشرة', const NasabPage()),
+          item('🤝', 'كيف أسلم الصحابة', 'قصة إسلام العشرة المبشرين', const CompanionsIslamPage()),
           item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
           item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
