@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core/arabic.dart';
@@ -29,8 +33,108 @@ class GhazwaAudio extends ChangeNotifier {
   bool playing = false;
   final missing = <String>{};
 
+  static String fileOf(String id) => 'ghazwa-$id-mazen.mp3';
   static String urlOf(String id) =>
-      'https://github.com/M-goma/mawaqeety/releases/download/stories-audio/ghazwa-$id-mazen.mp3';
+      'https://github.com/M-goma/mawaqeety/releases/download/stories-audio/${fileOf(id)}';
+
+  /// Approximate size of all the recordings, in MB.
+  static const totalMB = 35;
+
+  // ------------------------------------------------ offline copies (same folder as the prophets' stories)
+  Directory? _dir;
+  final saved = <String>{};
+  bool downloading = false, _cancel = false;
+  int doneFiles = 0, totalFiles = 0;
+  String? error;
+  double get progress => totalFiles == 0 ? 0 : doneFiles / totalFiles;
+  bool get supported => !kIsWeb;
+  bool isSaved(String id) => saved.contains(id);
+
+  Future<Directory?> _folder() async {
+    if (!supported) return null;
+    if (_dir == null) {
+      _dir = Directory('${(await getApplicationSupportDirectory()).path}/stories');
+      if (await _dir!.exists()) {
+        await for (final f in _dir!.list()) {
+          final n = f.uri.pathSegments.last;
+          if (f is File && n.startsWith('ghazwa-') && n.endsWith('-mazen.mp3') && await f.length() > 10000) {
+            saved.add(n.substring(7, n.length - 10));
+          }
+        }
+        notifyListeners();
+      }
+    }
+    return _dir;
+  }
+
+  /// Reads which battles are on the device (call when a page opens).
+  Future<void> init() async => _folder();
+
+  Future<bool> _save(http.Client client, String id) async {
+    final dir = await _folder();
+    if (dir == null) return false;
+    await dir.create(recursive: true);
+    for (var attempt = 0; attempt < 3 && !_cancel; attempt++) {
+      try {
+        final r = await client.get(Uri.parse(urlOf(id))).timeout(const Duration(minutes: 3));
+        if (r.statusCode == 200 && r.bodyBytes.length > 10000) {
+          final tmp = File('${dir.path}/${fileOf(id)}.part');
+          await tmp.writeAsBytes(r.bodyBytes, flush: true);
+          await tmp.rename('${dir.path}/${fileOf(id)}');
+          saved.add(id);
+          notifyListeners();
+          return true;
+        }
+      } catch (_) {
+        await Future.delayed(Duration(seconds: 2 * (attempt + 1)));
+      }
+    }
+    return false;
+  }
+
+  /// Downloads every battle not yet on the device.
+  Future<void> downloadAll(List<String> ids) async {
+    if (downloading || !supported) return;
+    await _folder();
+    final todo = ids.where((id) => !saved.contains(id)).toList();
+    downloading = true;
+    _cancel = false;
+    error = null;
+    doneFiles = 0;
+    totalFiles = todo.length;
+    notifyListeners();
+    final client = http.Client();
+    var failed = 0;
+    try {
+      for (final id in todo) {
+        if (_cancel) break;
+        if (!await _save(client, id) && !_cancel) failed++;
+        doneFiles++;
+        notifyListeners();
+      }
+    } finally {
+      client.close();
+      downloading = false;
+      if (failed > 0 && !_cancel) error = 'تعذّر تنزيل ${Arabic.digits(failed)} من الغزوات. تأكد من الاتصال ثم أعد المحاولة.';
+      notifyListeners();
+    }
+  }
+
+  void cancel() => _cancel = true;
+
+  Future<void> deleteAll() async {
+    cancel();
+    final dir = await _folder();
+    if (dir != null && await dir.exists()) {
+      for (final id in saved.toList()) {
+        try {
+          await File('${dir.path}/${fileOf(id)}').delete();
+        } catch (_) {}
+      }
+    }
+    saved.clear();
+    notifyListeners();
+  }
 
   /// Returns false when the recording is not available (yet).
   Future<bool> play(String id) async {
@@ -55,7 +159,18 @@ class GhazwaAudio extends ChangeNotifier {
     loading = true;
     notifyListeners();
     try {
-      await p.setUrl(urlOf(id)).timeout(const Duration(seconds: 25));
+      final dir = await _folder();
+      final local = dir == null ? null : File('${dir.path}/${fileOf(id)}');
+      if (local != null && saved.contains(id) && await local.exists()) {
+        await p.setFilePath(local.path);
+      } else {
+        await p.setUrl(urlOf(id)).timeout(const Duration(seconds: 25));
+        // Keep a copy so it plays offline next time.
+        if (dir != null) {
+          final c = http.Client();
+          unawaited(_save(c, id).whenComplete(c.close));
+        }
+      }
       loading = false;
       notifyListeners();
       unawaited(p.play());
@@ -93,8 +208,19 @@ class GhazawatPage extends StatelessWidget {
   const GhazawatPage({super.key});
   @override
   Widget build(BuildContext context) {
+    GhazwaAudio.instance.init();
     return Scaffold(
-      appBar: AppBar(title: const Text('غزوات النبي ﷺ')),
+      appBar: AppBar(title: const Text('غزوات النبي ﷺ'), actions: [
+        if (GhazwaAudio.instance.supported)
+          ListenableBuilder(
+            listenable: GhazwaAudio.instance,
+            builder: (context, _) => IconButton(
+              tooltip: 'تنزيل الغزوات للاستماع دون إنترنت',
+              icon: Icon(GhazwaAudio.instance.downloading ? Icons.downloading : Icons.download_for_offline_outlined),
+              onPressed: () => showGhazawatDownloads(context),
+            ),
+          ),
+      ]),
       body: FutureBuilder(
         future: GhazawatData.load(),
         builder: (context, snap) {
@@ -103,6 +229,7 @@ class GhazawatPage extends StatelessWidget {
           if (d == null) return const Center(child: CircularProgressIndicator());
           final hint = Theme.of(context).hintColor;
           return ListView(padding: const EdgeInsets.only(bottom: 24), children: [
+            const _DownloadProgress(),
             Container(
               margin: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               padding: const EdgeInsets.all(16),
@@ -129,6 +256,114 @@ class GhazawatPage extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Progress strip while the battles are downloading, and the error if some failed.
+class _DownloadProgress extends StatelessWidget {
+  const _DownloadProgress();
+  @override
+  Widget build(BuildContext context) {
+    final a = GhazwaAudio.instance;
+    return ListenableBuilder(
+      listenable: a,
+      builder: (context, _) {
+        if (!a.downloading && a.error == null) return const SizedBox.shrink();
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          padding: const EdgeInsets.fromLTRB(14, 10, 6, 10),
+          decoration: hero3D(radius: 16),
+          child: Row(children: [
+            Expanded(
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                    a.downloading
+                        ? 'جارٍ تنزيل الغزوات • ${Arabic.digits(a.doneFiles)} من ${Arabic.digits(a.totalFiles)}'
+                        : a.error!,
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                if (a.downloading) ...[
+                  const SizedBox(height: 8),
+                  LinearProgressIndicator(value: a.progress, color: AppColors.gold, backgroundColor: Colors.white24),
+                ],
+              ]),
+            ),
+            if (a.downloading)
+              TextButton(onPressed: a.cancel, child: const Text('إيقاف', style: TextStyle(color: Colors.white))),
+          ]),
+        );
+      },
+    );
+  }
+}
+
+/// Download every battle narration for offline listening, or delete the saved ones.
+void showGhazawatDownloads(BuildContext context) async {
+  final a = GhazwaAudio.instance;
+  await a.init();
+  final ids = (await GhazawatData.load()).list.map((g) => g.id).toList();
+  if (!context.mounted) return;
+  showModalBottomSheet(
+    context: context,
+    builder: (c) => ListenableBuilder(
+      listenable: a,
+      builder: (c, _) {
+        final n = ids.where(a.isSaved).length;
+        final all = n == ids.length;
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 8),
+            child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('تنزيل الغزوات للاستماع دون إنترنت', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text('${Arabic.digits(ids.length)} غزوات بصوت مازن، نحو ${Arabic.digits(GhazwaAudio.totalMB)} ميجابايت. يُفضَّل التنزيل عبر Wi-Fi.',
+                  style: const TextStyle(fontSize: 12.5)),
+              const SizedBox(height: 12),
+              Row(children: [
+                Icon(all ? Icons.download_done : Icons.headphones_outlined, color: AppColors.gold),
+                const SizedBox(width: 8),
+                Text(n == 0 ? 'لا توجد غزوات محفوظة بعد' : 'محفوظ ${Arabic.digits(n)} من ${Arabic.digits(ids.length)}',
+                    style: const TextStyle(fontWeight: FontWeight.w600)),
+              ]),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  icon: const Icon(Icons.download),
+                  label: Text(all ? 'كل الغزوات محفوظة' : n == 0 ? 'تنزيل كل الغزوات' : 'تنزيل الباقي'),
+                  onPressed: a.downloading || all
+                      ? null
+                      : () {
+                          Navigator.pop(c);
+                          a.downloadAll(ids);
+                        },
+                ),
+              ),
+              if (n > 0)
+                Center(
+                  child: TextButton(
+                    onPressed: () async {
+                      Navigator.pop(c);
+                      final ok = await showDialog<bool>(
+                        context: context,
+                        builder: (d) => AlertDialog(
+                          title: const Text('حذف الغزوات المحفوظة'),
+                          content: const Text('ستُحذف تسجيلات الغزوات من الهاتف، ويمكنك تنزيلها مرة أخرى في أي وقت.'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('إلغاء')),
+                            FilledButton(onPressed: () => Navigator.pop(d, true), child: const Text('حذف')),
+                          ],
+                        ),
+                      );
+                      if (ok == true) await a.deleteAll();
+                    },
+                    child: const Text('حذف الغزوات المحفوظة', style: TextStyle(color: Colors.redAccent)),
+                  ),
+                ),
+            ]),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 void _open(BuildContext context, Ghazwa g) =>
@@ -351,6 +586,12 @@ class GhazwaPage extends StatefulWidget {
 class _GhazwaPageState extends State<GhazwaPage> {
   late final Future<List<(GhazwaHadith, Hadith?)>> _hadith = _loadHadith();
 
+  @override
+  void initState() {
+    super.initState();
+    GhazwaAudio.instance.init();
+  }
+
   Future<List<(GhazwaHadith, Hadith?)>> _loadHadith() async =>
       [for (final r in widget.g.hadith) (r, await findGhazwaHadith(r))];
 
@@ -506,6 +747,12 @@ class _ListenButton extends StatelessWidget {
               onPressed: audio.stop,
               icon: const Icon(Icons.stop_circle_outlined, color: Colors.white),
             ),
+          ],
+          if (!mine && audio.isSaved(g.id)) ...[
+            const SizedBox(width: 10),
+            Icon(Icons.download_done, size: 18, color: AppColors.goldLight),
+            const SizedBox(width: 4),
+            Text('محفوظة على الهاتف', style: TextStyle(color: AppColors.heroText, fontSize: 12.5)),
           ],
           if (missing && !mine) ...[
             const SizedBox(width: 10),
