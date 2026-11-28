@@ -21,7 +21,9 @@ public sealed class NarrationService
     private List<Func<Task<string?>>> _parts = [];
     private int _index;
     private int _session;
-    private string _title = "", _artist = "";
+    private string _title = "", _artist = "", _album = "قصص الأنبياء – سبيل";
+    /// <summary>False for a single recording (a battle's narration): next/previous do not switch stories.</summary>
+    private bool _skippable = true;
 
     public bool IsSpeaking { get; private set; }
     public bool IsPaused { get; private set; }
@@ -33,6 +35,8 @@ public sealed class NarrationService
     public event Action<string>? Finished;
     /// <summary>The next/previous key of the keyboard or Windows' media overlay asks for another story.</summary>
     public event Action<int>? SkipRequested;
+    /// <summary>A recording could not be played (id, message): e.g. not published yet or no connection.</summary>
+    public event Action<string, string>? PartFailed;
 
     /// <summary>"Male" or "Female" (read on every chunk so a change applies immediately).</summary>
     public Func<string> PreferredGender { get; set; } = () => "Male";
@@ -49,6 +53,7 @@ public sealed class NarrationService
         {
             if (!IsSpeaking) return;
             _log.Warn($"Story part failed: {msg}");
+            if (CurrentId is { } failedId) PartFailed?.Invoke(failedId, msg);
             _index++;
             _ = PlayCurrentAsync(_session);
         };
@@ -60,8 +65,8 @@ public sealed class NarrationService
                 case SystemMediaTransportControlsButton.Play: if (IsPaused) TogglePause(); break;
                 case SystemMediaTransportControlsButton.Pause: if (!IsPaused) TogglePause(); break;
                 case SystemMediaTransportControlsButton.Stop: Stop(); break;
-                case SystemMediaTransportControlsButton.Next: SkipRequested?.Invoke(1); break;
-                case SystemMediaTransportControlsButton.Previous: SkipRequested?.Invoke(-1); break;
+                case SystemMediaTransportControlsButton.Next: if (_skippable) SkipRequested?.Invoke(1); break;
+                case SystemMediaTransportControlsButton.Previous: if (_skippable) SkipRequested?.Invoke(-1); break;
             }
         };
     }
@@ -107,35 +112,57 @@ public sealed class NarrationService
             parts = chunks.Select((c, i) => (Func<Task<string?>>)(() => SynthesizeAsync(c, session, i))).ToList();
             _artist = "صوت Windows";
         }
+        Start(prophetId, title, parts, "قصص الأنبياء – سبيل", skippable: true);
+        return true;
+    }
+
+    /// <summary>
+    /// Plays one recorded narration from <paramref name="url"/> (e.g. a battle of the Prophet ﷺ), kept in
+    /// %AppData%\Mawaqeety\&lt;cacheFolder&gt;\ after the first listen so it works offline.
+    /// </summary>
+    public void PlayRecording(string id, string title, string artist, string album, string url, string cacheFolder)
+    {
+        Stop();
+        var file = Path.GetFileName(new Uri(url).LocalPath);
+        var dir = Path.Combine(AppPaths.DataDir, cacheFolder);
+        _artist = artist;
+        Start(id, title, [() => Task.FromResult<string?>(CachedSource(dir, file, url))], album, skippable: false);
+    }
+
+    private void Start(string id, string title, List<Func<Task<string?>>> parts, string album, bool skippable)
+    {
         _session++;
         _parts = parts;
         _index = 0;
         _title = title;
-        CurrentId = prophetId;
+        _album = album;
+        _skippable = skippable;
+        CurrentId = id;
         IsSpeaking = true;
         IsPaused = false;
         StateChanged?.Invoke();
         _ = PlayCurrentAsync(_session);
-        return true;
     }
 
     private static string CacheDir => Path.Combine(AppPaths.DataDir, "stories");
 
+    private string RecordingSource(string file) => CachedSource(CacheDir, file, StoryAudio.Default.BaseUrl + file);
+
     /// <summary>The saved copy, or the online file (a copy is then saved in the background).</summary>
-    private string RecordingSource(string file)
+    private string CachedSource(string dir, string file, string url)
     {
-        var local = Path.Combine(CacheDir, file);
+        var local = Path.Combine(dir, file);
         if (File.Exists(local)) return local;
-        _ = CacheAsync(file, local);
-        return StoryAudio.Default.BaseUrl + file;
+        _ = CacheAsync(dir, file, url, local);
+        return url;
     }
 
-    private async Task CacheAsync(string file, string local)
+    private async Task CacheAsync(string dir, string file, string url, string local)
     {
         try
         {
-            Directory.CreateDirectory(CacheDir);
-            var bytes = await Http.GetByteArrayAsync(StoryAudio.Default.BaseUrl + file);
+            Directory.CreateDirectory(dir);
+            var bytes = await Http.GetByteArrayAsync(url);
             if (bytes.Length < 10_000) return;
             var tmp = local + ".part";
             await File.WriteAllBytesAsync(tmp, bytes);
@@ -180,7 +207,7 @@ public sealed class NarrationService
             {
                 if (session != _session) return;
                 _media.Open(src);
-                _media.SetInfo(_title, _artist, "قصص الأنبياء – سبيل");
+                _media.SetInfo(_title, _artist, _album, _skippable);
                 ChunkStarted?.Invoke(idx);
             });
         }

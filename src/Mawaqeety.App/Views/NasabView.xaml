@@ -1,0 +1,207 @@
+<UserControl x:Class="Mawaqeety.App.Views.NasabView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls">
+    <UserControl.Resources>
+        <c:BoolToVisibilityConverter x:Key="BoolVis"/>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
+        <!-- A button that only hosts its content (the tree nodes) -->
+        <Style x:Key="PlainButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource AppFont}"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <ContentPresenter/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <DataTemplate x:Key="LinkChip">
+            <Button Style="{StaticResource GhostButton}" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Left" ToolTip="{Binding Url}" Padding="6,2"
+                    Command="{Binding DataContext.OpenUrlCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Url}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="&#xE71B;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12" Margin="0,3,6,0"/>
+                    <TextBlock Text="{Binding Label}" FontSize="12" TextWrapping="Wrap"/>
+                </DockPanel>
+            </Button>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <ScrollViewer x:Name="Scroll" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="32,28,32,24" MaxWidth="980">
+            <Border Style="{StaticResource HeroCard}">
+                <StackPanel>
+                    <DockPanel>
+                        <TextBlock Text="🌳" Style="{StaticResource HeroEmoji}"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="النسب الشريف" Foreground="White" FontSize="28" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding HeroSub}" Foreground="#E9C75A" FontSize="14"/>
+                        </StackPanel>
+                    </DockPanel>
+                    <TextBlock Text="{Binding Book.Intro}" Foreground="White" FontFamily="{StaticResource QuranFont}" FontSize="17" TextWrapping="Wrap"
+                               TextAlignment="Center" LineHeight="34" Margin="0,12,0,0"/>
+                    <TextBlock Text="{Binding Book.BukhariRef}" Foreground="{DynamicResource HeroMutedBrush}" FontSize="12" TextWrapping="Wrap" TextAlignment="Center" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <UniformGrid Columns="2">
+                <Border Style="{StaticResource Card}" Padding="18,14" Margin="0,0,8,16">
+                    <StackPanel>
+                        <TextBlock Text="القدر المتفق عليه" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15.5"/>
+                        <TextBlock Text="{Binding Book.Agreed}" TextWrapping="Wrap" FontSize="14.5" LineHeight="27" Margin="0,6,0,6"/>
+                        <ContentControl Content="{Binding Zad}" ContentTemplate="{StaticResource LinkChip}" Focusable="False"/>
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}" Padding="18,14" Margin="8,0,0,16">
+                    <StackPanel>
+                        <TextBlock Text="نسبه ﷺ من جهة أمه" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold" FontSize="15.5"/>
+                        <TextBlock Text="{Binding Book.Mother}" TextWrapping="Wrap" FontSize="14.5" LineHeight="27" Margin="0,6,0,6"/>
+                        <ContentControl Content="{Binding MotherSource}" ContentTemplate="{StaticResource LinkChip}" Focusable="False"/>
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <TextBlock Text="شجرة النسب" Style="{StaticResource Section}" Margin="4,8,4,2"/>
+            <TextBlock Text="اضغط على أي اسم لتقرأ نبذة عنه، أو اختر صحابيًا ليظهر ملتقى نسبه." Style="{StaticResource Muted}" Margin="4,0,4,8"/>
+            <ItemsControl ItemsSource="{Binding Companions}" Margin="0,0,0,8">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ToggleButton Content="{Binding Name}" IsChecked="{Binding IsSelected}" Padding="12,4" Margin="0,0,6,6"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="{Binding SelectedText}" Foreground="{DynamicResource GoldBrush}" FontWeight="SemiBold" Margin="4,0,4,8"
+                       Visibility="{Binding SelectedText, Converter={StaticResource NotEmpty}}"/>
+
+            <!-- The tree: from the Prophet ﷺ (top) up to عدنان -->
+            <ItemsControl x:Name="Tree" ItemsSource="{Binding Chain}" HorizontalAlignment="Center">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <Border x:Name="Line" Width="3" Height="18" CornerRadius="1.5" Background="{DynamicResource LineBrush}" HorizontalAlignment="Center"/>
+                            <Button Style="{StaticResource PlainButton}" Command="{Binding ToggleCommand}" Width="340">
+                                <Border x:Name="Node" CornerRadius="16" Padding="12,10" Background="{DynamicResource SurfaceBrush}" BorderThickness="1"
+                                        BorderBrush="{DynamicResource LineBrush}" Effect="{StaticResource RaisedShadow}">
+                                    <StackPanel>
+                                        <DockPanel>
+                                            <Border x:Name="Badge" DockPanel.Dock="Left" Width="30" Height="30" CornerRadius="15" Background="{DynamicResource GoldSoftBrush}" Margin="0,0,10,0">
+                                                <TextBlock x:Name="BadgeText" Text="{Binding BadgeText}" FontWeight="Bold" FontSize="12.5" Foreground="{DynamicResource GoldBrush}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock x:Name="Chevron" DockPanel.Dock="Right" Text="&#xE70D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="12"
+                                                       Foreground="{DynamicResource TextMutedBrush}" VerticalAlignment="Center" Margin="6,0,0,0"
+                                                       Visibility="{Binding HasNote, Converter={StaticResource BoolVis}}"/>
+                                            <Border DockPanel.Dock="Right" CornerRadius="8" Background="{DynamicResource GoldSoftBrush}" Padding="6,1" Margin="4,0,0,0" VerticalAlignment="Center"
+                                                    Visibility="{Binding HasMeeting, Converter={StaticResource BoolVis}}" ToolTip="{Binding MeetingText}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE716;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" FontSize="11" Foreground="{DynamicResource GoldBrush}" Margin="0,3,4,0"/>
+                                                    <TextBlock Text="{Binding MeetingCount}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}"/>
+                                                </StackPanel>
+                                            </Border>
+                                            <Border DockPanel.Dock="Right" CornerRadius="8" Background="{DynamicResource GoldSoftBrush}" Padding="6,1" VerticalAlignment="Center"
+                                                    Visibility="{Binding IsMotherMeet, Converter={StaticResource BoolVis}}">
+                                                <TextBlock Text="ملتقى نسب أمه ﷺ" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}"/>
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center">
+                                                <TextBlock x:Name="NameText" Text="{Binding Name}" FontSize="17" FontWeight="Bold"/>
+                                                <TextBlock x:Name="SubText" Text="{Binding Subtitle}" FontSize="12" Foreground="{DynamicResource TextMutedBrush}"
+                                                           Visibility="{Binding HasSubtitle, Converter={StaticResource BoolVis}}"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                        <StackPanel Visibility="{Binding ShowDetails, Converter={StaticResource BoolVis}}">
+                                            <TextBlock x:Name="NoteText" Text="{Binding Note}" TextWrapping="Wrap" FontSize="13.5" LineHeight="25" Margin="0,8,0,0"
+                                                       Visibility="{Binding HasNote, Converter={StaticResource BoolVis}}"/>
+                                            <TextBlock Text="{Binding MeetingText}" TextWrapping="Wrap" FontSize="12.5" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}" Margin="0,6,0,0"
+                                                       Visibility="{Binding HasMeeting, Converter={StaticResource BoolVis}}"/>
+                                            <Border Background="{DynamicResource GoldSoftBrush}" CornerRadius="10" Padding="10,6" Margin="0,8,0,0"
+                                                    Visibility="{Binding Branch, Converter={StaticResource NotEmpty}}">
+                                                <TextBlock Text="{Binding Branch}" TextWrapping="Wrap" FontSize="13" LineHeight="24" Foreground="{DynamicResource TextBrush}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </Button>
+                        </StackPanel>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsFirst}" Value="True">
+                                <Setter TargetName="Line" Property="Visibility" Value="Collapsed"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsLit}" Value="True">
+                                <Setter TargetName="Line" Property="Background" Value="{DynamicResource GoldBrush}"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsOpen}" Value="True">
+                                <Setter TargetName="Chevron" Property="Text" Value="&#xE70E;"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsProphet}" Value="True">
+                                <Setter TargetName="Node" Property="Background" Value="{DynamicResource HeroBrush}"/>
+                                <Setter TargetName="Node" Property="BorderBrush" Value="#B3E9C75A"/>
+                                <Setter TargetName="NameText" Property="Foreground" Value="White"/>
+                                <Setter TargetName="NameText" Property="FontSize" Value="20"/>
+                                <Setter TargetName="SubText" Property="Foreground" Value="#E9C75A"/>
+                                <Setter TargetName="NoteText" Property="Foreground" Value="{DynamicResource HeroMutedBrush}"/>
+                                <Setter TargetName="Chevron" Property="Foreground" Value="#B3FFFFFF"/>
+                                <Setter TargetName="Badge" Property="Background" Value="#E9C75A"/>
+                                <Setter TargetName="BadgeText" Property="Foreground" Value="#1B2A3A"/>
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding IsHit}" Value="True">
+                                <Setter TargetName="Node" Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
+                                <Setter TargetName="Node" Property="BorderThickness" Value="2.2"/>
+                                <Setter TargetName="Badge" Property="Background" Value="{DynamicResource GoldBrush}"/>
+                                <Setter TargetName="BadgeText" Property="Foreground" Value="White"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="… وما فوق عدنان مختلف فيه بين النسّابين، ولا خلاف أنه من ولد إسماعيل بن إبراهيم عليهما السلام." Style="{StaticResource Muted}"
+                       TextAlignment="Center" Margin="28,12,28,8"/>
+
+            <TextBlock Text="ملتقى أنساب العشرة المبشرين" Style="{StaticResource Section}" Margin="4,16,4,2"/>
+            <TextBlock Text="كلهم من قريش، ويلتقي نسب كل واحد منهم بنسب النبي ﷺ عند جدٍّ من أجداده." Style="{StaticResource Muted}" Margin="4,0,4,10"/>
+            <ItemsControl ItemsSource="{Binding Companions}">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><UniformGrid Columns="2"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border x:Name="Card" Style="{StaticResource Card}" Padding="16,12" Margin="4,0,4,12">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Border DockPanel.Dock="Right" CornerRadius="8" Background="{DynamicResource GoldSoftBrush}" Padding="8,1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Clan}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource GoldBrush}"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="16"/>
+                                </DockPanel>
+                                <TextBlock Text="{Binding Lineage}" TextWrapping="Wrap" FontSize="14" LineHeight="26" Margin="0,6,0,0"/>
+                                <DockPanel Margin="0,6,0,0">
+                                    <ToggleButton DockPanel.Dock="Right" IsChecked="{Binding IsSelected}" Padding="8,3" ToolTip="إظهار ملتقى نسبه في الشجرة">
+                                        <TextBlock Text="&#xE890;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                                    </ToggleButton>
+                                    <TextBlock TextWrapping="Wrap" FontSize="14" VerticalAlignment="Center">
+                                        <Run Text="يلتقي مع النبي ﷺ في: "/><Run Text="{Binding MeetText, Mode=OneWay}" Foreground="{DynamicResource GoldBrush}" FontWeight="Bold"/>
+                                    </TextBlock>
+                                </DockPanel>
+                                <TextBlock Text="{Binding Remark}" Style="{StaticResource Muted}" FontSize="12.5" Margin="0,4,0,0"
+                                           Visibility="{Binding HasRemark, Converter={StaticResource BoolVis}}"/>
+                                <ContentControl Content="{Binding Source}" ContentTemplate="{StaticResource LinkChip}" Focusable="False" Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource GoldBrush}"/>
+                                <Setter TargetName="Card" Property="BorderThickness" Value="1.6"/>
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="المصادر" FontWeight="Bold" Foreground="{DynamicResource TextMutedBrush}" Margin="4,12,4,4"/>
+            <TextBlock Text="{Binding Footnote}" Style="{StaticResource Muted}" FontSize="12" Margin="4,0,4,6"/>
+            <ItemsControl ItemsSource="{Binding Sources}" ItemTemplate="{StaticResource LinkChip}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

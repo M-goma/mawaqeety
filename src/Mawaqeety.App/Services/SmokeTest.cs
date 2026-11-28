@@ -321,6 +321,62 @@ public static class SmokeTest
             await Task.Delay(1200);
             Shot(w, "21b-stats-sunan-pages");
         });
+        // ---------------- pages ported from the mobile app's «المزيد» ----------------
+        await Step("arbaeen", async () =>
+        {
+            vm.Page = ViewModels.Page.Arbaeen;
+            await Task.Delay(1200);
+            Shot(w, "23-arbaeen");
+            vm.Arbaeen.Selected = vm.Arbaeen.Items[1];
+            if (vm.Arbaeen.SahihLinks.FirstOrDefault() is { } link) await link.ToggleCommand.ExecuteAsync(null);
+            await Task.Delay(1500);
+            Shot(w, "23b-arbaeen-sahih");
+            if (vm.Arbaeen.SahihLinks.FirstOrDefault() is { Text.Length: 0 }) errors.Add("arbaeen: the sahih narration did not load");
+        });
+        await Step("fiqh", async () =>
+        {
+            vm.Page = ViewModels.Page.Fiqh;
+            await Task.Delay(1200);
+            Shot(w, "24-fiqh");
+            vm.Fiqh.Query = "التيمم";
+            await Task.Delay(600);
+            Shot(w, "24b-fiqh-search");
+            if (vm.Fiqh.Items.Count == 0) errors.Add("fiqh search found nothing");
+            vm.Fiqh.Query = "";
+        });
+        await Step("asbab", async () =>
+        {
+            vm.Page = ViewModels.Page.Asbab;
+            await Task.Delay(1500);
+            Shot(w, "25-asbab");
+            if (vm.Asbab.Groups.Count == 0) errors.Add("asbab: no occasions for the first surah");
+        });
+        await Step("ghazawat", async () =>
+        {
+            vm.Page = ViewModels.Page.Ghazawat;
+            await Task.Delay(4000); // the hadiths load in the background
+            Shot(w, "26-ghazawat");
+            if (vm.Ghazawat.Hadith.Any(h => h.Text.Length == 0)) errors.Add("ghazawat: hadith did not load");
+        });
+        await Page(ViewModels.Page.Nasab, "27-nasab");
+        await Step("nasab-companion", async () =>
+        {
+            vm.Nasab.Companions[0].IsSelected = true;
+            await Task.Delay(1000);
+            Shot(w, "27b-nasab-abubakr");
+            if (!vm.Nasab.Chain[vm.Nasab.Companions[0].C.Meet].IsHit) errors.Add("nasab: meeting point not marked");
+            vm.Nasab.Companions[0].IsSelected = false;
+        });
+        await Page(ViewModels.Page.CompanionsIslam, "28-companions-islam");
+        await Step("calendar", async () =>
+        {
+            vm.IsCalendar = true;
+            await Task.Delay(1200);
+            Shot(w, "29-calendar");
+            if (vm.Calendar.Cells.Count(c => !c.IsBlank) < 28) errors.Add("calendar: month grid incomplete");
+        });
+        await Page(ViewModels.Page.Atlas, "30-atlas");
+
         await Step("new-palettes", async () =>
         {
             vm.Settings.PaletteId = "mocha";
