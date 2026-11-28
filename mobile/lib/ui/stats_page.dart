@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/arabic.dart';
 import '../main.dart';
 import '../services/tracker.dart';
+import 'planner_page.dart';
 import 'theme.dart';
 
 const _weekDays = ['الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت', 'الأحد'];
@@ -21,7 +22,7 @@ class _StatsPageState extends State<StatsPage> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      listenable: Listenable.merge([app, app.tracker]),
+      listenable: Listenable.merge([app, app.tracker, app.planner]),
       builder: (context, _) {
         final t = app.tracker;
         final today = app.today;
@@ -96,6 +97,7 @@ class _StatsPageState extends State<StatsPage> {
                 ]),
               ),
             ),
+            const PlannerStatsCard(),
             // Tasbeeh
             Card3D(
               child: ListTile(

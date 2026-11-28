@@ -7,6 +7,7 @@ import 'format.dart';
 import 'hadith_page.dart';
 import 'companions_page.dart';
 import 'hisn_page.dart';
+import 'planner_page.dart';
 import 'prayer_page.dart';
 import 'prophets_page.dart';
 import 'qibla_page.dart';
@@ -48,6 +49,7 @@ class HomePage extends StatelessWidget {
         const NextPrayerHero(),
         const RadioCard(),
         const TodayHarvest(),
+        const PlannerHomeCard(),
         const KahfCard(),
         const _HadithOfDay(),
         const _Sections(),

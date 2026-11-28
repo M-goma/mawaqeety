@@ -64,6 +64,8 @@ void main() {
     expect(top('حاسبة الزكاة').first, 'feature:zakat');
     expect(top('الهجرة إلى الحبشة'), contains('seerah:habasha1'));
     expect(top('كيف أحفظ القرآن'), contains('feature:hifz'));
+    expect(top('تنظيم الوقت'), contains('feature:planner'));
+    expect(top('مخطط اليوم').first, 'feature:planner');
     expect(top('صيام عرفة'), contains('occasions:arafah'));
     expect(top('قصة يوسف'), contains('prophets:yusuf'));
     expect(top('إنما الأعمال بالنيات'), contains('arbaeen:1'));

@@ -10,6 +10,7 @@ import 'ghazawat_page.dart';
 import 'hajj_page.dart';
 import 'nasab_page.dart';
 import 'occasions_page.dart';
+import 'planner_page.dart';
 import 'quiz_page.dart';
 import 'ramadan_page.dart';
 import 'seerah_page.dart';
@@ -111,6 +112,7 @@ class MorePage extends StatelessWidget {
         grid([
           item('🏆', 'مسابقات', 'أسئلة قصيرة من محتوى التطبيق بمصادرها', const QuizPage()),
           item('📊', 'إحصائياتي', 'صلواتك وأذكارك ووردك', const StatsPage()),
+          item('🗒️', 'مخطط اليوم', 'مهامك مرتّبة تلقائيًا حول الصلوات', const PlannerPage()),
         ]),
         band(Icons.tune, 'التطبيق'),
         grid([

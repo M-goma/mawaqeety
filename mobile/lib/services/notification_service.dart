@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../core/arabic.dart';
 import '../core/prayer_calculator.dart';
 import '../data/occasions.dart';
+import '../data/planner.dart';
 import 'adhan_player.dart';
 import 'app_state.dart';
 import 'download_notifier.dart';
@@ -357,6 +358,25 @@ class NotificationService {
           );
         }
       }
+      // Daily planner: each task's reminder, the morning plan and the evening summary. On Android they go into the
+      // same list of native notes (each call replaces all of them), never as a separate call.
+      var pid = _plannerBaseId;
+      for (final (at, title, body) in _plannerNotes(app, nowUtc)) {
+        if (native) {
+          notes.add({'at': at.millisecondsSinceEpoch, 'title': title, 'body': body, 'late': 10 * 60000, 'ttl': 60 * 60000});
+        } else if (count < _maxPending) {
+          await _plugin.zonedSchedule(
+            id: pid++,
+            scheduledDate: tz.TZDateTime.from(at, tz.UTC),
+            notificationDetails: _plannerDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            title: title,
+            body: body,
+            payload: 'planner',
+          );
+          count++;
+        }
+      }
       if (native) {
         // Native alarms are keyed by minute: give reminders that share a minute their own minute.
         final used = <int>{};
@@ -380,6 +400,69 @@ class NotificationService {
       debugPrint('scheduling failed: $e');
     }
   }
+
+  static const _plannerBaseId = 7000;
+
+  static const _plannerDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'planner_v1', 'مخطط اليوم',
+      channelDescription: 'تذكير بمهام اليوم وخطتك وملخصها',
+      importance: Importance.high,
+      priority: Priority.high,
+    ),
+    iOS: DarwinNotificationDetails(presentSound: true, presentAlert: true),
+  );
+
+  /// The planner's notifications for today and tomorrow (UTC time, title, body). No adhan: they only open the app.
+  static List<(DateTime, String, String)> _plannerNotes(AppState app, DateTime nowUtc) {
+    final pl = app.planner;
+    final c = pl.config;
+    final s = app.settings;
+    final out = <(DateTime, String, String)>[];
+    for (var d = 0; d < 2; d++) {
+      final date = app.today.add(Duration(days: d));
+      final plan = pl.plan(date);
+      if (c.reminders) {
+        for (final b in plan.taskBlocks) {
+          final t = b.task!;
+          if (t.done || t.remind == null) continue;
+          final at = app.utcAt(date, b.start - t.remind!);
+          if (!at.isAfter(nowUtc)) continue;
+          final time = _fmt(app.local(app.utcAt(date, b.start)), s.use24h);
+          out.add((
+            at,
+            '⏰ ${t.title}',
+            t.remind == 0 ? 'حان موعد مهمتك • $time • ${Arabic.minutes(t.minutes)}' : 'تبدأ بعد ${Arabic.minutes(t.remind!)} • $time',
+          ));
+        }
+      }
+      final times = app.day(date);
+      final tasks = pl.of(date);
+      if (c.morningNote) {
+        // Tomorrow's plan also gets today's unfinished tasks (they roll over at midnight).
+        var n = tasks.where((t) => !t.done).length;
+        if (d == 1 && c.carryOver) n += pl.of(app.today).where((t) => !t.done).length;
+        final at = times[Prayer.fajr].add(const Duration(minutes: 45));
+        if (n > 0 && at.isAfter(nowUtc)) out.add((at, '🗒️ خطة يومك: ${_tasks(n)}', 'افتح مخطط اليوم لترى جدولك بين الصلوات'));
+      }
+      if (c.eveningNote) {
+        final at = times[Prayer.isha].add(const Duration(minutes: 45));
+        final st = PlanStat.of(tasks);
+        if (at.isAfter(nowUtc) && (st.total > 0 || d == 1)) {
+          out.add((
+            at,
+            '📋 ملخص يومك',
+            d == 0
+                ? 'أنجزت ${Arabic.digits(st.done)} من ${_tasks(st.total)}${st.minutes > 0 ? ' • ${Arabic.minutes(st.minutes)} من التركيز' : ''}'
+                : 'راجع ما أنجزته اليوم، وخطّط لغدك',
+          ));
+        }
+      }
+    }
+    return out;
+  }
+
+  static String _tasks(int n) => n == 1 ? 'مهمة واحدة' : (n == 2 ? 'مهمتان' : (n <= 10 ? '${Arabic.digits(n)} مهام' : '${Arabic.digits(n)} مهمة'));
 
   static const fridayBaseId = 8500;
 

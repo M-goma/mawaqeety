@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show EventChannel;
-import 'package:flutter/widgets.dart' show WidgetsBinding;
+import 'package:flutter/material.dart' show MaterialPageRoute, Navigator, WidgetsBinding;
 import 'package:geolocator/geolocator.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,6 +17,7 @@ import '../data/mushaf.dart';
 import '../data/repository.dart';
 import '../main.dart' show navigatorKey;
 import '../ui/mushaf_page.dart' show openMushaf;
+import '../ui/planner_page.dart' show PlannerPage;
 import 'adhan_player.dart';
 import 'app_updater.dart';
 import 'narration.dart';
@@ -24,6 +25,7 @@ import 'download_notifier.dart';
 import 'hifz.dart';
 import 'mushaf_store.dart';
 import 'notification_service.dart';
+import 'planner_store.dart';
 import 'quran_downloads.dart';
 import 'story_downloads.dart';
 import 'ghazwa_downloads.dart';
@@ -54,6 +56,7 @@ class AppState extends ChangeNotifier {
   final stories = StoryDownloads();
   final ghazawat = GhazwaDownloads();
   final tracker = Tracker();
+  final planner = PlannerStore();
   final hifz = HifzStore();
   final hifzPlayer = HifzPlayer();
   late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories, ghazawat);
@@ -85,6 +88,12 @@ class AppState extends ChangeNotifier {
     await ghazawat.init();
     tracker.wirdGoal = () => settings.wirdGoal;
     await tracker.load();
+    planner
+      ..today = (() => today)
+      ..prayers = prayerMinutes
+      ..nowMinute = (() => now.hour * 60 + now.minute)
+      ..onChanged = _plannerChanged;
+    await planner.load();
     await hifz.load();
     narration.onSaved = stories.noteSaved;
     narration.storyOrder = [for (final p in repo.prophets) p.id];
@@ -115,6 +124,13 @@ class AppState extends ChangeNotifier {
       if (r.actionId?.startsWith('dl_') ?? false) return downloadNotifier.handleAction(r.actionId);
       if (r.actionId?.startsWith('pt_') ?? false) {
         logPrayerAction(r.actionId!, r.payload ?? '');
+        return;
+      }
+      if (r.payload == 'planner') {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final ctx = navigatorKey.currentContext;
+          if (ctx != null) Navigator.push(ctx, MaterialPageRoute(builder: (_) => const PlannerPage()));
+        });
         return;
       }
       if (r.payload == 'kahf') {
@@ -159,6 +175,7 @@ class AppState extends ChangeNotifier {
         'settings': settings.toJson(),
         'tracker': jsonDecode(tracker.exportJson()),
         'hifz': hifz.toJson(),
+        'planner': planner.toJson(),
       });
 
   /// Restores a backup made by [exportBackup]. Returns false if the file is not one.
@@ -170,6 +187,7 @@ class AppState extends ChangeNotifier {
       await _prefs.setString(_key, settings.toJsonString());
       await tracker.importJson((j['tracker'] ?? <String, dynamic>{}) as Map<String, dynamic>);
       if (j['hifz'] is Map) await hifz.importJson((j['hifz'] as Map).cast<String, dynamic>());
+      if (j['planner'] is Map) await planner.importJson((j['planner'] as Map).cast<String, dynamic>());
       notifyListeners();
       await reschedule();
       return true;
@@ -195,6 +213,26 @@ class AppState extends ChangeNotifier {
     await tracker.setPrayer(date, p, log);
     unawaited(notifications.refreshPrayerChecks(this));
   }
+
+  Timer? _plannerDebounce;
+
+  /// Planner tasks changed: re-plan their reminders shortly after (a burst of changes re-plans once).
+  void _plannerChanged() {
+    if (!ready) return;
+    _plannerDebounce?.cancel();
+    _plannerDebounce = Timer(const Duration(seconds: 2), () => unawaited(reschedule()));
+  }
+
+  /// The day's prayers in minutes from its local midnight (a time after midnight is above 1440).
+  Map<Prayer, int> prayerMinutes(DateTime date) {
+    final times = day(date);
+    final midnight = tz.TZDateTime(location, date.year, date.month, date.day);
+    return {for (final p in Prayer.values) p: local(times[p]).difference(midnight).inMinutes};
+  }
+
+  /// The instant (UTC) of a minute of a local day, as used by the planner.
+  DateTime utcAt(DateTime date, int minute) =>
+      tz.TZDateTime(location, date.year, date.month, date.day).add(Duration(minutes: minute)).toUtc();
 
   Future<void> reschedule() async {
     await notifications.schedule(this);
@@ -295,6 +333,7 @@ class AppState extends ChangeNotifier {
 
   void _tick() {
     if (!ready) return;
+    planner.rollover();
     notifyListeners();
     if (!settings.adhanEnabled) return;
     // Android: the native adhan service plays it (also when the app is closed).

@@ -34,6 +34,7 @@ import '../ui/khatma_page.dart';
 import '../ui/monthly_page.dart';
 import '../ui/nasab_page.dart';
 import '../ui/occasions_page.dart';
+import '../ui/planner_page.dart';
 import '../ui/prophets_page.dart';
 import '../ui/qibla_page.dart';
 import '../ui/quiz_page.dart';
@@ -538,6 +539,8 @@ Future<List<LibraryEntry>> _features(Repository repo) async {
     f('hadith', 'الأحاديث الصحيحة', 'تصفّح صحيح البخاري وصحيح مسلم وابحث فيهما.', 'صحيح البخاري صحيح مسلم احاديث بحث',
         () => const HadithPage()),
     f('radio', 'الإذاعة', 'إذاعة القرآن الكريم مباشرة.', 'اذاعه راديو القران', () => const RadioPage()),
+    f('planner', 'مخطط اليوم', 'نظّم مهامك حول مواقيت الصلاة: يرتّبها المخطط تلقائيًا في أوقات فراغك حسب أولويتها، ويذكّرك بها، ويلخّص إنجازك.',
+        'مخطط مهام مهامي تنظيم الوقت جدول اليوم تخطيط اليوم خطه يومي اولويات انجاز', () => const PlannerPage()),
     f('stats', 'إحصائياتي', 'صلواتك وأذكارك ووردك.', 'احصائيات متابعه', () => const StatsPage()),
     f('prophets', 'قصص الأنبياء', 'قصص الأنبياء من القرآن والسنة الصحيحة.', 'قصص الانبياء', () => const ProphetsPage()),
   ];
