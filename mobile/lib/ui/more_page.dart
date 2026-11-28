@@ -7,6 +7,7 @@ import 'asma_page.dart';
 import 'companions_islam_page.dart';
 import 'fiqh_page.dart';
 import 'ghazawat_page.dart';
+import 'hajj_page.dart';
 import 'nasab_page.dart';
 import 'occasions_page.dart';
 import 'quiz_page.dart';
@@ -104,6 +105,7 @@ class MorePage extends StatelessWidget {
           item('🤍', 'الأيام البيض', '١٣ و١٤ و١٥ من كل شهر', const WhiteDaysPage()),
           item('🗓️', 'المناسبات والصيام', 'عرفة وعاشوراء والعيدان والاثنين والخميس', const OccasionsPage()),
           item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
+          item('🕋', 'دليل الحج والعمرة', 'خطوة بخطوة مع الأدعية والمواقيت والخريطة', const HajjPage()),
         ]),
         band(Icons.emoji_events_outlined, 'تعلّم وتابع تقدّمك'),
         grid([

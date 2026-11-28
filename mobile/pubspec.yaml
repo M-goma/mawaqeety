@@ -60,6 +60,7 @@ flutter:
     - assets/data/arbaeen.json
     - assets/data/quiz.json
     - assets/data/seerah.json
+    - assets/data/hajj.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
   fonts:
