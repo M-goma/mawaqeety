@@ -9,6 +9,7 @@ import 'fiqh_page.dart';
 import 'ghazawat_page.dart';
 import 'nasab_page.dart';
 import 'occasions_page.dart';
+import 'quiz_page.dart';
 import 'ramadan_page.dart';
 import 'settings_page.dart';
 import 'stats_page.dart';
@@ -73,6 +74,7 @@ class MorePage extends StatelessWidget {
           item('⚔️', 'غزوات النبي ﷺ', 'بدر وأحد والخندق وفتح مكة…', const GhazawatPage()),
           item('🌳', 'النسب الشريف', 'نسب النبي ﷺ وملتقى أنساب العشرة', const NasabPage()),
           item('🤝', 'كيف أسلم الصحابة', 'قصة إسلام العشرة المبشرين', const CompanionsIslamPage()),
+          item('🏆', 'مسابقات', 'أسئلة قصيرة من محتوى التطبيق بمصادرها', const QuizPage()),
           item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
           item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),

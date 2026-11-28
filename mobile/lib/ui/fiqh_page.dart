@@ -54,7 +54,7 @@ class _FiqhPageState extends State<FiqhPage> {
                   ),
                 );
               }
-              return _FiqhCard(item: list[i - 1]);
+              return FiqhCard(item: list[i - 1]);
             },
           );
         },
@@ -125,9 +125,9 @@ Color _sourceColor(String source) => switch (source) {
       _ => const Color(0xFF4A86C8),
     };
 
-class _FiqhCard extends StatelessWidget {
+class FiqhCard extends StatelessWidget {
   final FiqhItem item;
-  const _FiqhCard({required this.item});
+  const FiqhCard({super.key, required this.item});
 
   @override
   Widget build(BuildContext context) {
