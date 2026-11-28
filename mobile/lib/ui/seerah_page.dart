@@ -15,7 +15,9 @@ import 'theme.dart';
 /// السيرة النبوية على خط زمني: from the birth in the Year of the Elephant to the death of the Prophet ﷺ,
 /// grouped into eras; an event opens its summary, related ayah, battle and sources.
 class SeerahPage extends StatefulWidget {
-  const SeerahPage({super.key});
+  /// Id of an event to open once the timeline is shown (from «سبيل»).
+  final String? openEvent;
+  const SeerahPage({super.key, this.openEvent});
   @override
   State<SeerahPage> createState() => _SeerahPageState();
 }
@@ -25,6 +27,23 @@ class _SeerahPageState extends State<SeerahPage> {
   final _eraKeys = <String, GlobalKey>{};
 
   static Future<(SeerahData, GhazawatData)> _load() async => (await SeerahData.load(), await GhazawatData.load());
+
+  @override
+  void initState() {
+    super.initState();
+    final id = widget.openEvent;
+    if (id == null) return;
+    _data.then((d) {
+      final e = d.$1.byId(id);
+      if (e == null || !mounted) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final c = _eraKeys[e.era]?.currentContext;
+        if (c != null) Scrollable.ensureVisible(c, duration: const Duration(milliseconds: 300));
+        showSeerahEvent(context, e, ghazawat: d.$2);
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

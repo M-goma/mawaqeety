@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import '../core/arabic.dart';
 import 'hadith.dart';
 import 'repository.dart';
+import 'sabeel_library.dart';
 
 /// التفسير الميسر (مجمع الملك فهد), one text per ayah (assets/data/tafsir_muyassar.json.gz,
 /// built by tools/build_tafsir.py).
@@ -46,8 +47,19 @@ class SabeelAnswer {
   final List<Hadith> hadith;
   final bool ruling; // a fiqh/fatwa question: refer to scholars
   final bool more; // more ayat matched than shown
-  SabeelAnswer(this.title, this.ayat, this.hadith, {this.ruling = false, this.more = false});
-  bool get isEmpty => ayat.isEmpty && hadith.isEmpty;
+  /// Entries «من محتوى التطبيق» (fiqh, seerah, battles…), best first.
+  final LibraryResult library;
+  /// Found by keywords (not a named ayah or a surah/ayah number).
+  final bool byKeywords;
+  SabeelAnswer(this.title, this.ayat, this.hadith,
+      {this.ruling = false, this.more = false, this.library = LibraryResult.empty, this.byKeywords = false});
+  bool get isEmpty => ayat.isEmpty && hadith.isEmpty && library.entries.isEmpty;
+
+  /// Show the app's content before the ayat: a ruling question, or an entry whose title has every word asked.
+  bool get libraryFirst => library.entries.isNotEmpty && (ruling || library.strong);
+
+  SabeelAnswer _with({bool? ruling, LibraryResult? library}) => SabeelAnswer(title, ayat, hadith,
+      ruling: ruling ?? this.ruling, more: more, library: library ?? this.library, byKeywords: byKeywords);
 }
 
 /// «سبيل»: an offline search that answers «تفسير آية…» or «حديث عن…» questions from the bundled
@@ -56,10 +68,11 @@ class Sabeel {
   final Repository repo;
   final Tafsir tafsir;
   final List<HadithCollection> hadith;
-  Sabeel(this.repo, this.tafsir, this.hadith);
+  final SabeelLibrary? library;
+  Sabeel(this.repo, this.tafsir, this.hadith, [this.library]);
 
-  static Future<Sabeel> load(Repository repo) async =>
-      Sabeel(repo, await Tafsir.load(), [for (final id in HadithCollection.ids) await HadithCollection.load(id)]);
+  static Future<Sabeel> load(Repository repo) async => Sabeel(repo, await Tafsir.load(),
+      [for (final id in HadithCollection.ids) await HadithCollection.load(id)], await SabeelLibrary.load(repo));
 
   /// Well-known names of ayat: (names, surah, from, to, words to find hadith about it).
   static const named = <(List<String>, int, int, int, String)>[
@@ -93,6 +106,19 @@ class Sabeel {
 
   static String _plain(String s) => Arabic.normalize(s).replaceAll(RegExp(r'[؟?،,.:;!«»"()\[\]-]'), ' ');
 
+  /// The query's words without question/filler words, ruling words and numbers (normalized, not stemmed).
+  static List<String> keywordsOf(String query) =>
+      _keywordsIn(_plain(Arabic.latinDigits(query)).replaceAll(RegExp(r'\s+'), ' ').trim());
+
+  /// True when the query asks for a ruling (حكم، يجوز، حلال…).
+  static bool isRuling(String query) {
+    final q = _plain(query);
+    return _rulingWords.any((w) => q.split(RegExp(r'\s+')).any((t) => t == w || t.startsWith(w)));
+  }
+
+  /// Public form of the prefix stemmer (for [SabeelLibrary]).
+  static String stem(String w) => _stem(w);
+
   /// Drops common prefixes so «الصبر», «والصبر» and «بالصبر» all find «صبر».
   static String _stem(String w) {
     for (final p in const ['وبال', 'وال', 'بال', 'فال', 'كال', 'لل', 'ال']) {
@@ -109,7 +135,16 @@ class Sabeel {
     }
   };
 
+  /// Answers [query] from the Quran, the tafsir, the two Sahihs and the app's own content ([library]).
   SabeelAnswer ask(String query) {
+    final a = _ask(query);
+    final lib = library;
+    if (lib == null) return a;
+    // A named ayah or a surah: add only entries that name every word (e.g. «سبب نزول سورة …»).
+    return a._with(library: lib.search(query, titleOnly: !a.byKeywords && !a.isEmpty));
+  }
+
+  SabeelAnswer _ask(String query) {
     final raw = Arabic.latinDigits(query);
     final q = _plain(raw).replaceAll(RegExp(r'\s+'), ' ').trim();
     final ruling = _rulingWords.any((w) => q.split(' ').any((t) => t == w || t.startsWith(w)));
@@ -156,12 +191,14 @@ class Sabeel {
 
     // 4) Keywords: search the ayat (and their tafsir) and the hadith.
     final kw = _keywords(q);
-    if (kw.isEmpty) return SabeelAnswer('', const [], const [], ruling: ruling);
+    if (kw.isEmpty) return SabeelAnswer('', const [], const [], ruling: ruling, byKeywords: true);
     // «حديث …» quotes a hadith: show only ayat that have every word.
     return _keywordAnswer(kw, ruling: ruling, exact: q.split(' ').contains('حديث'));
   }
 
-  List<String> _keywords(String q) => [
+  List<String> _keywords(String q) => _keywordsIn(q);
+
+  static List<String> _keywordsIn(String q) => [
         for (final w in q.split(' '))
           if (w.length >= 2 && !_filler.contains(w) && !_rulingWords.any(w.startsWith) && !RegExp(r'^\d+$').hasMatch(w)) w,
       ];
@@ -215,7 +252,7 @@ class Sabeel {
     final top = scored.take(12).map((e) => _ayah(e.$2, e.$3)).toList();
     final where = onlySurah == null ? '' : ' في سورة ${repo.surahs[onlySurah - 1].name}';
     return SabeelAnswer('نتائج «${kw.join(' ')}»$where', top, onlySurah == null ? _hadith(stems) : const [],
-        ruling: ruling, more: scored.length > top.length);
+        ruling: ruling, more: scored.length > top.length, byKeywords: onlySurah == null);
   }
 
   /// A word that starts with [w] (after و/ف/ب/ل/ك and «ال»): «صبر» finds «والصبر» and «صبروا» but «ربا»
@@ -250,5 +287,5 @@ String _head(Hadith h) {
 }
 
 extension on SabeelAnswer {
-  SabeelAnswer withRuling(bool r) => r ? SabeelAnswer(title, ayat, hadith, ruling: true, more: more) : this;
+  SabeelAnswer withRuling(bool r) => r ? _with(ruling: true) : this;
 }
