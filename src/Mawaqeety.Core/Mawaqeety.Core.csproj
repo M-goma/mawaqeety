@@ -15,6 +15,13 @@
     <EmbeddedResource Include="Resources\story_audio.json" />
     <EmbeddedResource Include="Resources\duas.json" />
     <EmbeddedResource Include="Resources\companions.json" />
+    <EmbeddedResource Include="Resources\arbaeen.json" />
+    <EmbeddedResource Include="Resources\fiqh.json" />
+    <EmbeddedResource Include="Resources\asbab.json" />
+    <EmbeddedResource Include="Resources\ghazawat.json" />
+    <EmbeddedResource Include="Resources\nasab.json" />
+    <EmbeddedResource Include="Resources\companions_islam.json" />
+    <EmbeddedResource Include="Resources\atlas.json" />
     <EmbeddedResource Include="Resources\hadith_bukhari.json.gz" />
     <EmbeddedResource Include="Resources\hadith_muslim.json.gz" />
     <EmbeddedResource Include="Resources\tafsir_muyassar.json.gz" />

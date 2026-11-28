@@ -1,0 +1,206 @@
+<UserControl x:Class="Mawaqeety.App.Views.GhazawatView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:Mawaqeety.App.Controls">
+    <UserControl.Resources>
+        <c:BoolToVisibilityConverter x:Key="BoolVis"/>
+        <c:NotEmptyToVisibilityConverter x:Key="NotEmpty"/>
+        <DataTemplate x:Key="LinkChip">
+            <Button Style="{StaticResource GhostButton}" Foreground="{DynamicResource AccentBrush}" HorizontalAlignment="Left" ToolTip="{Binding Url}"
+                    Command="{Binding DataContext.OpenUrlCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding Url}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Left" Text="&#xE8A7;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,3,6,0"/>
+                    <TextBlock Text="{Binding Label}" TextWrapping="Wrap"/>
+                </DockPanel>
+            </Button>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid Margin="24,24,24,16">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="290"/>
+            <ColumnDefinition Width="20"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <DockPanel>
+            <Border DockPanel.Dock="Top" Background="{DynamicResource HeroBrush}" Effect="{StaticResource HeroShadow}" BorderBrush="{StaticResource RimBrush}"
+                    BorderThickness="0,1,0,0" CornerRadius="18" Padding="16,12" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="﴿وَلَقَدْ نَصَرَكُمُ اللَّهُ بِبَدْرٍ وَأَنتُمْ أَذِلَّةٌ﴾" Foreground="White" FontFamily="{StaticResource QuranFont}" FontSize="16"
+                               TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock Text="آل عمران ١٢٣" Foreground="#E9C75A" FontSize="11.5" HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding Book.Intro}" Foreground="{DynamicResource HeroMutedBrush}" FontSize="12.5" TextWrapping="Wrap" TextAlignment="Center"
+                               LineHeight="22" Margin="0,6,0,0"/>
+                </StackPanel>
+            </Border>
+            <TextBlock DockPanel.Dock="Bottom" Text="{Binding Book.Note}" Style="{StaticResource Muted}" FontSize="11.5" TextAlignment="Center" Margin="4,8,4,0"/>
+            <ListBox ItemsSource="{Binding Items}" SelectedItem="{Binding Selected}" Background="Transparent" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="2,4">
+                            <Border DockPanel.Dock="Left" Width="48" Height="34" CornerRadius="10" Background="{DynamicResource HeroBrush}"
+                                    Effect="{StaticResource RaisedShadow}" BorderBrush="{StaticResource RimBrush}" BorderThickness="0,1,0,0" Margin="0,0,10,0">
+                                <TextBlock Text="{Binding YearText}" Foreground="#E9C75A" FontWeight="Bold" FontSize="12" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding Date}" Style="{StaticResource Muted}" FontSize="12" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                        </DockPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </DockPanel>
+
+        <ScrollViewer x:Name="Scroll" Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel MaxWidth="880" Margin="0,0,8,24">
+                <Border Background="{DynamicResource HeroBrush}" Effect="{StaticResource HeroShadow}" BorderBrush="{StaticResource RimBrush}"
+                        BorderThickness="0,1,0,0" CornerRadius="18" Padding="24,20" Margin="0,0,0,16">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Title}" Foreground="White" FontSize="28" FontWeight="Bold"/>
+                            <Border CornerRadius="8" Background="#33FFFFFF" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center"
+                                    Visibility="{Binding IsTreaty, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="صلح وليس غزوة" Foreground="White" FontSize="12" FontWeight="SemiBold"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Subtitle}" Foreground="#E9C75A" FontSize="14.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        <TextBlock Text="{Binding Summary}" Foreground="#E6F3EE" FontSize="14.5" TextWrapping="Wrap" Margin="0,10,0,0" LineHeight="26"/>
+                        <ItemsControl ItemsSource="{Binding Facts}" Margin="0,8,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock TextWrapping="Wrap" Margin="0,2" FontSize="13.5">
+                                        <Run Text="{Binding Label, Mode=OneWay}" Foreground="#E9C75A" FontWeight="Bold"/><Run Text=": " Foreground="#E9C75A"/><Run Text="{Binding Value, Mode=OneWay}" Foreground="White"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <WrapPanel Margin="0,14,0,0">
+                            <Button Command="{Binding ListenCommand}" Padding="16,6" Background="#26FFFFFF" Foreground="White" BorderBrush="#66FFFFFF" ToolTip="التسجيل الصوتي بصوت مازن">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding ListenGlyph}" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,8,0"/>
+                                    <TextBlock Text="{Binding ListenLabel}"/>
+                                </StackPanel>
+                            </Button>
+                            <Button Command="{Binding StopAudioCommand}" Margin="8,0,0,0" Padding="10,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="إيقاف الصوت" Visibility="{Binding IsMine, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="&#xE71A;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                            <Button Command="{Binding SeekBackCommand}" Margin="8,0,0,0" Padding="8,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="رجوع ١٥ ثانية" Visibility="{Binding IsMine, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="&#xED3C;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                            <Button Command="{Binding SeekForwardCommand}" Margin="4,0,0,0" Padding="8,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="تقديم ١٥ ثانية" Visibility="{Binding IsMine, Converter={StaticResource BoolVis}}">
+                                <TextBlock Text="&#xED3D;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"/>
+                            </Button>
+                            <Button Command="{Binding OpenMapCommand}" Margin="10,0,0,0" Padding="12,6" Background="#26FFFFFF" Foreground="White"
+                                    BorderBrush="#66FFFFFF" ToolTip="فتح الموقع في خرائط OpenStreetMap">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="&#xE707;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                    <TextBlock Text="الموقع على الخريطة"/>
+                                </StackPanel>
+                            </Button>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+                <TextBlock Text="{Binding AudioStatus}" TextWrapping="Wrap" Foreground="{DynamicResource GoldBrush}" Margin="4,0,4,12"
+                           Visibility="{Binding AudioStatus, Converter={StaticResource NotEmpty}}"/>
+
+                <ItemsControl ItemsSource="{Binding Sections}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,4,0,12">
+                                <DockPanel Margin="0,0,0,8">
+                                    <Border Width="4" Height="22" Background="{DynamicResource GoldBrush}" Margin="0,0,10,0" DockPanel.Dock="Left"/>
+                                    <TextBlock Text="{Binding Heading}" FontSize="19" FontWeight="Bold"/>
+                                </DockPanel>
+                                <ItemsControl ItemsSource="{Binding Paragraphs}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Text}" TextWrapping="Wrap" TextAlignment="Justify" FontSize="15.5" LineHeight="30" Margin="0,0,0,10"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Visibility="{Binding HasAyat, Converter={StaticResource BoolVis}}">
+                    <TextBlock Text="من القرآن الكريم" FontSize="19" FontWeight="Bold" Margin="0,8,0,8"/>
+                    <ItemsControl ItemsSource="{Binding Ayat}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource Card}" Padding="16,12" Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Text}" FontFamily="{StaticResource QuranFont}" FontSize="22" TextWrapping="Wrap"
+                                                   TextAlignment="Justify" LineHeight="44" LineStackingStrategy="BlockLineHeight"/>
+                                        <DockPanel Margin="0,6,0,0">
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Foreground="{DynamicResource GoldBrush}" ToolTip="استماع للتلاوة بصوت القارئ المختار"
+                                                    Command="{Binding DataContext.ReciteAyatCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="&#xE768;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets" Margin="0,2,6,0"/>
+                                                    <TextBlock Text="استماع"/>
+                                                </StackPanel>
+                                            </Button>
+                                            <Button DockPanel.Dock="Right" Style="{StaticResource GhostButton}" Content="فتح في المصحف" Foreground="{DynamicResource AccentBrush}"
+                                                    Command="{Binding DataContext.OpenInQuranCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}"/>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Reference}" Foreground="{DynamicResource GoldBrush}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding Note}" Style="{StaticResource Muted}" FontSize="12.5"/>
+                                            </StackPanel>
+                                        </DockPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+
+                <TextBlock Text="من الصحيحين" FontSize="19" FontWeight="Bold" Margin="0,8,0,8"
+                           Visibility="{Binding Hadith.Count, Converter={x:Static c:ZeroVisibility.Instance}, ConverterParameter=inv}"/>
+                <ItemsControl ItemsSource="{Binding Hadith}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Padding="18,12" Margin="0,0,0,10">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Label}" Foreground="{DynamicResource AccentBrush}" FontWeight="Bold" FontSize="13.5" TextWrapping="Wrap"/>
+                                    <TextBlock Text="جارٍ التحميل…" Style="{StaticResource Muted}" Visibility="{Binding Loading, Converter={StaticResource BoolVis}}"/>
+                                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" FontFamily="{StaticResource QuranFont}" FontSize="19" LineHeight="38" Margin="0,6,0,0"/>
+                                    <DockPanel Margin="0,4,0,0">
+                                        <Button DockPanel.Dock="Right" Content="نسخ" Padding="12,3" Style="{StaticResource GhostButton}" Command="{Binding CopyCommand}"/>
+                                        <TextBlock Text="{Binding Reference}" Style="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center"/>
+                                    </DockPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <TextBlock Text="دروس وعبر" FontSize="19" FontWeight="Bold" Margin="0,8,0,8"/>
+                <ItemsControl ItemsSource="{Binding Lessons}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <DockPanel Margin="0,3">
+                                <TextBlock DockPanel.Dock="Left" Text="&#xE735;" FontFamily="Segoe Fluent Icons, Segoe MDL2 Assets"
+                                           Foreground="{DynamicResource GoldBrush}" Margin="0,6,10,0" FontSize="12"/>
+                                <TextBlock Text="{Binding}" TextWrapping="Wrap" FontSize="15" LineHeight="28"/>
+                            </DockPanel>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <StackPanel Visibility="{Binding HasRefs, Converter={StaticResource BoolVis}}" Margin="0,12,0,0">
+                    <TextBlock Text="مراجع التواريخ والأعداد" FontSize="16" FontWeight="Bold" Margin="0,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding Refs}" ItemTemplate="{StaticResource LinkChip}"/>
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Sources}" ItemTemplate="{StaticResource LinkChip}"/>
+                <TextBlock Style="{StaticResource Muted}" FontSize="12" Margin="0,10,0,0"
+                           Text="التواريخ والأعداد على الأشهر عند أهل السير، وقد يختلف فيها المؤرخون. الأحاديث من صحيحَي البخاري ومسلم المرفقين في التطبيق."/>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

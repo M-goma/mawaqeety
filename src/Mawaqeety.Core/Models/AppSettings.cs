@@ -120,6 +120,8 @@ public sealed class AppSettings
     public bool FridayHour { get; set; } = true;
     /// <summary>Show hadiths with their full chain of narrators (default: the text only).</summary>
     public bool HadithFull { get; set; }
+    /// <summary>Numbers (1..42) of the hadiths of al-Arba'een an-Nawawiyya marked as memorised.</summary>
+    public List<int> ArbaeenMemorized { get; set; } = [];
     public int TasbeehPhrase { get; set; }
     /// <summary>33, 100, 0 = free counting, -1 = after-prayer sequence (33+33+34).</summary>
     public int TasbeehTarget { get; set; } = 33;

@@ -35,6 +35,14 @@
         <DataTemplate DataType="{x:Type vm:AsmaViewModel}"><v:AsmaView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ZakatViewModel}"><v:ZakatView/></DataTemplate>
         <DataTemplate DataType="{x:Type vm:KhatmaViewModel}"><v:KhatmaView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:ArbaeenViewModel}"><v:ArbaeenView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:FiqhViewModel}"><v:FiqhView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AsbabViewModel}"><v:AsbabView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:GhazawatViewModel}"><v:GhazawatView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:NasabViewModel}"><v:NasabView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CompanionsIslamViewModel}"><v:CompanionsIslamView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:CalendarViewModel}"><v:CalendarView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AtlasViewModel}"><v:AtlasView/></DataTemplate>
     </Window.Resources>
 
     <Grid>
@@ -64,15 +72,23 @@
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE80F;" Content="{l:Tr NavDashboard}" IsChecked="{Binding IsDashboard}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE916;" Content="المواقيت" IsChecked="{Binding IsTimes}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE787;" Content="{l:Tr NavMonthly}" IsChecked="{Binding IsMonthly}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8C0;" Content="التقويم الميلادي" IsChecked="{Binding IsCalendar}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE736;" Content="{l:Tr NavQuran}" IsChecked="{Binding IsQuran}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE7C3;" Content="أسباب النزول" IsChecked="{Binding IsAsbab}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8BD;" Content="اسأل سبيل" IsChecked="{Binding IsSabeel}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE734;" Content="{l:Tr NavAdhkar}" IsChecked="{Binding IsAdhkar}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE7C1;" Content="{l:Tr NavTasbeeh}" IsChecked="{Binding IsTasbeeh}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE9D2;" Content="{l:Tr NavStats}" IsChecked="{Binding IsStats}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE707;" Content="{l:Tr NavQibla}" IsChecked="{Binding IsQibla}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE82D;" Content="{l:Tr NavProphets}" IsChecked="{Binding IsProphets}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE774;" Content="أطلس قصص الأنبياء" IsChecked="{Binding IsAtlas}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xEA18;" Content="غزوات النبي ﷺ" IsChecked="{Binding IsGhazawat}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8F1;" Content="الأحاديث الصحيحة" IsChecked="{Binding IsHadith}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8A5;" Content="الأربعون النووية" IsChecked="{Binding IsArbaeen}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE7BE;" Content="فقه العبادات" IsChecked="{Binding IsFiqh}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE734;" Content="العشرة المبشرون" IsChecked="{Binding IsCompanions}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE716;" Content="كيف أسلم الصحابة" IsChecked="{Binding IsCompanionsIslam}"/>
+                    <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE71B;" Content="النسب الشريف" IsChecked="{Binding IsNasab}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE708;" Content="رمضان" IsChecked="{Binding IsRamadan}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE706;" Content="الأيام البيض" IsChecked="{Binding IsWhiteDays}"/>
                     <RadioButton Style="{StaticResource NavItem}" GroupName="nav" Tag="&#xE8BF;" Content="المناسبات" IsChecked="{Binding IsOccasions}"/>

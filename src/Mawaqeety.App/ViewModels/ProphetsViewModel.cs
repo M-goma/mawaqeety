@@ -56,8 +56,10 @@ public sealed partial class ProphetsViewModel : ObservableObject
 
     /// <summary>Opens the passage in the Qur'an reader.</summary>
     // ---------------- audio ----------------
-    public bool IsNarrating => App.Instance.Narration.IsSpeaking;
-    public bool IsNarrationPaused => App.Instance.Narration.IsPaused;
+    /// <summary>A prophet's story is being read (not another recording such as a battle's narration).</summary>
+    public bool IsNarrating => App.Instance.Narration.IsSpeaking && !IsOtherRecording(App.Instance.Narration.CurrentId);
+    private static bool IsOtherRecording(string? id) => id?.StartsWith("ghazwa-", StringComparison.Ordinal) == true;
+    public bool IsNarrationPaused => IsNarrating && App.Instance.Narration.IsPaused;
     public string NarrateLabel => !IsNarrating ? "استمع إلى القصة" : IsNarrationPaused ? "متابعة" : "إيقاف مؤقت";
     public string NarrateGlyph => IsNarrating && !IsNarrationPaused ? "\uE769" : "\uE768";
 
@@ -222,7 +224,8 @@ public sealed partial class ProphetsViewModel : ObservableObject
 
     partial void OnSelectedChanged(ProphetListItem? value)
     {
-        if (App.Instance.Narration.CurrentId != value?.Prophet.Id) App.Instance.Narration.Stop();
+        var current = App.Instance.Narration.CurrentId;
+        if (current != value?.Prophet.Id && !IsOtherRecording(current)) App.Instance.Narration.Stop();
         AudioStatus = "";
     }
 
