@@ -47,6 +47,8 @@ class Settings {
   Map<Prayer, bool> notify = {for (final p in Prayer.values) p: p != Prayer.sunrise};
   int preAlertMinutes = 10; // 0 = off
   bool adhanEnabled = true;
+  /// At prayer time: 'full' = the full adhan, 'voice' = a short spoken alert («حان الآن موعد صلاة …»).
+  String adhanMode = 'full';
   bool adhanFlip = true; // turning the phone face down silences the adhan
   bool adhanPower = true; // the power button silences the adhan
   bool whiteDaysReminder = true; // reminder the evening before the white days (13–15 of each Hijri month)
@@ -119,7 +121,7 @@ class Settings {
         'highLat': highLat.name, 'customFajr': customFajr, 'customIsha': customIsha,
         'adjust': {for (final e in adjust.entries) e.key.name: e.value},
         'notify': {for (final e in notify.entries) e.key.name: e.value},
-        'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanFlip': adhanFlip, 'adhanPower': adhanPower, 'adhanSilent': adhanSilent, 'whiteDaysReminder': whiteDaysReminder, 'flipStopsAudio': flipStopsAudio, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
+        'preAlert': preAlertMinutes, 'adhanEnabled': adhanEnabled, 'adhanMode': adhanMode, 'adhanFlip': adhanFlip, 'adhanPower': adhanPower, 'adhanSilent': adhanSilent, 'whiteDaysReminder': whiteDaysReminder, 'flipStopsAudio': flipStopsAudio, 'adhanId': adhanId, 'fajrAdhanId': fajrAdhanId,
         'hijriAdjust': hijriAdjust, 'use24h': use24h, 'theme': theme.name, 'palette': palette, 'quranFontSize': quranFontSize, 'reciterId': reciterId, 'continueNextSurah': continueNextSurah, 'narrationVoice': narrationVoice, 'voiceMale': voiceMale, 'voiceFemale': voiceFemale,
         'pitchMale': pitchMale, 'pitchFemale': pitchFemale, 'rateMale': rateMale, 'rateFemale': rateFemale,
         'ongoingCountdown': ongoingCountdown, 'widgetStyle': widgetStyle, 'storyAutoplay': storyAutoplay,
@@ -151,6 +153,7 @@ class Settings {
       }
       r.preAlertMinutes = j['preAlert'] ?? 10;
       r.adhanEnabled = j['adhanEnabled'] ?? true;
+      r.adhanMode = j['adhanMode'] == 'voice' ? 'voice' : 'full';
       r.adhanFlip = j['adhanFlip'] ?? true;
       r.adhanPower = j['adhanPower'] ?? true;
       r.adhanSilent = j['adhanSilent'] ?? true;

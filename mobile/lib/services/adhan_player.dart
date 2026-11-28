@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:just_audio/just_audio.dart';
 import 'package:path_provider/path_provider.dart';
@@ -90,9 +91,48 @@ class AdhanPlayer extends ChangeNotifier {
     }
   }
 
-  Future<void> playFor(Prayer p, Repository repo, Settings s) async {
+  Future<void> playFor(Prayer p, Repository repo, Settings s, {bool friday = false}) async {
+    if (s.adhanMode == 'voice') return playAlert(p, near: false, friday: friday);
     final v = repo.voice(p == Prayer.fajr ? s.fajrAdhanId : s.adhanId) ?? repo.voices.first;
     await play(v);
+  }
+
+  /// The short spoken alert in Mazen's voice: «اقتربت صلاة …» ([near]) or «حان الآن موعد صلاة …».
+  static String alertAsset(Prayer p, {required bool near, bool friday = false}) {
+    final name = friday && p == Prayer.dhuhr ? 'jumuah' : p.name;
+    return 'assets/sounds/alerts/alert-$name-${near ? 'near' : 'now'}-mazen.mp3';
+  }
+
+  /// The alert copied to a file, so the native service can play it while the app is closed.
+  static Future<String?> alertFile(Prayer p, {required bool near, bool friday = false}) async {
+    if (kIsWeb) return null;
+    try {
+      final asset = alertAsset(p, near: near, friday: friday);
+      final dir = Directory('${(await getApplicationSupportDirectory()).path}/alerts');
+      final f = File('${dir.path}/${asset.split('/').last}');
+      if (await f.exists() && await f.length() > 10000) return f.path;
+      await dir.create(recursive: true);
+      final bytes = (await rootBundle.load(asset)).buffer.asUint8List();
+      await f.writeAsBytes(bytes, flush: true);
+      return f.path;
+    } catch (e) {
+      debugPrint('alert file: $e');
+      return null;
+    }
+  }
+
+  Future<void> playAlert(Prayer p, {required bool near, bool friday = false}) async {
+    try {
+      await stop();
+      playingId = 'alert';
+      notifyListeners();
+      await _player.setAsset(alertAsset(p, near: near, friday: friday));
+      await _player.play();
+    } catch (e) {
+      debugPrint('alert play failed: $e');
+      playingId = null;
+      notifyListeners();
+    }
   }
 
   Future<void> stop() async {

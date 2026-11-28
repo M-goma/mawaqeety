@@ -63,6 +63,7 @@ flutter:
     - assets/data/hajj.json
     - assets/images/logo.png
     - assets/sounds/chime.wav
+    - assets/sounds/alerts/
   fonts:
     - family: Cairo
       fonts:

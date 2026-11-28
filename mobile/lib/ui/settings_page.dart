@@ -4,6 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter/material.dart';
 
+import '../core/arabic.dart';
+
 import '../core/methods.dart';
 import '../core/prayer_calculator.dart';
 import '../core/settings.dart';
@@ -138,13 +140,50 @@ class SettingsPage extends StatelessWidget {
             Card3D(
               child: Column(children: [
                 SwitchListTile(
-                  title: Text(Theme.of(context).platform == TargetPlatform.android ? 'تشغيل الأذان كاملًا في وقت كل صلاة' : 'تشغيل الأذان عند دخول الوقت والتطبيق مفتوح'),
+                  title: Text(Theme.of(context).platform == TargetPlatform.android ? 'الأذان أو التنبيه الصوتي في وقت كل صلاة' : 'تشغيل الأذان عند دخول الوقت والتطبيق مفتوح'),
                   subtitle: Theme.of(context).platform == TargetPlatform.android
                       ? const Text('حتى لو كان التطبيق مغلقًا. لا يقطع تلاوة أو إذاعة تستمع إليها', style: TextStyle(fontSize: 12))
                       : null,
                   value: s.adhanEnabled,
                   // Android: re-plan the native adhans.
                   onChanged: (v) => app.update((x) => x.adhanEnabled = v),
+                ),
+                // What plays at prayer time: the full adhan or Mazen's short spoken alert.
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                    const Text('عند دخول وقت الصلاة', style: TextStyle(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    SegmentedButton<String>(
+                      segments: const [
+                        ButtonSegment(value: 'full', icon: Icon(Icons.mosque_outlined), label: Text('الأذان كاملًا')),
+                        ButtonSegment(value: 'voice', icon: Icon(Icons.record_voice_over_outlined), label: Text('تنبيه صوتي')),
+                      ],
+                      selected: {s.adhanMode},
+                      onSelectionChanged: s.adhanEnabled ? (v) => app.update((x) => x.adhanMode = v.first) : null,
+                    ),
+                    if (s.adhanMode == 'voice') ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        s.preAlertMinutes > 0
+                            ? 'بصوت مازن: «اقتربت صلاة الظهر» قبل الوقت بـ${Arabic.minutes(s.preAlertMinutes)}، ثم «حان الآن موعد صلاة الظهر» عند دخوله.'
+                            : 'بصوت مازن: «حان الآن موعد صلاة الظهر» عند دخول الوقت. اضبط «التذكير قبل الصلاة» ليقول أيضًا «اقتربت صلاة الظهر».',
+                        style: TextStyle(fontSize: 12.5, height: 1.6, color: Theme.of(context).hintColor),
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional.centerStart,
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.play_circle_outline),
+                          label: const Text('استمع للتنبيه'),
+                          onPressed: () async {
+                            await app.adhan.playAlert(Prayer.dhuhr, near: true);
+                            await Future.delayed(const Duration(milliseconds: 2600));
+                            await app.adhan.playAlert(Prayer.dhuhr, near: false);
+                          },
+                        ),
+                      ),
+                    ],
+                  ]),
                 ),
                 if (Theme.of(context).platform == TargetPlatform.android) ...[
                   SwitchListTile(

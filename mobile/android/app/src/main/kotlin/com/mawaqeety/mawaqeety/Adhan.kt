@@ -194,7 +194,7 @@ class AdhanService : Service(), SensorEventListener {
         startedAt = SystemClock.elapsedRealtime()
         wake = (getSystemService(Context.POWER_SERVICE) as PowerManager)
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "mawaqeety:adhan").apply { acquire(6 * 60_000L) }
-        play(o.optString("path", ""))
+        play(o.optString("path", ""), if (o.optBoolean("short", false)) 10_000L else 50_000L)
         if (o.optBoolean("power", true)) {
             val f = IntentFilter(Intent.ACTION_SCREEN_OFF).apply { addAction(Intent.ACTION_SCREEN_ON) }
             if (Build.VERSION.SDK_INT >= 33) registerReceiver(screen, f, RECEIVER_NOT_EXPORTED) else registerReceiver(screen, f)
@@ -206,13 +206,13 @@ class AdhanService : Service(), SensorEventListener {
         return START_NOT_STICKY
     }
 
-    private fun play(path: String) {
+    private fun play(path: String, minSize: Long = 50_000L) {
         try {
             val p = MediaPlayer()
             p.setAudioAttributes(AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_ALARM)
                 .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH).build())
             val f = File(path)
-            if (path.isNotEmpty() && f.exists() && f.length() > 50_000) p.setDataSource(path)
+            if (path.isNotEmpty() && f.exists() && f.length() > minSize) p.setDataSource(path)
             else p.setDataSource(this, Uri.parse("android.resource://$packageName/raw/chime"))
             p.setOnCompletionListener { stopAdhan() }
             p.setOnErrorListener { _, _, _ -> stopAdhan(); true }

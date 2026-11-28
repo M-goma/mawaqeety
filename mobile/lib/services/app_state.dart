@@ -310,7 +310,7 @@ class AppState extends ChangeNotifier {
         // Never cut off a recitation, story or the radio the user is listening to:
         // the prayer notification still alerts them, and the in-app adhan is skipped.
         if (recitation.playing || (narration.speaking && !narration.paused) || radio.playing) continue;
-        unawaited(adhan.playFor(p, repo, settings));
+        unawaited(adhan.playFor(p, repo, settings, friday: today.weekday == DateTime.friday));
       }
     }
   }

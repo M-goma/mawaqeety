@@ -6,6 +6,7 @@ import 'package:timezone/timezone.dart' as tz;
 import '../core/arabic.dart';
 import '../core/prayer_calculator.dart';
 import '../data/occasions.dart';
+import 'adhan_player.dart';
 import 'app_state.dart';
 import 'download_notifier.dart';
 import 'tracker.dart';
@@ -171,14 +172,41 @@ class NotificationService {
         for (final p in Prayer.values.where((p) => p.isObligatory && (s.notify[p] ?? false))) {
           final at = times[p];
           if (!at.isAfter(nowUtc)) continue;
-          final v = app.repo.voice(p == Prayer.fajr ? s.fajrAdhanId : s.adhanId) ?? app.repo.voices.first;
-          final name = p == Prayer.dhuhr && date.weekday == DateTime.friday ? 'الجمعة' : p.nameAr;
+          final friday = p == Prayer.dhuhr && date.weekday == DateTime.friday;
+          final name = friday ? 'الجمعة' : p.nameAr;
+          final voice = s.adhanMode == 'voice';
+          final timeText = _fmt(app.local(at), s.use24h);
+          String path;
+          if (voice) {
+            path = await AdhanPlayer.alertFile(p, near: false, friday: friday) ?? '';
+          } else {
+            final v = app.repo.voice(p == Prayer.fajr ? s.fajrAdhanId : s.adhanId) ?? app.repo.voices.first;
+            path = await app.adhan.localPath(v) ?? '';
+          }
+          // Voice alerts: «اقتربت صلاة …» before the time too (the reminder minutes in the settings).
+          if (voice && s.preAlertMinutes > 0) {
+            final pre = at.subtract(Duration(minutes: s.preAlertMinutes));
+            if (pre.isAfter(nowUtc)) {
+              items.add({
+                'id': id++,
+                'at': pre.millisecondsSinceEpoch,
+                'title': 'اقتربت صلاة $name',
+                'body': 'بقي ${Arabic.minutes(s.preAlertMinutes)} • $name $timeText',
+                'path': await AdhanPlayer.alertFile(p, near: true, friday: friday) ?? '',
+                'short': true,
+                'flip': s.adhanFlip,
+                'power': s.adhanPower,
+                'silent': s.adhanSilent,
+              });
+            }
+          }
           items.add({
             'id': id++,
             'at': at.millisecondsSinceEpoch,
             'title': 'حان الآن موعد صلاة $name',
-            'body': '$name • ${_fmt(app.local(at), s.use24h)} • ${s.place.nameAr}',
-            'path': await app.adhan.localPath(v) ?? '',
+            'body': '$name • $timeText • ${s.place.nameAr}',
+            'path': path,
+            'short': voice,
             'flip': s.adhanFlip,
             'power': s.adhanPower,
             'silent': s.adhanSilent,
@@ -212,7 +240,9 @@ class NotificationService {
           final at = times[p];
           final timeText = _fmt(app.local(at), s.use24h);
           final name = p == Prayer.dhuhr && date.weekday == DateTime.friday ? 'الجمعة' : p.nameAr;
-          if (s.preAlertMinutes > 0 && count < _maxPending) {
+          // The spoken «اقتربت صلاة …» replaces the written reminder for the five prayers.
+          final spoken = full && s.adhanMode == 'voice' && p.isObligatory;
+          if (s.preAlertMinutes > 0 && count < _maxPending && !spoken) {
             final pre = at.subtract(Duration(minutes: s.preAlertMinutes));
             if (pre.isAfter(nowUtc)) {
               final left = Arabic.minutes(s.preAlertMinutes);
