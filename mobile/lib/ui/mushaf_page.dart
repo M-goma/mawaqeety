@@ -7,6 +7,7 @@ import '../core/arabic.dart';
 import '../core/settings.dart';
 import '../data/mushaf.dart';
 import '../main.dart';
+import 'ayah_sheet.dart';
 import 'quran_pages.dart';
 import 'theme.dart';
 
@@ -88,7 +89,7 @@ class _MushafPageState extends State<MushafPage> {
     if (!app.settings.mushafHint) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _snack('اضغط مطوّلًا على أي آية للاستماع منها أو حفظ موضعها أو وضع علامة عليها');
+        _snack('اضغط مطوّلًا على أي آية لقراءة تفسيرها أو الاستماع إليها أو حفظها');
         app.update((x) => x.mushafHint = true, reschedule: false);
       });
     }
@@ -220,15 +221,7 @@ class _MushafPageState extends State<MushafPage> {
     final marked = app.settings.bookmarks.contains(b);
     final isRead = app.settings.lastRead == b;
     setState(() => _selected = b);
-    showModalBottomSheet(
-      context: context,
-      builder: (c) => SafeArea(
-        child: Column(mainAxisSize: MainAxisSize.min, children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-            child: Text('سورة ${app.repo.surahs[b.surah - 1].name} • الآية ${Arabic.digits(b.ayah)}',
-                style: TextStyle(color: Theme.of(c).hintColor, fontWeight: FontWeight.w600)),
-          ),
+    showAyahSheet(context, b.surah, b.ayah, extra: (c) => [
           ListTile(
             leading: Icon(Icons.play_circle_outline, color: AppColors.emerald),
             title: const Text('استماع من هذه الآية'),
@@ -254,9 +247,7 @@ class _MushafPageState extends State<MushafPage> {
               app.update((x) => marked ? x.bookmarks.remove(b) : x.bookmarks.add(b), reschedule: false);
             },
           ),
-        ]),
-      ),
-    ).whenComplete(() {
+        ]).whenComplete(() {
       if (mounted) setState(() => _selected = null);
     });
   }

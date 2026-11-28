@@ -5,6 +5,7 @@ import '../core/settings.dart';
 import '../data/repository.dart';
 import '../main.dart';
 import 'downloads_page.dart';
+import 'hifz_page.dart';
 import 'khatma_page.dart';
 import 'mushaf_page.dart';
 import 'theme.dart';
@@ -68,6 +69,7 @@ class _QuranIndexPageState extends State<QuranIndexPage> {
               ),
             ),
             const KhatmaCard(),
+            const HifzCard(),
             const ReciterTile(),
             if (last != null)
               Card3D(
