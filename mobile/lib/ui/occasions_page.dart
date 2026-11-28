@@ -5,6 +5,7 @@ import '../data/occasions.dart';
 import '../main.dart';
 import '../services/app_state.dart';
 import 'format.dart';
+import 'hajj_page.dart';
 import 'theme.dart';
 
 /// The next start of [o] on or after [from] (local days).
@@ -161,6 +162,13 @@ class _OccasionTile extends StatelessWidget {
         children: [
           if (o.note.isNotEmpty) Text(o.note, style: const TextStyle(fontFamily: 'AmiriQuran', fontSize: 16, height: 1.9)),
           if (o.ref.isNotEmpty) Text(o.ref, style: TextStyle(fontSize: 11.5, color: Theme.of(context).hintColor)),
+          if (o.month == 12)
+            TextButton.icon(
+              style: TextButton.styleFrom(foregroundColor: AppColors.gold, padding: EdgeInsets.zero, visualDensity: VisualDensity.compact),
+              icon: const Icon(Icons.mosque_outlined, size: 18),
+              label: const Text('دليل الحج والعمرة خطوة بخطوة'),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const HajjPage(initialTab: 1))),
+            ),
         ],
       ),
     );

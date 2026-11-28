@@ -7,6 +7,7 @@ import 'asma_page.dart';
 import 'companions_islam_page.dart';
 import 'fiqh_page.dart';
 import 'ghazawat_page.dart';
+import 'hajj_page.dart';
 import 'nasab_page.dart';
 import 'occasions_page.dart';
 import 'ramadan_page.dart';
@@ -75,6 +76,7 @@ class MorePage extends StatelessWidget {
           item('🤝', 'كيف أسلم الصحابة', 'قصة إسلام العشرة المبشرين', const CompanionsIslamPage()),
           item('✨', 'أسماء الله الحسنى', 'تسعة وتسعون اسمًا بمعانيها', const AsmaPage()),
           item('💰', 'حاسبة الزكاة', 'المال والذهب والفضة', const ZakatPage()),
+          item('🕋', 'دليل الحج والعمرة', 'خطوة بخطوة مع الأدعية والمواقيت والخريطة', const HajjPage()),
           item('⚙️', 'الإعدادات', 'المدينة والأذان والألوان', const SettingsPage()),
           guide(),
         ],
