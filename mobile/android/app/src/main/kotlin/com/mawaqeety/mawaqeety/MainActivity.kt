@@ -49,10 +49,12 @@ class MainActivity : AudioServiceActivity() {
 
 /** Streams [azimuthDegrees, accuracy] from the rotation-vector sensor (falls back to accelerometer + magnetometer). */
 private class CompassStream(context: Context) : EventChannel.StreamHandler, SensorEventListener {
+    private val ctx = context
     private val sm = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     private var sink: EventChannel.EventSink? = null
     private val rot = FloatArray(9)
     private val orient = FloatArray(3)
+    private val upright = FloatArray(9)
     private var grav: FloatArray? = null
     private var mag: FloatArray? = null
     private var accuracy = SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM
@@ -104,7 +106,21 @@ private class CompassStream(context: Context) : EventChannel.StreamHandler, Sens
         if (now - last < 40) return
         last = now
         SensorManager.getOrientation(rot, orient)
-        var deg = Math.toDegrees(orient[0].toDouble()) + declination
+        // Held upright (screen facing you): the flat azimuth becomes unstable near ±90° pitch, so use the
+        // direction the back of the phone points instead.
+        if (Math.abs(Math.toDegrees(orient[1].toDouble())) > 55) {
+            SensorManager.remapCoordinateSystem(rot, SensorManager.AXIS_X, SensorManager.AXIS_Z, upright)
+            SensorManager.getOrientation(upright, orient)
+        }
+        // The top of the screen, whichever way the screen is rotated.
+        @Suppress("DEPRECATION")
+        val turn = when ((ctx.getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager).defaultDisplay.rotation) {
+            android.view.Surface.ROTATION_90 -> 90.0
+            android.view.Surface.ROTATION_180 -> 180.0
+            android.view.Surface.ROTATION_270 -> 270.0
+            else -> 0.0
+        }
+        var deg = (Math.toDegrees(orient[0].toDouble()) + declination + turn) % 360.0
         if (deg >= 360) deg -= 360.0
         if (deg < 0) deg += 360.0
         sink?.success(listOf(deg, accuracy))

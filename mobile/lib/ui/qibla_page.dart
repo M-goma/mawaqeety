@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:geomag/geomag.dart';
+
 import '../core/arabic.dart';
 import '../core/qibla.dart';
 import '../main.dart';
@@ -23,6 +25,27 @@ class _QiblaPageState extends State<QiblaPage> {
   static const _channel = EventChannel('mawaqeety/compass');
   StreamSubscription? _sub;
   double? _heading;
+
+  /// The dial angle without wrapping at 0°/360° (359° → 1° turns 2°, not back the whole way round).
+  double _dial = 0;
+
+  void _setHeading(double h) {
+    final prev = _heading;
+    _heading = prev == null ? h : _smooth(prev, h);
+    _dial = prev == null ? _heading! : _dial + ((((_heading! - prev) + 540) % 360) - 180);
+  }
+
+  /// Browser compasses report magnetic north (iPhone's webkitCompassHeading, Chrome's absolute alpha);
+  /// add the magnetic declination of the place (World Magnetic Model 2025) to get true north, like the
+  /// Android sensor path does natively.
+  late final double _declination = () {
+    try {
+      final p = app.settings.place;
+      return GeoMag().calculate(p.lat, p.lng).dec;
+    } catch (_) {
+      return 0.0;
+    }
+  }();
   int _accuracy = 3;
   String? _error;
   bool _aligned = false;
@@ -58,7 +81,7 @@ class _QiblaPageState extends State<QiblaPage> {
         }
         return;
       }
-      setState(() => _heading = _heading == null ? h : _smooth(_heading!, h));
+      setState(() => _setHeading((h + _declination + 360) % 360));
       _checkAligned();
     });
   }
@@ -73,8 +96,8 @@ class _QiblaPageState extends State<QiblaPage> {
         final h = (l[0] as num).toDouble();
         if (!mounted) return;
         setState(() {
-          // Smooth small jitters.
-          _heading = _heading == null ? h : _smooth(_heading!, h);
+          // Smooth small jitters (the native side already corrects for magnetic declination).
+          _setHeading(h);
           _accuracy = (l[1] as num).toInt();
         });
         _checkAligned();
@@ -141,6 +164,7 @@ class _QiblaPageState extends State<QiblaPage> {
         const SizedBox(height: 20),
         _Compass3D(
           heading: _live && _heading != null ? heading : 0,
+          dial: _live && _heading != null ? _dial : 0,
           qibla: q,
           aligned: _aligned,
           dark: Theme.of(context).brightness == Brightness.dark,
@@ -202,9 +226,9 @@ class _QiblaPageState extends State<QiblaPage> {
 
 /// A tilted, shaded compass: rotating dial + fixed lubber mark showing where the phone points.
 class _Compass3D extends StatelessWidget {
-  final double heading, qibla;
+  final double heading, dial, qibla;
   final bool aligned, dark;
-  const _Compass3D({required this.heading, required this.qibla, required this.aligned, required this.dark});
+  const _Compass3D({required this.heading, required this.dial, required this.qibla, required this.aligned, required this.dark});
 
   @override
   Widget build(BuildContext context) {
@@ -229,7 +253,7 @@ class _Compass3D extends StatelessWidget {
           child: Stack(alignment: Alignment.center, children: [
             CustomPaint(size: Size.infinite, painter: _BezelPainter(p)),
             AnimatedRotation(
-              turns: -heading / 360,
+              turns: -dial / 360,
               duration: const Duration(milliseconds: 120),
               child: CustomPaint(size: Size.infinite, painter: _FacePainter(qibla: qibla, heading: heading, aligned: aligned, palette: p, dark: dark)),
             ),

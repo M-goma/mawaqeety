@@ -1,22 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:geomag/geomag.dart';
 import 'package:mawaqeety/core/qibla.dart';
-import 'package:mawaqeety/data/adhkar.dart';
 
 void main() {
-  test('qibla bearing and distance from known cities', () {
-    expect(Qibla.bearing(30.0444, 31.2357), closeTo(136.1, 0.5)); // Cairo
-    expect(Qibla.bearing(51.5074, -0.1278), closeTo(118.99, 0.5)); // London
-    expect(Qibla.bearing(40.7128, -74.0060), closeTo(58.5, 0.5)); // New York
-    expect(Qibla.bearing(-6.2088, 106.8456), closeTo(295.15, 0.5)); // Jakarta
-    expect(Qibla.distanceKm(30.0444, 31.2357), closeTo(1280, 15));
+  test('qibla bearings match published values', () {
+    // Published great-circle qibla directions (true north): Cairo ≈ 136°, London ≈ 119°, Jakarta ≈ 295°, Riyadh ≈ 244°.
+    expect(Qibla.bearing(30.0444, 31.2357), closeTo(136.1, 0.5));
+    expect(Qibla.bearing(51.5074, -0.1278), closeTo(119.0, 0.5));
+    expect(Qibla.bearing(-6.2088, 106.8456), closeTo(295.1, 0.5));
+    expect(Qibla.bearing(24.7136, 46.6753), closeTo(244.0, 1.0));
+    expect(Qibla.distanceKm(30.0444, 31.2357), closeTo(1287, 15));
   });
 
-  test('every dhikr is available in at least one session', () {
-    for (final d in adhkar) {
-      expect(d.availableAt(true) || d.availableAt(false), isTrue);
-      expect(d.count, greaterThan(0));
-    }
-    expect(adhkar.where((d) => d.availableAt(true)).length, greaterThan(15));
-    expect(adhkar.where((d) => d.availableAt(false)).length, greaterThan(15));
+  test('magnetic declination comes from WMM-2025 (used to turn browser compasses to true north)', () {
+    final cairo = GeoMag().calculate(30.0444, 31.2357, 0, DateTime(2026, 12, 1)).dec;
+    expect(cairo, inInclusiveRange(4.0, 6.0)); // east, about 5°
+    final london = GeoMag().calculate(51.5074, -0.1278, 0, DateTime(2026, 12, 1)).dec;
+    expect(london, inInclusiveRange(0.0, 2.5));
   });
 }

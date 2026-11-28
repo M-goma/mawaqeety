@@ -33,6 +33,7 @@ dependencies:
   file_picker: ^13.4.1
   flutter_map: ^8.3.2
   latlong2: ^0.10.1
+  geomag: ^0.3.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
