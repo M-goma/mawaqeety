@@ -21,6 +21,7 @@ import 'adhan_player.dart';
 import 'app_updater.dart';
 import 'narration.dart';
 import 'download_notifier.dart';
+import 'hifz.dart';
 import 'mushaf_store.dart';
 import 'notification_service.dart';
 import 'quran_downloads.dart';
@@ -53,6 +54,8 @@ class AppState extends ChangeNotifier {
   final stories = StoryDownloads();
   final ghazawat = GhazwaDownloads();
   final tracker = Tracker();
+  final hifz = HifzStore();
+  final hifzPlayer = HifzPlayer();
   late final downloadNotifier = DownloadNotifier(downloads, mushafStore, repo, stories, ghazawat);
   final narration = Narration();
   final radio = QuranRadio();
@@ -82,16 +85,25 @@ class AppState extends ChangeNotifier {
     await ghazawat.init();
     tracker.wirdGoal = () => settings.wirdGoal;
     await tracker.load();
+    await hifz.load();
     narration.onSaved = stories.noteSaved;
     narration.storyOrder = [for (final p in repo.prophets) p.id];
     recitation.downloads = downloads;
+    hifzPlayer.downloads = downloads;
+    hifzPlayer.onStart = () {
+      if (recitation.active) unawaited(recitation.stop());
+      if (narration.speaking) unawaited(narration.stop());
+      if (radio.on) unawaited(radio.stop());
+    };
     // Only one thing plays at a time: starting the radio stops a recitation or story, and the other way round.
     radio.onStart = () {
       if (recitation.active) unawaited(recitation.stop());
       if (narration.speaking) unawaited(narration.stop());
+      unawaited(hifzPlayer.stop());
     };
     recitation.addListener(() {
       if (recitation.playing && radio.on) unawaited(radio.stop());
+      if (recitation.active && hifzPlayer.active) unawaited(hifzPlayer.stop());
       _watchFlip();
     });
     radio.addListener(_watchFlip);
@@ -140,13 +152,14 @@ class AppState extends ChangeNotifier {
     if (reschedule) await this.reschedule();
   }
 
-  /// Backup file: the settings and the tracker (prayers, adhkar, fasts…), as JSON.
+  /// Backup file: the settings, the tracker (prayers, adhkar, fasts…) and the memorization progress, as JSON.
   String exportBackup() => jsonEncode({
         'app': 'sabeel',
         'version': 1,
         'date': DateTime.now().toIso8601String(),
         'settings': settings.toJson(),
         'tracker': jsonDecode(tracker.exportJson()),
+        'hifz': hifz.toJson(),
       });
 
   /// Restores a backup made by [exportBackup]. Returns false if the file is not one.
@@ -157,6 +170,7 @@ class AppState extends ChangeNotifier {
       settings = Settings.fromJsonString(jsonEncode(j['settings']));
       await _prefs.setString(_key, settings.toJsonString());
       await tracker.importJson((j['tracker'] ?? <String, dynamic>{}) as Map<String, dynamic>);
+      if (j['hifz'] is Map) await hifz.importJson((j['hifz'] as Map).cast<String, dynamic>());
       notifyListeners();
       await reschedule();
       return true;
