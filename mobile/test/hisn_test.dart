@@ -69,12 +69,9 @@ void main() {
     for (final d in dhikrs) {
       for (final r in d.refs) {
         final h = rows[r.col]!;
-        // Rows whose number does not fit between its neighbours' are known mis-numberings in the data.
         final found = [
-          for (var i = 0; i < h.length; i++)
-            if (h[i][1] == r.number &&
-                !(i > 0 && i + 1 < h.length && h[i - 1][1] <= h[i + 1][1] && (r.number < h[i - 1][1] || r.number > h[i + 1][1])))
-              plain(h[i][2] as String),
+          for (final row in h)
+            if (row[1] == r.number) plain(row[2] as String),
         ];
         expect(found, isNotEmpty, reason: '${r.col} ${r.number} not found');
         expect(found.any((t) => t.contains(r.key)), isTrue, reason: '${r.col} ${r.number} lacks «${r.key}» (${d.chapter.title})');
@@ -85,6 +82,36 @@ void main() {
       }
     }
     expect(n, greaterThan(100));
+  });
+
+  test('display: no bracket pair around a whole dhikr, Arabic-Indic numerals in the takhrij', () {
+    const pairs = {'(': ')', '«': '»', '[': ']'};
+    for (final d in dhikrs) {
+      final t = d.text.trim().replaceAll(RegExp(r'[\s.]+$'), '');
+      final close = t.isEmpty ? null : pairs[t[0]];
+      if (close != null && t.endsWith(close)) {
+        // A pair at both ends is fine only when they are two separate pairs («…» … «…»).
+        var depth = 0, i = 0;
+        for (; i < t.length; i++) {
+          if (t[i] == t[0]) depth++;
+          if (t[i] == close) depth--;
+          if (depth == 0) break;
+        }
+        expect(i, lessThan(t.length - 1), reason: 'wrapped: ${d.number} ${d.chapter.title}');
+      }
+      expect(d.text, isNot(contains('((')));
+      expect(d.source, isNot(contains(RegExp('[0-9]'))), reason: d.source);
+      expect(d.source, isNot(contains(RegExp(r'[٠-٩]\s+/|/\s+[٠-٩]'))), reason: d.source);
+    }
+    for (final c in Hisn.chapters) {
+      expect(c.sourcesText, isNot(contains(RegExp('[0-9]'))));
+    }
+    // The corrections in tools/build_hisn.py (TEXT_FIX) are in the data.
+    String textOf(int n) => dhikrs.firstWhere((d) => d.number == n).text;
+    expect(plain(textOf(224)), contains('لا تدخلون الجنه'));
+    expect(plain(textOf(226)), contains('عبد الله بن عمرو'));
+    expect(plain(textOf(55)), contains('من عذاب جهنم ومن عذاب القبر'));
+    expect(textOf(1), isNot(startsWith('(')));
   });
 
   test('Qur\'an quotations match assets/data/quran.json', () {

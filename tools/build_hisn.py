@@ -15,7 +15,12 @@ Checked against the app's own data:
   * A dhikr whose takhrij names al-Bukhari or Muslim is looked up in the bundled Sahihs
     (mobile/assets/data/hadith_*.json.gz): the hadith number is kept only when a run of the dhikr's own words is
     found in that collection (with that phrase, re-checked by mobile/test/hisn_test.dart).
-Nothing is typed by hand except chapter-title spelling fixes (TITLE_FIX) and the topic grouping (TOPICS).
+Nothing is typed by hand except chapter-title spelling fixes (TITLE_FIX), the topic grouping (TOPICS) and the
+reviewed corrections below (TEXT_FIX, TAKHRIJ_FIX, REF_FIX), each with the source it was checked against.
+Display: the transcription's (( … )) become « … »; a bracket pair that wraps the whole dhikr, and round brackets
+around a run of four words or more (the transcription's marking of the quoted words), are dropped — short notes such
+as «(ثلاثاً)» or «(بِاسْمِهِ)» and the book's [ … ] additions stay. In the takhrij, «4/ 2083» becomes «4/2083»
+(volume/page as one run, shown with Arabic-Indic numerals by lib/data/hisn.dart).
 Grading: the edition graded nothing as weak; the grade shown is the wording of the takhrij itself
 («وصححه الألباني», «وحسن إسناده ابن باز في تحفة الأخيار», a reference to al-Albani's «صحيح …»), or
 «في الصحيحين / رواه البخاري / رواه مسلم».
@@ -46,6 +51,44 @@ TITLE_FIX = {
     "الدعاء إذا تقلب ليلاً": "الدعاء إذا تقلب ليلًا",
 }
 
+# Corrections of the transcription's wording, checked against the cited source: (dhikr number, or (chapter, item
+# index) in «فضل الذكر»; the old text, which must occur once; the new text; the source).
+TEXT_FIX = [
+    (55, "مِنْ عَذَابِ الْقَبْرِ، وَمِنْ عَذَابِ جَهَنَّمَ", "مِنْ عَذَابِ جَهَنَّمَ، وَمِنْ عَذَابِ الْقَبْرِ",
+     "the takhrij says «واللفظ لمسلم»; Muslim 588 (app data; www.islamweb.net/ar/library/content/1/995): "
+     "«اللهم إني أعوذ بك من عذاب جهنم ومن عذاب القبر ومن فتنة المحيا والممات ومن شر فتنة المسيح الدجال»"),
+    (224, "لاَ تَدْخُلُوا الْجَنَّةَ", "لاَ تَدْخُلُونَ الْجَنَّةَ",
+     "Muslim 54 (app data; www.islamweb.net/ar/library/content/1/152): «لا تدخلون الجنة حتى تؤمنوا»"),
+    (226, "عَبْدِ اللَّهِ بْنِ عُمَرَ", "عَبْدِ اللَّهِ بْنِ عَمْرٍو",
+     "the narrator is Abdullah b. Amr: al-Bukhari 12 and Muslim 39 (app data; www.islamweb.net/ar/library/content/1/127)"),
+    ((0, 6), "وإن تقرب إلي شبراً", "وإن تقرب إلي بشبر",
+     "the takhrij says «واللفظ للبخاري»; al-Bukhari 7405 (app data): «وإن تقرب إلي بشبر تقربت إليه ذراعا»"),
+    ((0, 9), "ولا قطيعة رحم", "ولا قطع رحم",
+     "Muslim 803 (app data; www.islamweb.net/ar/library/content/1/1408): «في غير إثم ولا قطع رحم»"),
+]
+# Footnotes whose virtue ran into the takhrij in the transcription: dhikr number → (takhrij, virtue).
+TAKHRIJ_FIX = {
+    69: ("مسلم 1/418", "من قال ذلك دبر كل صلاة غفرت خطاياه وإن كانت مثل زبد البحر."),
+}
+# Spelling slips in the takhrij: (dhikr number, old, new).
+TAKHRIJ_TYPO = [(165, "سلمم", "مسلم")]
+# Sahih references set by hand where the word search picks another hadith: dhikr number → [(col, number, phrase)].
+REF_FIX = {
+    # «سبحان الله والحمد لله والله أكبر ثلاثاً وثلاثين … تمام المائة» is Muslim 597 (the search found 593, «لا إله
+    # إلا الله وحده …» after the salam); www.islamweb.net/ar/library/content/1/1010.
+    69: [("muslim", 597, "ثلاثا وثلاثين")],
+    # «عشر مرار كان كمن أعتق أربعة أنفس من ولد إسماعيل»: al-Bukhari 6404 (the search found 3293, «مائة مرة»); its
+    # Muslim number (2693) is not in the app's Muslim data, so no Muslim number is shown.
+    255: [("bukhari", 6404, "من ولد اسماعيل")],
+    # After the TEXT_FIX above the wording is Muslim's; al-Bukhari 1377 («من عذاب القبر ومن عذاب النار») stays cited.
+    55: [("bukhari", 1377, "ومن فتنه المحيا والممات"), ("muslim", 588, "اعوذ بك من عذاب جهنم ومن عذاب القبر")],
+    # Muslim 2042 writes «في ما رزقتهم» in two words, so the word search misses it; 1032 is three words only.
+    182: [("muslim", 2042, "واغفر لهم وارحمهم")],
+    172: [("bukhari", 1032, "صيبا نافعا")],
+    # «من البخل … من الجبن» in this order is al-Bukhari 6365 (6374 has «من الجبن … من البخل»).
+    60: [("bukhari", 6365, "اعوذ بك من البخل واعوذ بك من الجبن")],
+}
+
 # Topics for the chapter list's filter (chapter numbers as in the book).
 TOPICS = [
     ("day", "اليوم والمنزل", "🌅", [1, 2, 3, 4, 5, 10, 11]),
@@ -72,8 +115,73 @@ def fix_forms(s):
     return "".join(unicodedata.normalize("NFKC", c) if ("ﭐ" <= c <= "﷿" or "ﹰ" <= c <= "﻿") and c not in "ﷺﷻ" else c for c in s)
 
 
+def brackets(t):
+    """(( … )) → « … », matching each closing bracket to its opener: «(ثلاثاً)))» is «(ثلاثاً)» then «»»."""
+    out, stack, i = [], [], 0
+    while i < len(t):
+        c = t[i]
+        if c == "(":
+            double = t[i + 1:i + 2] == "("
+            stack.append("«" if double else "(")
+            out.append(stack[-1])
+            i += 2 if double else 1
+            continue
+        if c == ")" and stack:
+            if stack[-1] == "(":
+                stack.pop()
+                out.append(")")
+                i += 1
+                continue
+            if t[i + 1:i + 2] == ")":
+                stack.pop()
+                out.append("»")
+                i += 2
+                continue
+        out.append(c)
+        i += 1
+    return "".join(out)
+
+
+def unwrap(t):
+    """Drops a bracket pair around the whole text, and round brackets around a run of four words or more."""
+    pairs = {"(": ")", "«": "»", "[": "]"}
+    while True:
+        s = t.strip()
+        body = s.rstrip(" .")
+        if len(body) < 2 or body[0] not in pairs:
+            break
+        o, c, depth = body[0], pairs[body[0]], 0
+        for j, ch in enumerate(body):
+            depth += ch == o
+            depth -= ch == c
+            if depth == 0:
+                break
+        if j != len(body) - 1:
+            break
+        t = body[1:-1].strip() + s[len(body):].strip()
+
+    def long_run(m):
+        return m.group(1) if len(m.group(1).split()) >= 4 else m.group(0)
+    prev = None
+    while prev != t:
+        prev = t
+        t = re.sub(r"\(([^()]*(?:\([^()]*\)[^()]*)*)\)", long_run, t)
+    t = re.sub(r"\]\s*\[", "] [", t)
+    t = re.sub(r"»\.(?=\S)", "». ", t)
+    t = re.sub(r"([^\s\[(«])\[", r"\1 [", t)
+    return re.sub(r"\s+([.،,])", r"\1", t).strip()
+
+
+def tidy_takhrij(t):
+    """«4/ 2083» → «4/2083»; «الترمذي3/144», «418من» → spaced."""
+    t = re.sub(r"(\d)\s*/\s*(\d)", r"\1/\2", t)
+    t = re.sub(r"([ء-ي])(\d)", r"\1 \2", t)
+    t = re.sub(r"(\d)([ء-ي])", r"\1 \2", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+
 def clean(t):
-    t = fix_forms(t).replace("((", "«").replace("))", "»")
+    t = brackets(fix_forms(t))
     t = re.sub("ـ{2,}", "", t)
     t = re.sub(r"[ \t ]+", " ", t)
     t = re.sub(r"\s*\n\s*", "\n", t)
@@ -160,19 +268,9 @@ def parts_of(text):
 
 
 # ───────────────────────── Sahihs ─────────────────────────
-def numbered(rows):
-    """Rows whose number fits between its neighbours': the Muslim data has a few rows with a wrong number
-    (e.g. «اللهم باعد بيني وبين خطاياي» numbered 1354 between 597 and 599). mobile/test/hisn_test.dart applies
-    the same rule."""
-    ok = []
-    for i, h in enumerate(rows):
-        p, n = rows[i - 1][1] if i else h[1], rows[i + 1][1] if i + 1 < len(rows) else h[1]
-        if not (p <= n and (h[1] < p or h[1] > n)):
-            ok.append(h)
-    return ok
-
-
-SPLAIN = {c: [(h[1], plain(h[2])) for h in numbered(rows)] for c, rows in sahih.items()}
+# Muslim numbers are Abdul-Baqi's: a repeated hadith keeps its first number, so the sequence is not monotonic
+# (tools/build_hadith.py, tools/muslim_numbers.json).
+SPLAIN = {c: [(h[1], plain(h[2])) for h in rows] for c, rows in sahih.items()}
 NAMES = {"bukhari": "البخاري", "muslim": "مسلم"}
 
 
@@ -278,6 +376,7 @@ def title_of(k):
 
 
 topic_of = {n: t[0] for t in TOPICS for n in t[3]}
+fixed = set()
 chapters = []
 for num in range(0, 133):
     key = keys[num + 1]
@@ -285,7 +384,7 @@ for num in range(0, 133):
     lines = [clean(t) for t in notes[key]["text"]]
     foot = [f for f in notes[key].get("footnote", []) if f.strip()]
     if num == 0:
-        items = [{"text": t} for t in lines]
+        items = [{"text": t, "k": k} for k, t in enumerate(lines)]
     else:
         cat = cats[num - 1]
         if sim(fix_forms(cat["category"]), key) < 0.6:
@@ -315,18 +414,38 @@ for num in range(0, 133):
             if any(vs):
                 it["virtue"] = " ".join(v for v in vs if v)
     else:
-        ch["sources"] = [split_note(f)[1] for f in tk]
+        ch["sources"] = [tidy_takhrij(split_note(f)[1]) for f in tk]
 
     for it in items:
+        sel = it["n"] if "n" in it else (num, it.pop("k"))
+        for where, old, new, _src in TEXT_FIX:
+            if where == sel:  # compared in NFC: the transcription has both orders of shadda and its vowel
+                t, old, new = (unicodedata.normalize("NFC", x) for x in (it["text"], old, new))
+                assert t.count(old) == 1, (sel, old)
+                it["text"] = t.replace(old, new)
+                fixed.add(where)
+        it["text"] = unwrap(it["text"])
+        if sel in TAKHRIJ_FIX:
+            it["takhrij"], it["virtue"] = TAKHRIJ_FIX[sel]
+        if "takhrij" in it:
+            for where, old, new in TAKHRIJ_TYPO:
+                if where == sel:
+                    assert old in it["takhrij"], (sel, old)
+                    it["takhrij"] = it["takhrij"].replace(old, new)
+            it["takhrij"] = tidy_takhrij(it["takhrij"])
         p = parts_of(it["text"])
         if p:
             it["parts"] = p
         refs = []
-        for col in ("bukhari", "muslim"):
+        for col in ("bukhari", "muslim") if sel not in REF_FIX else ():
             if cites(it.get("takhrij", ""), col):
                 h = find_hadith(it["text"], col, stated_number(it["takhrij"], col))
                 if h:
                     refs.append({"col": col, "n": h[0], "key": h[1]})
+        for col, number, key in REF_FIX.get(sel, ()):
+            assert any(n == number and key in t for n, t in SPLAIN[col]), (sel, number)
+            assert key in plain(it["text"]), (sel, key)
+            refs.append({"col": col, "n": number, "key": key})
         if refs:
             it["refs"] = refs
         if "takhrij" in it:
@@ -336,6 +455,7 @@ for num in range(0, 133):
     ch["items"] = items
     chapters.append(ch)
 
+assert fixed == {w for w, *_ in TEXT_FIX}, {w for w, *_ in TEXT_FIX} - fixed
 meta = {
     "source": "حصن المسلم من أذكار الكتاب والسنة — د. سعيد بن علي بن وهف القحطاني",
     "urls": [ADHKAR_URL, NOTES_URL],

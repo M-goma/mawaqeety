@@ -35,9 +35,10 @@ class HisnDhikr {
   final List<HisnRef> refs;
   HisnDhikr(this.chapter, this.number, this.text, this.count, this.virtue, this.takhrij, this.grade, this.parts, this.refs);
 
-  /// «البخاري مع الفتح ١١/١١٣ ومسلم … (البخاري ٦٣١٢، مسلم ٢٧١١) — في الصحيحين».
+  /// «البخاري مع الفتح ١١/١١٣ ومسلم … (البخاري ٦٣١٢، مسلم ٢٧١١) — في الصحيحين»: Arabic-Indic numerals throughout,
+  /// so a volume/page such as «٤/٢٠٨٣» stays one run in right-to-left text.
   String get source {
-    final b = StringBuffer(takhrij.isEmpty ? Hisn.bookSource : takhrij);
+    final b = StringBuffer(takhrij.isEmpty ? Hisn.bookSource : Arabic.digits(takhrij));
     if (refs.isNotEmpty) b.write(' (${refs.map((r) => r.label).join('، ')})');
     if (grade.isNotEmpty) b.write(' — $grade');
     return b.toString();
@@ -53,6 +54,9 @@ class HisnChapter {
   final List<String> urls, sources;
   late final List<HisnDhikr> items;
   HisnChapter(this.number, this.title, this.topic, this.link, this.urls, this.sources);
+
+  /// The chapter-level takhrij, with Arabic-Indic numerals as in [HisnDhikr.source].
+  String get sourcesText => Arabic.digits(sources.join(' • '));
 
   /// «١٢. دعاء الذهاب إلى المسجد»; «فضل الذكر» has no number in the book.
   String get heading => number == 0 ? title : '${Arabic.digits(number)}. $title';

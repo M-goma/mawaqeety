@@ -244,7 +244,7 @@ class _HisnChapterPageState extends State<HisnChapterPage> {
           if (c.sources.isNotEmpty)
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
-              child: Text('التخريج: ${c.sources.join(' • ')}', style: TextStyle(fontSize: 11.5, color: hint)),
+              child: Text('التخريج: ${c.sourcesText}', style: TextStyle(fontSize: 11.5, color: hint)),
             ),
           Padding(
             padding: const EdgeInsets.all(16),
